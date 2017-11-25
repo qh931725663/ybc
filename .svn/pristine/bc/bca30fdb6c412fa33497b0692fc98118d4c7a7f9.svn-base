@@ -1,0 +1,383 @@
+<?php
+include_once("check_login.php");
+
+$current_bd_mobile="暂未绑定";
+$p=cselect("*","ydf_member",array("m_bianhao=?",$_SESSION["ERP_ACCOUNT_LOGIN_BIANHAO"]) );
+$rowmember=$p[0]->fetch();
+if ($rowmember["m_type"]=="4")
+{
+    if (!empty($rowmember["m_bd_mobile"]))
+    {
+        $current_bd_mobile=$rowmember["m_bd_mobile"];
+    }
+}
+else
+{
+    $current_bd_mobile=$rowmember["m_mobile"];
+}
+?>
+                <div style="float:left; width:100%; overflow:hidden; display:block">
+<form id="password_set" method="post">  
+                    <div style="float:left; width:85%; margin:30px 0 0 15%; overflow:hidden; display:block">
+                        <span style="float:left; color:#999999">已绑定手机号：</span>
+                        <span style="float:left; color:#e43c3f"><?php echo $current_bd_mobile ?></span>
+                    </div>                  
+                    <div style="float:left; width:85%; margin:30px 0 0 15%; overflow:hidden; display:block">
+                        <div style="position:relative; float:left; overflow:hidden; display:block">
+                            <div style="position:relative; width:277px; height:20px; margin:0 10px 5px 0; padding:5px; background:#fafafa; border:1px solid #cccccc; display:block">
+                                <span style="float:left; width:30px; height:20px; background:url(/pc/reg/images/pic_mob.jpg) center center no-repeat; display:block"></span>
+                                <span style="float:left; width:150px; display:block">
+                                    <input id="bd_modify_mob" name="bd_modify_mob" type="text" value="新手机号码" maxlength="11" style="width:250px; padding-top:3px; height:13px; color:#cccccc; background:#fafafa; border:0;" />
+                                </span>
+                            </div>                
+                        </div>
+                        <div id="tip_mob" style="float:left; padding:8px 0; overflow:hidden; display:block"><span style="color:#999999">11位数字手机号码</span></div>        
+                    </div>
+                    <div style="float:left; width:85%; margin:30px 0 0 15%; overflow:hidden; display:block">
+                        <div style="float:left;width:140px; height:20px; margin:0 10px 5px 0; padding:5px; background:#fafafa; border:1px solid #cccccc; overflow:hidden; display:block">
+                            <span style="float:left; width:30px; height:20px; background:url(/pc/reg/images/pic_password.jpg) center center no-repeat; display:block"></span>
+                            <span style="float:left; width:80px; display:block"><input id="bd_modify_sms" name="bd_modify_sms" type="text" value="短信验证码" maxlength="6" style="width:100px; padding-top:3px; height:13px; color:#cccccc; background:#fafafa; border:0;"></span>
+                        </div>    
+                        <input type="button" id="bd_btn_sms" value="获取验证码"/> 
+                        <div id="bd_tip_sms" style="float:left; margin-left:12px; padding:8px 0; overflow:hidden; display:block"><span style="color:#999999">6位数字短信验证码</span></div>   
+                    </div>                   
+                    <div style="float:left; width:85%; margin:30px 0 0 15%; overflow:hidden; display:block">
+                        <span id="bd_btn_submit">确认修改</span>
+                    </div>
+</form>    
+                </div>
+                
+<script type="text/javascript">
+
+function p_send_reg_resp(msg)
+{
+    if (!msg){
+        alert("err::"+msg);
+        return;
+    }
+    if (msg.state == "new")
+    {
+        if (msg.sms_state == "0")
+			layer.msg("验证码已发送,请查收短信！", {time: 2000, icon:1});
+        else
+            alert("发送验证码失败!");
+    }
+    else
+    {
+        alert("err:"+ JSON.stringify(msg));
+    }
+}
+
+function send_reg_code()
+{
+    mob_num = $("#r_mob").val();
+    $.ajax({
+        url:"sendcode",
+        type:"POST",
+        dataType:"json",
+        data:{var_type:"reg",var_mobile:mob_num},
+        success: function(msg){p_send_reg_resp(msg);},
+        fail:function(){alert("ajax fail");}
+    });
+}
+
+var countdown = 60;
+function settime() 
+{ 
+    val = $("#btn_sms");
+    if (countdown == 0) { 
+        val.attr("disabled",false);    
+        val.attr("value","获取验证码"); 
+        countdown = 60; 
+    } else { 
+        val.attr("disabled", true); 
+        val.attr("value","" + countdown + "秒后重新获取"); 
+        countdown--; 
+        setTimeout(function() { settime(); },1000)
+
+    } 
+}
+
+$(function () {    
+    $("#r_mob").focus(function(){
+        if(this.value=="手机号码"){this.value=""}
+        $(this).css("color","#333333");
+    });    
+    $("#r_mob").blur(function(){
+        if(this.value==""){this.value="手机号码"; $(this).css("color","#cccccc")}
+        if(/\D/.test(this.value) || this.value.length != 11)
+        {
+            $("#tip_mob").html("<img src=/pc/reg/images/error.png> <span style='color:#e43c3f'>请输入正确格式的手机号码！</span>");
+        }
+        else
+        {
+            $.ajax({
+                url:"reg/mobcheck",
+                async: false,
+                type: "POST",
+                data: {var_mob:$(this).val()},
+                success: function(html){
+                    var current_status=parseInt(html);
+                    if (current_status==1001)
+                    {
+                        $("#tip_mob").html("<img src=/pc/reg/images/right.png>");
+                        $("#btn_sms").attr("disabled",false);
+                    }
+                    else if (current_status==1002)
+                    {
+                        $("#tip_mob").html("<img src=/pc/reg/images/error.png> <span style='color:#e43c3f'>此手机号码已注册！请直接 <a href='/'>登录</a></span>");
+                        $("#btn_sms").attr("disabled",true);
+                    }
+                }
+            });        
+        }
+    });
+
+    $("#bd_btn_sms").click(function(){
+        if(/\D/.test($("#bd_modify_mob").val()) || $("#bd_modify_mob").val().length != 11)
+        {
+            $("#tip_mob").html("<img src=/pc/reg/images/error.png> <span style='color:#e43c3f'>请输入正确格式的手机号码！</span>");
+			return false;
+        }
+		
+		settime();
+		send_reg_code();
+	});
+	
+    $("#r_sms").focus(function(){
+        if(this.value=="短信验证码"){this.value=""}
+        $(this).css("color","#333333");
+    });    
+    $("#r_sms").blur(function(){
+        if(this.value==""){this.value="短信验证码"; $(this).css("color","#cccccc")}
+        if(/\D/.test(this.value) || this.value.length != 6)
+        {
+            $("#tip_sms").html("<img src=/pc/reg/images/error.png> <span style='color:#e43c3f'>请输入正确格式的短信验证码！</span>");
+        }
+        else
+        {
+            $.ajax({
+                url:"reg/codecheck",
+                async: false,
+                type: "POST",
+                data: {var_code:$(this).val()},
+                success: function(html){
+                    var current_status=parseInt(html);
+                    if (current_status==1001)
+                    {
+                        $("#tip_sms").html("<img src=/pc/reg/images/right.png>");
+                    }
+                    else if (current_status==1002)
+                    {
+                        $("#tip_sms").html("<img src=/pc/reg/images/error.png> <span style='color:#e43c3f'>短信验证码不正确！</span>");
+                    }
+                }
+            }); 
+        }
+    });
+	    
+    $("input[name=pwdPrompt]").focus(function () { 
+        $("input[name=pwdPrompt]").hide(); 
+        $("input[name=r_pwd]").show().focus(); 
+        $("input[name=r_pwd]").css("color","#333333");
+    }); 
+    
+    $("input[name=r_pwd]").blur(function () { 
+        if ($(this).val() == "") { 
+            $("input[name=pwdPrompt]").show(); 
+            $("input[name=r_pwd]").hide(); 
+        }
+        if(!$("#r_pwd").val() || !$("#r_pwd").val().match(/^[\w]{6,20}$/))
+        {
+            $("#tip_pwd").html("<img src=/pc/reg/images/error.png> <span style='color:#e43c3f'>请输入正确格式的密码！</span>");
+        }
+        else
+        {
+            $("#tip_pwd").html("<img src=/pc/reg/images/right.png>");
+        }
+    }) 
+    
+    $("input[name=confirmpwdPrompt]").focus(function () { 
+        $("input[name=confirmpwdPrompt]").hide(); 
+        $("input[name=r_confirmpwd]").show().focus(); 
+        $("input[name=r_confirmpwd]").css("color","#333333");
+    }); 
+    
+    $("input[name=r_confirmpwd]").blur(function () { 
+        if ($(this).val() == "") { 
+            $("input[name=confirmpwdPrompt]").show(); 
+            $("input[name=r_confirmpwd]").hide(); 
+        }
+        if(!$("#r_confirmpwd").val() || !$("#r_confirmpwd").val().match(/^[\w]{6,20}$/))
+        {
+            $("#tip_confirmpwd").html("<img src=/pc/reg/images/error.png> <span style='color:#e43c3f'>请输入正确格式的密码！</span>");
+        }
+        else
+        {
+            if ($("#r_confirmpwd").val()!=$("#r_pwd").val())
+            {
+                $("#tip_confirmpwd").html("<img src=/pc/reg//images/error.png> <span style='color:#e43c3f'>两次输入的密码不一致！</span>");
+            }
+            else
+            {
+                $("#tip_confirmpwd").html("<img src=/pc/reg/images/right.png>");
+            }
+        }
+    });
+	
+    $("#r_realname").focus(function(){
+        if(this.value=="用户真实姓名"){this.value=""}
+        $(this).css("color","#333333");
+    });    
+    $("#r_realname").blur(function(){
+        if(this.value==""){this.value="用户真实姓名"; $(this).css("color","#cccccc")}
+        if(this.value=="" || this.value=="用户真实姓名")
+        {
+            $("#tip_realname").html("<img src=/pc/reg/images/error.png> <span style='color:#e43c3f'>请输入用户真实姓名！</span>");
+        }
+        else
+        {
+            $("#tip_realname").html("<img src=/pc/reg/images/right.png>");
+        }
+    }); 
+    
+    $("#btn_reg").click(function () { 
+        if($('input:radio[name="user_type"]:checked').val()==null)
+        {
+            $("#tip_usertype").html("<img src=/pc/reg/images/error.png> <span style='color:#e43c3f'>请选择用户类型！</span>");
+            return false;
+        }
+        else
+        {
+            $("#tip_usertype").html("");
+        }
+            
+        if(/\D/.test($("#r_mob").val()) || $("#r_mob").val().length != 11)
+        {
+            $("#tip_mob").html("<img src=/pc/reg/images/error.png> <span style='color:#e43c3f'>请输入正确格式的手机号码！</span>");
+            return false;
+        }
+        else
+        {
+            var current_status;
+            $.ajax({
+                url:"reg/mobcheck", 
+                async: false,
+                type: "POST",
+                data: {var_mob:$("#r_mob").val()},
+                success: function(html){
+                    current_status=parseInt(html);
+                }
+            });    
+            
+            if (current_status==1001)
+            {
+                $("#tip_mob").html("<img src=/pc/reg/images/right.png>");
+            }
+            else if (current_status==1002)
+            {
+                $("#tip_mob").html("<img src=/pc/reg/images/error.png> <span style='color:#e43c3f'>此手机号码已注册！请直接 <a href='/'>登录</a></span>");
+                return false;
+            }    
+        }
+		
+        if(/\D/.test($("#r_sms").val()) || $("#r_sms").val().length != 6)
+        {
+            $("#tip_sms").html("<img src=/pc/reg/images/error.png> <span style='color:#e43c3f'>请输入正确格式的短信验证码！</span>");
+            return false;
+        }
+        else
+        {
+            var current_status;
+            $.ajax({
+                url:"reg/codecheck", 
+                async: false,
+                type: "POST",
+                data: {var_code:$("#r_sms").val()},
+                success: function(html){
+                    current_status=parseInt(html);
+                }
+            });    
+            
+            if (current_status==1001)
+            {
+                $("#tip_sms").html("<img src=/pc/reg/images/right.png>");
+            }
+            else if (current_status==1002)
+            {
+                $("#tip_sms").html("<img src=/pc/reg/images/error.png> <span style='color:#e43c3f'>短信验证码不正确！</span>");
+                return false;
+            }    
+        }
+
+        if(!$("#r_pwd").val() || !$("#r_pwd").val().match(/^[\w]{6,20}$/))
+        {
+            $("#tip_pwd").html("<img src=/pc/reg/images/error.png> <span style='color:#e43c3f'>请输入正确格式的密码！</span>");
+            return false;
+        }
+        else
+        {
+            $("#tip_pwd").html("<img src=/pc/reg/images/right.png>");
+        }
+
+        if(!$("#r_confirmpwd").val() || !$("#r_confirmpwd").val().match(/^[\w]{6,20}$/))
+        {
+            $("#tip_confirmpwd").html("<img src=/pc/reg/images/error.png> <span style='color:#e43c3f'>请输入正确格式的密码！</span>");
+            return false;
+        }
+        else
+        {
+            if ($("#r_confirmpwd").val()!=$("#r_pwd").val())
+            {
+                $("#tip_confirmpwd").html("<img src=/pc/reg//images/error.png> <span style='color:#e43c3f'>两次输入的密码不一致！</span>");
+                return false;
+            }
+            else
+            {
+                $("#tip_confirmpwd").html("<img src=/pc/reg/images/right.png>");
+            }
+        }
+		
+        if(!$("#r_realname").val() || $("#r_realname").val()=="用户真实姓名")
+        {
+            $("#tip_realname").html("<img src=/pc/reg/images/error.png> <span style='color:#e43c3f'>请输入您的用户真实姓名！</span>");
+            return false;
+        }
+        else
+        {
+            $("#tip_realname").html("<img src=/pc/reg/images/right.png>");
+        }
+        
+        if($('input:checkbox[name="r_fuwu"]:checked').val()==null)
+        {
+            $("#tip_fuwu").html("<img src=/pc/reg/images/error.png> <span style='color:#e43c3f'>只有仔细阅读并同意《优百仓用户服务条款》才能注册！</span>");
+            return false;
+        }
+        else
+        {
+            $("#tip_fuwu").html("<img src=/pc/reg/images/right.png>");
+        }
+        
+        $.ajax({
+            url:"reg/post-reg", 
+            async: false,
+            type: "POST",
+            data:{var_usertype:$('input:radio[name="user_type"]:checked').val(),var_mobile:$("#r_mob").val(),var_password:$("#r_pwd").val(),var_realname:$("#r_realname").val() },
+			dataType:"json",
+            success: function(html){
+				if (html["state"]=="ok")
+				{
+					layer.msg("注册成功！", {time: 2000, icon:1});
+					setTimeout(function(){
+						window.location.href="/myaccount";
+					},2000);
+				}
+				else
+				{
+					layer.msg(html["desc"], {time: 2000, icon:2});
+				}
+            }
+        });        
+    });
+});
+</script>

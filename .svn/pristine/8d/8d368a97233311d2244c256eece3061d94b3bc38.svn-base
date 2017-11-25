@@ -1,0 +1,180 @@
+<?php 
+include_once "{$root_path}/model/model_bi.php";
+?>
+<script type="text/javascript">
+
+function search_stock_bi()
+{
+
+    set_page_num("view_stock_bi_stock_time","pages_stock_bi",1);
+
+    refresh_inner("view_stock_bi_stock_time?"+$("#form_stock_bi").serialize() );
+}
+
+function click_me_stock_bi(obj,state)
+{
+    $('#verify_state_stock_bi').attr('value',state);
+
+    obj.parent().find(".listtypevalue").removeClass('listtypeselect');
+    obj.addClass("listtypeselect");
+    
+    search_stock_bi();
+}
+
+function clean_search_stock_bi()
+{
+    mount_to_frame('view_stock_bi_stock_time',1,'frame_stock_bi_stock_time');
+}
+</script>
+                        <form id="form_stock_bi">        
+                        <input  type="hidden" name="bi_time" id="verify_state_stock_bi" value=""/>
+                        <input  type="hidden" name="get_stock_guige_huohao" id="get_stock_guige_huohao" value=""/>
+                        <input  type="hidden" name="get_stock_guige_color" id="get_stock_guige_color" value=""/>
+                        <input  type="hidden" name="get_stock_guige_time" id="get_stock_guige_time" value=""/>
+                        <div class="search_box">
+                            <div class="search_box_inner">
+                                <div class="kcfx_a">
+                                    <span class="listtypevalue listtypeselect" onclick='/**/click_me_stock_bi($(this),"day");'>日报</span>
+                                    <span class="listtypevalue" onclick='/**/click_me_stock_bi($(this),"week");'>周报</span>
+                                    <span class="listtypevalue" onclick='/**/click_me_stock_bi($(this),"month");'>月报</span>
+                                    <span class="listtypevalue" onclick='/**/click_me_stock_bi($(this),"year");'>年报</span>
+                                </div>
+                                <div class="kcfx_b">
+                                
+                                    <span class="lf"><input id="search_stock_bi_huohao" name="search_stock_bi_huohao" type="text" placeholder="请输入商品货号" autofocus="autofocus"/></span>
+                                    <span onclick="/**/search_stock_bi()" class="btn_normal_green">搜索</span>
+                                    <span onclick="/**/clean_search_stock_bi()" class="btn_normal_red">清空搜索条件</span>
+                                </div>
+                            </div>                        
+                        </div>
+<!-- refresh_begin -->                       
+                        <div class="report_table_header">
+                            <div style="width:10%; font-size:14px; color:#999999">日期</div>
+                            <div style="width:10%; font-size:14px; color:#999999">货号</div>
+                            <div style="width:10%; font-size:14px; color:#999999">颜色</div>
+                            <div style="width:10%; font-size:14px; color:#999999">尺码</div>
+                            <div style="width:10%; font-size:14px; color:#999999">期初库存</div>
+                            <div style="width:10%; font-size:14px; color:#999999">+ 入库数量</div>
+                            <div style="width:10%; font-size:14px; color:#999999">- 出库数量</div>
+                            <div style="width:10%; font-size:14px; color:#999999">- 返厂数量</div>
+                            <div style="width:10%; font-size:14px; color:#999999">= 库存数量</div>
+                            <div style="width:10%; font-size:14px; color:#999999">详细</div>
+
+                        </div>
+<?php
+$boss_id = $_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"];
+
+$ymd=empty($_REQUEST["bi_time"])?"day":$_REQUEST["bi_time"];
+@$search_stock_bi_huohao=$_REQUEST["search_stock_bi_huohao"]=="请输入商品货号"?null:$_REQUEST["search_stock_bi_huohao"];
+if (!empty($_SESSION["ERP_ACCOUNT_USER_DANGKOU_BIANHAO"]))
+    $order_master_id=$_SESSION["ERP_ACCOUNT_USER_DANGKOU_BIANHAO"];
+else
+    $order_master_id="";
+
+@$page=$_REQUEST["page_idx"]?$_REQUEST["page_idx"]:1;$pagesize=50;$offset=($page-1)*$pagesize; 
+$group=array("detail_order_{$ymd}","detail_p_huohao");
+$types=array('thdj',  'kccsh','jhrk','thsj','ckrk','dbrk', 'phth','xsck','qcfc','ckck','dbck');
+$where=array(
+    "detail_boss_m_bianhao=? and detail_master_bianhao=? and detail_master_bianhao!=0 and detail_p_huohao=?",
+    $boss_id,$order_master_id,$search_stock_bi_huohao
+);
+$sums=array();
+foreach($types as $type)
+    $sums[]="sum(CASE WHEN detail_order_type='{$type}' THEN detail_order_num ELSE 0 END ) as {$type}";
+$historys=bi_select($sums,"ydf_order_detail",$where,$group,"pool_stocks");
+$sorts=sort_rows($historys,$group,1);
+$rowcount=count($historys);$page_count=ceil($rowcount/$pagesize);
+debug($historys);
+for ($i=$offset;$i<$offset+$pagesize && $i<$rowcount;$i++)
+{
+    $idx=$rowcount-1-$i;//historys是从老到新的顺序,所以从尾巴开始取是最新的
+    $row_main=$historys[$sorts[$idx][0] ];
+?>
+                        <div class="report_table_body">
+                            <div style="font-size:14px; width:10%">
+                            <?php
+                            if ($row_main["detail_order_{$ymd}"]>1) 
+                            {
+                                if (empty($_REQUEST["bi_time"]) or $_REQUEST["bi_time"]=="day")
+                                {
+                                    echo date("Y-m-d",$row_main["detail_order_{$ymd}"]);
+                                }
+                                elseif (empty($_REQUEST["bi_time"]) or $_REQUEST["bi_time"]=="week")
+                                {
+                                    if (strtotime("+6 day",$row_main["detail_order_{$ymd}"])>time())
+                                    {
+                                        echo date("Y-m-d",$row_main["detail_order_{$ymd}"]);
+                                    }
+                                    else
+                                    {
+                                        echo date("Y-m-d",strtotime("+6 day",$row_main["detail_order_{$ymd}"]));
+                                    }
+                                }
+                                else if (!empty($_REQUEST["bi_time"]) and $_REQUEST["bi_time"]=="month")
+                                {
+                                    echo date("Y-m",$row_main["detail_order_{$ymd}"]);
+                                }
+                                elseif (!empty($_REQUEST["bi_time"]) and $_REQUEST["bi_time"]=="year")
+                                {
+                                    echo date("Y",$row_main["detail_order_{$ymd}"]);
+                                }
+                            }
+                            else
+                            {
+                                echo "初始化";
+                            }
+                            ?>
+                            </div>
+                            <div style="font-size:14px; width:10%"><?php echo $row_main["detail_p_huohao"] ?></div>
+                            <div style="height:15px; width:10%"></div>
+                            <div style="height:15px; width:10%"></div>
+                            <div style="font-size:14px; width:10%"><?php echo round($historys[$row_main["last"]]["sum"]["pool"]) ?></div>
+                            <div style="font-size:14px; width:10%"><?php echo round($row_main["jhrk"]) ?></div>
+                            <div style="font-size:14px; width:10%"><?php echo round($row_main["phth"]+$row_main["xsck"]) ?></div>
+                            <div style="font-size:14px; width:10%"><?php echo round($row_main["qcfc"]) ?></div>
+                            <div style="font-size:14px; width:10%"><?php echo round($row_main["sum"]["pool"]) ?></div>
+                            <div style="width:10%"><span onclick="/**/ShowStockProductGuige('<?php echo $row_main["detail_p_huohao"] ?>','<?php echo date("Y-m-d",$row_main["detail_order_{$ymd}"]) ?>')" style="font-size:14px; color:#0099FF; cursor:pointer">详细</span></div>
+                        </div>
+                        <div id="layer_stock_product_guige_<?php echo $row_main["detail_p_huohao"] ?>_<?php echo date("Y-m-d",$row_main["detail_order_{$ymd}"]) ?>">
+                        </div>
+<?php
+}
+?>
+                    
+                    
+                    <div class="record"> 共 <span class="record_num"><?php echo $rowcount?></span> 条记录</div>
+
+<script>/*n*/
+    set_page_count("view_stock_bi_stock_time","pages_stock_bi",<?php echo $page_count;?>);
+</script>
+
+<!-- refresh_end -->
+
+    <div class="ipages" id="pages_stock_bi" page="view_stock_bi_stock_time" form="form_stock_bi" count="<?php echo $page_count; ?>"/>
+                    </form> <!-- 页码也作为表单项统一处理  -->
+<script type="text/javascript">    
+
+
+function ShowStockProductGuige(p_huohao,time)
+{
+    if ($("#layer_stock_product_guige_"+p_huohao+"_"+time).is(":visible")==false)
+    {
+        $('#get_stock_guige_huohao').attr("value",p_huohao);
+        $('#get_stock_guige_time').attr("value",time);
+        $.ajax({
+            url:"view-get-stock-guige", 
+            async: false,
+            type: "POST",
+            data:$("#form_stock_bi").serialize(),
+            success: function(html){
+                $("#layer_stock_product_guige_"+p_huohao+"_"+time).html(html);
+                $("#layer_stock_product_guige_"+p_huohao+"_"+time).show();
+            }
+        });
+    }
+    else
+    {
+        $("#layer_stock_product_guige_"+p_huohao+"_"+time).hide();
+    }
+}
+</script>

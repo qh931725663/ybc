@@ -1,0 +1,23 @@
+<?php 
+include_once "{$root_path}/model/model_bi.php";
+@$page=$_REQUEST["page_idx"]?$_REQUEST["page_idx"]:1;$pagesize=20;$offset=($page-1)*$pagesize;
+$factory_array= get_stream_mjdz(@$_REQUEST["var_factory_id"]);
+$rowcount=count($factory_array);
+debug($factory_array);
+$page_count=ceil($rowcount/$pagesize);
+for ($i=$offset;$i<$offset+$pagesize && $i<$rowcount;$i++)
+{
+    $ro=$factory_array[$i];
+    debug($ro);
+?>
+<div class="report_table_body" style="border-bottom:1px dashed #cccccc">
+    <div style="width:10%; height:15px"></div>
+    <div style="width:10%; text-align:center">-</div>
+    <div style="width:5%; text-align:center">-</div>
+    <div style="width:10%; text-align:center">-</div>
+    <div style="width:5%; text-align:center">-</div>
+    <div style="width:5%; text-align:center">-</div>
+    <div style="width:5%; text-align:center">-</div>
+    <div style="width:10%; text-align:center">-</div>
+    <div style="width:40%; height:15px"></div>
+</div>

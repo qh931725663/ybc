@@ -1,0 +1,22 @@
+<?php
+
+include_once("check_factory_user.php");
+?>
+<div class="frame_main_div" >
+    <div class="frame_tab_panel">
+        <div class="frame_tab_line">
+            <span class="frame_tab_item_select" onclick="click_tab_arrange($(this));mount_to_frame('frame_factory_return_factory',0,'frame_factory_return')">退货返厂</span>
+            <span class="frame_tab_item"        onclick="click_tab_arrange($(this));mount_to_frame('frame_factory_return_clear',0,'frame_factory_return')">清仓返厂</span>
+        </div>
+    </div>    
+    <div id="frame_factory_return" />
+</div>
+<script>
+mount_to_frame('frame_factory_return_factory',0,'frame_factory_return');
+
+function click_tab_arrange(obj)
+{
+    obj.parent().find(".frame_tab_item_select").removeClass('frame_tab_item_select').addClass("frame_tab_item");
+    obj.addClass("frame_tab_item_select");
+}
+</script>    

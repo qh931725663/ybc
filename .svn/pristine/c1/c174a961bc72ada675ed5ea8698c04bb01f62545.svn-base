@@ -1,0 +1,34 @@
+<?php
+    include_once("{$root_path}/model/model_bi.php");
+    $historys=array();
+    $historys_idx=array();
+    get_history_agent_pools("month",$_REQUEST["select_getcash_factory"],$historys,$historys_idx);
+    $rowcount=count($historys);
+    for($i=$offset;$i<$rowcount;$i++){
+        $idx=$rowcount-1-$i;//historys是从老到新的顺序,所以从尾巴开始取是最新的
+        //$row=$historys[$sorts[$idx][0] ];
+        $row=$historys[$idx];
+    }
+    $p = cselect("*","ydf_bank",array("bank_boss_id=?",$_REQUEST["select_getcash_factory"]));
+    $factory_bank=array();
+    while ($row=$p[0]->fetch()){
+        $bank_user_name = $row["bank_user_name"];
+        $bank_type = $row["bank_type"];
+        $bank_user_account = $row["bank_user_account"];
+        $bank_name = $row["bank_name"];
+        $bank_boss_id = $row["bank_boss_id"];
+
+        if($bank_type==3){
+            $factory_bank[bank_user_account]=$bank_user_account;
+            $factory_bank["bank_boss_id"][]=$bank_boss_id;
+        }
+        else{
+            $factory_bank["bank_name"][]=$bank_name;
+            $factory_bank["bank_user_account"][]=$bank_user_account;
+            $factory_bank["bank_user_name"][]=$bank_user_name;
+            $factory_bank["bank_boss_id"][]=$bank_boss_id;
+        }
+    }
+    $factory_bank["cash_available"][]=$row["pool"];
+    echo json_encode($factory_bank);
+?>

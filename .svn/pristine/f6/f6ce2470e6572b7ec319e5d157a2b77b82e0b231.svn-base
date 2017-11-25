@@ -1,0 +1,28 @@
+<?php
+include_once("check_login.php");
+include_once("check_dangkou_user.php");
+?>
+<div class="frame_main_div" style="min-height:400px;">
+    <div style="width:100%">
+        <span class="chuku_seller_s" style="float:left;width:33%;height:70px;margin-left:6px;"><input id="chuku_seller_nickname" class="chuku_seller_name iinput name_iime ino_ime_input iseller_name" name="chuku_seller_name" type="text" placeholder="请输入卖家拼音首字母" autocomplete="off" style="width:161%;height:70px;font-size:20px;"/></span>
+        <div style="float:left;width:32.5%;height:70px;background:#ff6058;margin-left:2px;"><span class="chuhuo_register" style="display:block;height:70px;line-height:70px;text-align:center;font-size:30px;color:#fff;cursor:pointer;width:100%">出货收银</span></div>
+        <div style="float:left;;width:32.5%;height:70px;background:#555c6f;margin-left:2px;"><span class="return_goos" style="display:block;height:70px;line-height:70px;text-align:center;font-size:30px;color:#fff;cursor:pointer;width:100%">退货登记</span></div>
+    </div>
+    <div class="frame_tab_panel" style="top:18px">
+        <div class="frame_tab_line">
+            <span class="frame_tab_item_select chuhuo_btn" onclick="mount_to_frame('frame_sales_cashier',0,'frame_cashier')">出货记录</span>
+            <span class="frame_tab_item tuihuo_btn"    onclick="mount_to_frame('frame_return_list',0,'frame_cashier')">退货记录</span>
+        </div>
+    </div>    
+    <div id="frame_cashier" />
+</div>
+
+<script>
+mount_to_frame('frame_sales_cashier',0,'frame_cashier');
+
+num_sound = new NumSound();
+
+$(".return_goos").click(function(){
+    $(".tuihuo_btn").click();
+});
+</script>

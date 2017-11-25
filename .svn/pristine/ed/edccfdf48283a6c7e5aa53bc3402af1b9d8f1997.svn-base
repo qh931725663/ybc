@@ -1,0 +1,42 @@
+<?php
+
+include_once("check_dangkou_user.php");
+
+$rspagedata=mysql_query("SELECT * FROM ydf_seller WHERE seller_bianhao='".$_REQUEST["var_seller_bianhao"]."'" , $dbconn);
+$rowpagedata=mysql_fetch_array($rspagedata);
+
+?>
+    <div style="float:left; width:100%; line-height:1.8; overflow:hidden; display:block">
+        <p style="float:left; width:100%; padding:5px 0; display:block">
+            <span style="float:left; width:100px; margin:5px 0; text-align:right; color:#999999">卖家昵称：</span>
+            <span style="float:left; margin:5px 0"><?php echo $rowpagedata["seller_name"]?></span>
+        </p>
+        <p style="float:left; width:100%; padding:5px 0; display:block">
+            <span style="float:left; width:100px;font-size:12px; margin:5px 0; text-align:right; color:#999999">商品指定价：</span>
+            <span style="float:left; width:400px; overflow:hidden; display:block">
+                <span style="float:left; width:100%; border-bottom:1px dashed #cccccc; padding:5px 0; overflow:hidden; display:block">
+                    <span style="float:left; width:60%">商品货号</span>
+                    <span style="float:left; width:30%; text-align:right">指定价</span>
+                    <span style="float:left; width:10%; text-align:right">操作</span>
+                </span>
+                <span style="float:left; width:100%; border-bottom:1px dashed #cccccc; padding:5px 0; overflow:hidden; display:block">
+                    <span style="float:left; width:60%; height:25px"><input class="iinput" name="s_huohao_<?php echo $rowpagedata["seller_bianhao"]?>" id="s_huohao_<?php echo $rowpagedata["seller_bianhao"]?>" type="text" maxlength="50" style="width:120px; padding:5px"/></span>
+                    <span style="float:left; width:30%; height:25px; text-align:right"><input class="iinput" name="s_price_<?php echo $rowpagedata["seller_bianhao"]?>" id="s_price_<?php echo $rowpagedata["seller_bianhao"]?>" type="text" maxlength="50" style="width:50px; padding:5px"/></span>
+                    <span style="float:left; width:10%; height:25px; text-align:right; color:blue; cursor:pointer" onclick="AddSellerGoods(<?php echo $rowpagedata["seller_bianhao"] ?>)">添加</span>
+                </span>
+                <?php
+                $p_seller=cselect("*","ydf_seller_price",array("seller_price_seller_bianhao=? and seller_price_boss_m_bianhao=?",$rowpagedata["seller_bianhao"],$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"] ),"","seller_price_bianhao desc" );
+                while ($rowseller=$p_seller[0]->fetch())
+                {
+                ?>
+                <span style="float:left; width:100%; border-bottom:1px dashed #cccccc; padding:5px 0; overflow:hidden; display:block">
+                    <span style="float:left; width:60%; height:25px"><?php echo $rowseller["seller_price_p_huohao"] ?></span>
+                    <span style="float:left; width:30%; height:25px; text-align:right"><?php echo $rowseller["seller_price"]; ?></span>
+                    <span style="float:left; width:10%; height:25px; text-align:right; color:blue; cursor:pointer" onclick="DeleteSellerGoods(<?php echo $rowpagedata["seller_bianhao"] ?>,<?php echo $rowseller["seller_price_bianhao"]; ?>)">删除</span>
+                </span>
+                <?php
+                }
+                ?>
+            </span>
+        </p>
+    </div>

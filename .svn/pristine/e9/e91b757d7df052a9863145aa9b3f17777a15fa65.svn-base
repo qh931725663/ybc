@@ -1,0 +1,22 @@
+<?php
+$seller_arr=[];
+$p=cselect("product_name,product_pinyin","ydf_products",array("p_boss_m_bianhao=?",$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"]));
+while ($row=$p[0]->fetch())
+{
+    $pinyins=$row["product_pinyin"];
+    $pinyins=explode(",",$pinyins);
+    $prefixs=array();
+    foreach($pinyins as $pinyin){
+        $prefix="";
+        $chars=str_split($pinyin);
+        foreach($chars as $char)
+        {
+            $prefix.=$char;
+            $prefixs[$prefix]=1;
+        }
+    }
+    foreach($prefixs as $prefix=>$v)
+        $seller_arr[$prefix][]=$row["product_name"];
+}
+echo json_encode($seller_arr);
+?>

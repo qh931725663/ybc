@@ -1,0 +1,22 @@
+<?php
+    $p = cselect("*","ydf_bank",array("bank_boss_id=?",$_REQUEST["select_getcash_factory"]));
+    while ($row=$p[0]->fetch()){
+        $bank_user_name = $row["bank_user_name"];
+        $bank_type = $row["bank_type"];
+        $bank_user_account = $row["bank_user_account"];
+        $bank_name = $row["bank_name"];
+        $bank_boss_id = $row["bank_boss_id"];
+        $factory_bank=array();
+        if($bank_type==3){
+            $factory_bank[bank_user_account]=$bank_user_account;
+            $factory_bank["bank_boss_id"][]=$bank_boss_id;
+        }
+        else{
+            $factory_bank["bank_name"][]=$bank_name;
+            $factory_bank["bank_user_account"][]=$bank_user_account;
+            $factory_bank["bank_user_name"][]=$bank_user_name;
+            $factory_bank["bank_boss_id"][]=$bank_boss_id;
+        }
+    }
+echo json_encode($factory_bank);
+?>

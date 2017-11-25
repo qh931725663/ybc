@@ -1,0 +1,180 @@
+<?php 
+include_once "{$root_path}/model/model_bi.php";
+?>
+                    <form id="form_stock_addup">
+                        <input  type="hidden" name="bi_time" id="verify_state_stock_bi" value=""/>
+                        <input  type="hidden" name="get_stock_guige_huohao" id="get_stock_guige_huohao" value=""/>
+                        <input  type="hidden" name="get_stock_guige_color" id="get_stock_guige_color" value=""/>
+                        <input  type="hidden" name="get_stock_guige_time" id="get_stock_guige_time" value=""/>
+                        <div class="search_box">
+                            <div class="search_box_inner">
+                                <div class="kcfx_b">
+                                    <span class="lf">
+                                        <select name="dangkou_id" style="height:30px;width:120px;margin-right:10px;">
+                                            <option value="">请选择档口</option>
+                                            <?php get_dangkou_option();?>
+                                        </select>
+                                    </span>
+                                    <span class="lf">
+                                        <select name="kucun_select_factory" style="height:30px;width:120px;margin-right:10px;">
+                                            <option value="">请选择工厂</option>
+                                            <?php get_factory_option();?>
+                                        </select>
+                                    </span>
+                                    <span class="lf"><input class="iinput name_iime ino_ime_input iproduct_name"  style="padding-right:20px; width:142px" id="search_stock_bi_huohao" name="search_stock_bi_huohao" type="text" placeholder="请输入商品货号" autocomplete="off " required/></span>
+                                    <input id="page_idx" name="page_idx" type="hidden" value="1" />
+                                    <span  onclick="/**/search_kucun()" class="btn_normal_blue" style="height:17px;line-height:17px;">搜索</span>
+                                    <span class="clear_search" onclick="mount_to_frame('view_stock_bi_addup',1,'frame_stock_bi_addup')">清空<br>条件</span>
+                                </div>
+                                <div class="rt" style="width:16%;">
+                                    <div style="display:inline-block;border-right:3px solid #797979;padding-right:8px;">
+                                        <span style="display:block;font-size:16px;font-weight:bold;">库存总计</span>
+<?php
+include_once("{$root_path}/model/model_bi.php");
+$boss_id = $_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"];
+$ymd=empty($_REQUEST["bi_time"])?"day":$_REQUEST["bi_time"];
+@$product_id=$_REQUEST["search_stock_bi_huohao"]==""?null:$_REQUEST["search_stock_bi_huohao"];
+@$factory_id=$_REQUEST["kucun_select_factory"];
+if (!empty($_SESSION["ERP_ACCOUNT_USER_DANGKOU_BIANHAO"]))
+    $order_master_id=$_SESSION["ERP_ACCOUNT_USER_DANGKOU_BIANHAO"];
+else
+    $order_master_id=@$_REQUEST["dangkou_id"];
+@$page=$_REQUEST["page_idx"]?$_REQUEST["page_idx"]:1;$pagesize=20;$offset=($page-1)*$pagesize;
+
+//得到每个货号下每个档口的库存
+$group=array("detail_p_huohao","detail_master_bianhao");
+list($historys,$detail_addup)=get_history_stock_num($ymd="day",$group,$factory_id,$product_id,null,null,null,null);
+//debug($detail_addup);
+
+//得到每个货号的公司总库存，不区分档口
+$group=array("detail_p_huohao");
+list($historys2,$addup)=get_history_stock_num($ymd="day",$group,$factory_id,$product_id,$order_master_id,null,null,null);
+$total_kucun=sum_addup($addup);//取总库存
+//得到货款总额
+$group=array("bill_factory_id");
+list($historys_payment,$payment_addup)=get_history_stock_fund($ymd="day",$group,null,$factory_id,null);
+$total_payment=sum_addup($payment_addup);
+//得到档口列表
+$dangkou_arr=get_dangkou_list();//档口仓库和编号数组
+debug($dangkou_arr);
+
+//七日总销和均销
+$group=array("detail_p_huohao");
+$where=array("detail_p_huohao=? and detail_master_bianhao=? and detail_factory_bianhao=?",$product_id,$order_master_id,$factory_id);
+$event_inventory=predict(7,7,7,$group,$where);
+debug($event_inventory);
+
+$rowcount=count($event_inventory);$page_count=ceil($rowcount/$pagesize);
+$ret=[];
+foreach ($event_inventory as $key=>$value)
+{
+    $value["detail_p_huohao"]=$key;
+    $ret[]=$value;
+}
+//排序
+$keys=array("total_num"=>"");
+$sret=ysort($ret,$keys);
+debug($sret);
+?>
+                                            <span style="display:block;color:#e83c3f;margin-top:5px;font-size:20px;font-weight:bold;"><?php echo floatval($total_kucun) ?></span>
+                                    </div>
+                                    <div style="display:inline-block;padding-left:4px;">
+                                        <span style="display:block;font-size:16px;font-weight:bold;">货款总计</span>
+                                        <span style="display:block;color:#e83c3f;margin-top:5px;font-size:20px;font-weight:bold;"><?php echo round($total_payment) ?></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+<div class="report">
+    <div class="report_table_header">
+        <div style="width:8%;color:#999999;">货号</div>
+        <div style="width:8%;color:#999999;"></div>
+        <div style="width:8%;color:#999999;"></div>
+        <div style="width:8%;color:#999999;">总库存</div>
+        <div style="width:8%;color:#999999;margin-left:9%;">分库存</div>
+        <div style="width:8%;color:#999999;margin-left:12%;">七日均销</div>
+        <div style="width:8%;color:#999999;margin-left:8%;">七日总销</div>
+        <div style="width:7%;color:#999999;margin-left:5%;">操作</div>
+    </div>
+<!-- refresh_begin -->
+<?php
+for ($i=$offset;$i<$offset+$pagesize && $i<$rowcount;$i++)
+{
+    //$idx=$rowcount-1-$i;
+    $idx=$sret[$i]["idx"];
+    //$ro=$historys2[$ret[$idx]["now"]];
+    $ro=$ret[$idx];
+    debug($ro);
+    if(array_key_exists($ro["detail_p_huohao"],$event_inventory)==false){
+        $avg_num=0;
+        $total_num=0;
+    }else{
+        $avg_num=round($event_inventory[$ro["detail_p_huohao"]]["avg_num"],2);
+        $total_num=round($event_inventory[$ro["detail_p_huohao"]]["total_num"],2);
+    }
+
+    $kucun="";
+    for($j=0;$j<count($dangkou_arr);$j++){
+
+        $huo_dang=$dangkou_arr[$j][0];
+        $dangkou_name=$dangkou_arr[$j][1];
+        if(array_key_exists($ro["detail_p_huohao"].'#'.$huo_dang, $detail_addup)==false){
+            $kucun.="<span class='lf' style='margin-top:4px;margin-right:5px;'>".$dangkou_name.":0"."</span>";
+        }else{
+            $kucun.="<span class='lf' style='margin-top:4px;margin-right:5px;'>".$dangkou_name.":".floatval($detail_addup[$ro["detail_p_huohao"].'#'.$huo_dang]['pool'])."</span>";
+        }
+    }
+?>
+                        <div class="report_table_body" style="width:100%; margin:0 auto; padding:10px 0; border-bottom:1px dashed #cccccc; overflow:hidden; display:block;">
+                            <div style="width:8%;"><?php echo $ro["detail_p_huohao"] ?></div>
+                            <div style="width:8%;margin-left:16%">
+                                <span style="float:left; width:100%; text-align:center"><?php echo @floatval($addup[$ro["detail_p_huohao"]]["pool"])?></span>
+                            </div>
+                            <div class="kucun_sp" style="width:28%;margin-left:2%"><?php echo $kucun ?></div>
+                            <div style="width:6%;"><?php echo round($avg_num) ?></div>
+                            <div style="width:8%;margin-left:9%"><?php echo floatval($total_num) ?></div>
+                            <div style="width:7%;margin-left:5%"><span onclick="/**/ShowStockProductGuige('<?php echo $ro["detail_p_huohao"] ?>','<?php echo $product_id ?>','<?php $factory_id ?>')" style="font-size:14px; color:#0099FF; cursor:pointer">详细</span></div>
+                            <div id="layer_stock_product_guige_<?php echo $ro["detail_p_huohao"] ?>" style="display:none;width:100%; display:none"></div>
+                        </div>
+<?php
+
+}
+?>
+    <div class="record"> 共 <span class="record_num"><?php echo $rowcount?></span> 条记录</div>
+<script>/*n*/
+    $("#pid_view_stock_bi_addup #pages_stock_addup").set_page_count("view_stock_bi_addup","pages_stock_addup",<?php echo $page_count;?>);
+</script>
+<!-- refresh_end -->
+    <div class="ipages" input_idx_id="#pid_view_stock_bi_addup #page_idx" id="pages_stock_addup" page="view_stock_bi_addup" form="form_stock_addup" count="<?php echo $page_count; ?>"/>
+</div>
+<script type="text/javascript">
+function ShowStockProductGuige(detail_p_huohao,product_id,factory_id)
+{
+    if($("#layer_stock_product_guige_"+detail_p_huohao).is(":visible")==false)
+    {
+     $("#layer_stock_product_guige_"+detail_p_huohao).show();
+        $.ajax({
+            url:"view-get-stock-guige",
+            async: false,
+            type: "POST",
+            data:{get_stock_guige_huohao:detail_p_huohao,product_id:product_id,factory_id:factory_id},
+            success: function(html){
+                $("#layer_stock_product_guige_"+detail_p_huohao).html(html);
+            }
+        });
+    }
+    else
+    {
+        $("#layer_stock_product_guige_"+detail_p_huohao).hide();
+    }
+}
+function search_kucun()
+{
+
+    $("#pid_view_stock_bi_addup #pages_stock_addup").set_page_num("","",1);
+
+    refresh_inner("view_stock_bi_addup?"+$("#form_stock_addup").serialize() );
+}
+</script>
+

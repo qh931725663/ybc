@@ -1,0 +1,716 @@
+<?php
+include_once("check_login.php");
+include_once("check_dangkou_user.php");
+?>
+
+<script type="text/javascript">    
+
+function list_sdsy()
+{
+    //重置value
+    $('#chuku_from_day').attr("value","");
+    $('#chuku_to_day').attr("value","");
+    /* $('#chuku_searchwords').attr("placeholder","请输入卖家昵称"); */
+    /* $('#chuku_searchwords').css("color","#cccccc") */
+    
+    $("#pid_view_sales_cashier #pages_sdsy").set_page_num("view_sales_cashier","pages_sdsy",1);
+
+    refresh_inner("view_sales_cashier?"+$("#form_sdsy").serialize() );
+}
+
+function search_sdsy()
+{
+    
+    $("#pid_view_sales_cashier #pages_sdsy").set_page_num("view_sales_cashier","pages_sdsy",1);
+
+    refresh_inner("view_sales_cashier?"+$("#form_sdsy").serialize() );
+}
+
+function click_me_sdsy(obj,state)
+{
+    
+    //重置value
+    $('#chuku_order_pay_sdsy').attr("value","");
+    $('#chuku_order_temp_sdsy').attr("value","");
+    $('#chuku_order_credit_min_sdsy').attr("value","");
+    $('#chuku_order_credit_max_sdsy').attr("value","");
+
+    if (state=="temp")
+        $('#chuku_order_temp_sdsy').attr("value","1");
+    if (state=="havepay")//已未付款订单
+    {
+        $('#chuku_order_pay_sdsy').attr("value","1");
+        $('#chuku_order_credit_min_sdsy').attr("value","0");
+        $('#chuku_order_credit_max_sdsy').attr("value","0");
+    }
+    if (state=="pay")//暂时未付款订单
+    {
+        $('#chuku_order_pay_sdsy').attr("value","0");
+        $('#chuku_order_credit_min_sdsy').attr("value","0");
+        $('#chuku_order_credit_max_sdsy').attr("value","0");
+    }
+    if (state=="credit")
+    {
+        $('#chuku_order_credit_min_sdsy').attr("value","1");
+        $('#chuku_order_credit_max_sdsy').attr("value","");
+    }
+
+    list_sdsy();
+}
+</script>
+<form id="form_sdsy" >
+<div class="sdsy_setup">
+    <div class="sdsy_setup_h">
+        <div class="sdsy_setup_b">
+            <span class="chuku_seller_s"><input id="chuku_seller_name" class="chuku_seller_name iinput name_iime ino_ime_input iseller_name" name="chuku_seller_name" type="text" placeholder="请输入卖家拼音首字母" autocomplete="off" style="width:200px;font-size:16px"/></span>
+            <span class="btn_type_green" id="link_start_cashier" onclick="/**/PostSelectChukuSeller()">开始出货</span>
+            <span class="btn_type_red" onclick="/**/ShowChukuAddSeller()">新增卖家</span>
+        </div>
+    </div>
+    <div class="sdsy_nave" style="margin-top:20px;">
+        <div class="sdsy_nave_a">
+            <input type="hidden" id="chuku_order_temp_sdsy" name="order_temp" value=""/>
+            <input type="hidden" id="chuku_order_pay_sdsy" name="order_is_pay" value=""/>
+            <input type="hidden" id="chuku_order_credit_min_sdsy" name="order_seller_cycle_min" value=""/>
+            <input type="hidden" id="chuku_order_credit_max_sdsy" name="order_seller_cycle_max" value=""/>
+            <span class="listtypevalue listtypeselect" onclick='/**/click_me_sdsy($(this),"")'>全部</span>
+            <span class="listtypevalue" onclick='/**/click_me_sdsy($(this),"havepay")'>已付款</span>
+            <span class="listtypevalue" onclick='/**/click_me_sdsy($(this),"pay")'>未付款</span>
+            <span class="listtypevalue" onclick='/**/click_me_sdsy($(this),"credit")'>账期</span>
+            <span class="listtypevalue" onclick='/**/click_me_sdsy($(this),"temp")'>挂起</span>
+        </div>
+        <div class="sdsy_nave_b">
+            <span class="sdsy_date">
+                <span class="sdsy_date_d">日期 <input type="text" class="datepicker" name="chuku_from_day" size="12" maxlength="50" readonly="readonly"> 至 <input type="text" class="datepicker" name="chuku_to_day"  size="12" maxlength="50" readonly="readonly">
+                </span>
+            </span>
+            <span class="sdsy_search"><input class="iinput name_iime ino_ime_input iseller_name" id="chuku_searchwords" name="chuku_searchwords" type="text" placeholder="请输入卖家拼音首字母" autocomplete="off" style="width:168px;"/></span>
+            <span id="btn_chukuorder_search" onclick="/**/search_sdsy()" class="btn_normal_green">搜索</span>
+        </div>
+    </div>                        
+</div>
+
+<!-- refresh_begin -->
+<?php                    
+$order_type="('xsck','xsckgq','ckph')";
+if (@$_REQUEST["order_temp"]==1)
+    $order_type="('xsckgq')";
+$boss_id=$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"];
+@$from_day=$_REQUEST["chuku_from_day"]?get_ymd($_REQUEST["chuku_from_day"])["d"]:null;
+@$to_day=$_REQUEST["chuku_to_day"]?get_ymd($_REQUEST["chuku_to_day"])["d"]+24*3600:null;
+@$chuku_searchwords=$_REQUEST["chuku_searchwords"]=="请输入卖家昵称"?null:$_REQUEST["chuku_searchwords"];
+if (!empty($_SESSION["ERP_ACCOUNT_USER_DANGKOU_BIANHAO"]))
+    $order_master_id=$_SESSION["ERP_ACCOUNT_USER_DANGKOU_BIANHAO"];
+else
+    $order_master_id="";
+
+$where=@array("order_boss_m_bianhao=? and (order_master_bianhao=? or order_slave_bianhao=?) and order_is_pay=? and order_seller_cycle>=? and order_seller_cycle<=? and order_addtime>=? and order_addtime<=? and order_type in ${order_type} and order_seller_name=?",
+        $boss_id,$order_master_id,$order_master_id,$_REQUEST["order_is_pay"],$_REQUEST["order_seller_cycle_min"],$_REQUEST["order_seller_cycle_max"],$from_day,$to_day,$chuku_searchwords);
+debug($where);
+$where=clean_where($where);
+debug($where);
+@$page=$_REQUEST["page_idx"]?$_REQUEST["page_idx"]:1;
+$pagesize=10;
+$offset=($page-1)*$pagesize; 
+$p=cselect("*","ydf_order",$where,"","order_addtime desc",$offset,$pagesize);
+//if ($p[0]->errorCode()!="00000")
+//print_r($p[0]->errorInfo());
+$rowcount=$p[1];
+$page_count=ceil($rowcount/$pagesize);  
+while ($roworder=$p[0]->fetch())
+{
+?>
+<div class="order">
+    <div class="order_inner">
+        <div class="order_table_header">
+            <div style="padding:5px 0; font-size:12px;"><span>编号：</span><?php echo $roworder["order_bianhao"];?></div>
+            <div style="margin-left:10px; padding:5px 0;"><span>更新时间：</span><?php echo date("Y-m-d H:i:s",$roworder["update_time"]); ?></div>          
+            <div style="margin-left:10px; padding:5px 0;"><span>创建时间：</span><?php echo date("Y-m-d H:i:s",$roworder["order_addtime"]); ?></div>          
+            <div style="float:right; text-align:right;">
+                <?php if ($roworder["order_type"]<>"xsckgq" ){ ?>
+                <span class="btn_order_red" style="color:#fff;" onclick="/**/ShowSetChukuOrderPayStatus(<?php echo $roworder["order_bianhao"]?>)">修改付款状态</span>
+                <?php } ?>
+                <?php if ($roworder["order_type"]<>"xsckgq"){ ?>
+                <span class="btn_order_red" style="color:#fff;" onclick="/**/PrintOrder(<?php echo $roworder["order_bianhao"]?>)">打印</span>
+                <?php } ?>
+
+                <?php if ($roworder["order_type"]=="xsckgq"){ ?>
+                <span class="btn_order_green" onclick="/**/ContinueChuku(<?php echo $roworder["order_bianhao"]?>)">继续出库</span>
+                <?php } ?>
+            </div>
+        </div>
+        <div class="order_table_header">
+            <div style="padding:5px 0;"><span>出货：</span><span style="color:#0099FF"><?php echo $roworder["order_master_name"]; ?></span></div>
+            <?php
+            if (!empty($roworder["order_slave_name"]))
+            {
+            ?>
+            <div style="margin-left:10px; padding:5px 0;"><span>销售：</span><span style="color:#0099FF"><?php echo $roworder["order_slave_name"]; ?></span></div>
+            <?php
+            }
+            ?>
+            <div style="margin-left:10px; padding:5px 0;"><span>操作用户：</span><?php echo $roworder["order_user_name"]; ?></div>
+
+            <?php
+            if ($roworder["order_seller_cycle"]=="0")
+            {
+            ?>
+            <div style="margin-left:10px; padding:5px 0; color:#009900;">现结</div>
+            <?php
+            }
+            elseif ($roworder["order_seller_cycle"]>"0")
+            {
+            ?>
+            <div  style="margin-left:10px; padding:5px 0; color:#FF3300;">账期</div>
+            <?php
+            }
+            ?>
+                                        
+            <?php
+            if ((($roworder["order_type"]=="xsck" and $roworder["order_is_pay"]=="0") or ($roworder["order_type"]=="ckph" and $roworder["order_is_pickup"]=="1" and $roworder["order_is_pickup"]=="1" and $roworder["order_is_pay"]=="0")) and $roworder["order_type"]<>"xsckgq")
+            {
+            ?>
+            <div style="margin-left:10px; padding:5px 0; color:#FF3300;">未付款</div><input type="hidden" id="chuku_order_is_pay_modify_<?php echo $roworder["order_bianhao"]?>" value="1">
+            <?php
+            }
+            elseif ((($roworder["order_type"]=="xsck" and $roworder["order_is_pay"]=="1") or ($roworder["order_type"]=="ckph" and $roworder["order_is_pickup"]=="1" and $roworder["order_is_pickup"]=="1" and $roworder["order_is_pay"]=="1")) and $roworder["order_type"]<>"xsckgq")
+            {
+            ?>
+            <div style="margin-left:10px; padding:5px 0; color:#009900;">已付款</div><input type="hidden" id="chuku_order_is_pay_modify_<?php echo $roworder["order_bianhao"]?>" value="0">
+            <?php
+            }
+            ?>
+            
+            <?php
+            if ($roworder["order_type"]=="ckph" and $roworder["order_is_pickup"]=="0")
+            {
+            ?>
+            <div style="margin-left:10px; padding:5px 0; color:#FF3300;">待提货</div>
+            <?php
+            }
+            elseif ($roworder["order_type"]=="ckph" and $roworder["order_is_pickup"]=="1")
+            {
+            ?>
+            <div style="margin-left:10px; padding:5px 0; color:#009900;">已提货</div>
+            <?php
+            }
+            elseif ($roworder["order_type"]=="ckph" and $roworder["order_is_pickup"]=="2")
+            {
+            ?>
+            <div  style="margin-left:10px; padding:5px 0; color:#999999;">放弃提货</div>
+            <?php
+            }
+            ?>
+        </div>
+        <div class="seller">
+            <?php
+            if ($roworder["order_seller_bianhao"]>"1")
+            {
+            ?>
+            <span class="seller_h1">
+                卖家：<span class="seller_b1"><?php echo $roworder["order_seller_name"];?></span>
+            </span>
+            <?php
+            }
+            else
+            {
+            ?>
+            <span class="seller_h2">匿名卖家</span>
+            <?php
+            }
+            ?>
+        </div>
+        <div class="order_table_tbody">
+            <div style="width:30%;">货号</div>
+            <div class="order_table_tbody_item" style="width:20%;">颜色</div>
+            <div class="order_table_tbody_item" style="width:20%;">尺码</div>
+            <div class="order_table_tbody_item" style="width:10%;">单价</div>
+            <div class="order_table_tbody_item" style="width:20%;">数量</div>
+        </div>
+        <?php
+        $shop_totalnum=0;
+        $shop_totalprice=0;
+        $rsitem = mysql_query("select * from ydf_order_detail where detail_order_bianhao='".$roworder["order_bianhao"]."' order by detail_p_bianhao, detail_p_color, detail_p_size", $dbconn);
+        while ($rowitem=mysql_fetch_array($rsitem))
+        {
+            $shop_totalnum+=$rowitem["detail_order_num"];
+            $shop_totalprice+=$rowitem["detail_order_num"]*$rowitem["detail_price"];
+            
+            $p_factory=cselect("*","ydf_factory",array("factory_bianhao=?",$rowitem["detail_factory_bianhao"]));
+            $rowfactory=$p_factory[0]->fetch();
+        ?>        
+        <div class="order_table_row">
+            <div class="order_table_row_item" style="width:30%;"><?php echo $rowitem["detail_p_huohao"]?> / <?php echo $rowfactory["factory_name"]?></div>
+            <div class="order_table_row_item" style="width:20%;text-align:center;"><?php echo $rowitem["detail_p_color"]?></div>
+            <div class="order_table_row_item" style="width:20%;text-align:center;"><?php echo $rowitem["detail_p_size"]?></div>
+            <div class="order_table_row_item" style="width:10%;color:#e43c3f; text-align:center;"><?php echo $rowitem["detail_price"]?></div>
+            <div class="order_table_row_item" style="width:20%;text-align:center;"><?php echo $rowitem["detail_order_num"]?></div>
+        </div>
+        <?php
+        }
+        ?>
+        <div class="sdsy_total">
+            <span class="total_title">数量总计：<span class="total_sum"><?php echo $shop_totalnum?></span>, 金额总计：<span class="total_money"><?php echo $shop_totalprice?></span></span>
+        </div>
+        <div class="sdsy_del">
+            <?php if ($roworder["order_type"]=="ckph" and $roworder["order_is_pickup"]=="0" and $roworder["order_type"]<>"xsckgq" ){ ?>
+            <span class="btn_order_red" style="color:#fff;" onclick="/**/ShowGiveupPickupSelectDangkouStore(<?php echo $roworder["order_bianhao"]?>)">放弃提货</span>
+            <?php } ?>
+            <span class="btn_order_red" onclick="/**/DeleteOrder(<?php echo $roworder["order_bianhao"]?>,'view_sales_cashier','form_sales_cashier')">删除</span>
+        </div>
+    </div>
+</div>
+<?php
+}
+?>
+
+<div class="record"> 共 <span class="record_num"><?php echo $rowcount?></span> 个订单</div>
+
+<script>/*n*//*n*/
+$("#pid_view_sales_cashier #pages_sdsy").set_page_count("view_sales_cashier","pages_sdsy",<?php echo $page_count;?>);
+</script>
+
+<!-- refresh_end -->
+<!-- 页码容器,容器放在需要放在表单中 也作为表单项统一处理  -->
+<div class="ipages" id="pages_sdsy" page="view_sales_cashier" form="form_sdsy" count="<?php echo $page_count; ?>"/>
+</form> 
+
+<div id="layer_sales_cashier_select_storewarehouse" style="float:left; width:650px; padding:25px; overflow:visible; display:none">
+    <div style="float:left; width:100%; margin:10px 0; padding:10px 0; font-size:14px; color:#e43c3f; border-bottom:1px dashed #cccccc; overflow:hidden; display:block">请先选择当前处理业务归属的档口！</div>
+    <div class="listclassblock">
+        <div class="listclassdefault">档口：</div>
+    </div>
+    <div style="float:left; width:90%; display:inline-block">
+        <?php
+        $p=cselect("*","ydf_dangkou",array("dangkou_type='1' and dangkou_boss_m_bianhao=?",$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"]),"","dangkou_bianhao");
+        while ($rowdangkou=$p[0]->fetch())
+        {
+            if ($rowdangkou["dangkou_endtime"]=="0")
+            {
+                $dangkou_status="0";
+            }
+            elseif ($rowdangkou["dangkou_endtime"]>strtotime(date("Y-m-d H:i:s")))
+            {
+                $dangkou_status="1";
+            }
+            else
+            {
+                $dangkou_status="2";
+            }
+        ?>
+        <div class="listclassvalueblock">
+            <div class="listclassvalue" onclick="/**/SuperManagerSalesCashierSelectDangkouStore('<?php echo $rowdangkou["dangkou_bianhao"]?>','<?php echo $rowdangkou["dangkou_name"]?>','<?php echo $rowdangkou["dangkou_type"]?>')"><?php echo $rowdangkou["dangkou_name"] ?></div>
+        </div>
+        <?php
+        }
+        ?>
+    </div>
+    <div class="listclassblock">
+        <div class="listclassdefault">仓库：</div>
+    </div>
+    <div style="float:left; width:90%; display:inline-block">
+        <?php
+        $p=cselect("*","ydf_dangkou",array("dangkou_type='2' and dangkou_boss_m_bianhao=?",$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"]),"","dangkou_bianhao");
+        while ($rowdangkou=$p[0]->fetch())
+        {
+            if ($rowdangkou["dangkou_endtime"]=="0")
+            {
+                $dangkou_status="0";
+            }
+            elseif ($rowdangkou["dangkou_endtime"]>strtotime(date("Y-m-d H:i:s")))
+            {
+                $dangkou_status="1";
+            }
+            else
+            {
+                $dangkou_status="2";
+            }
+        ?>
+        <div class="listclassvalueblock">
+            <div class="listclassvalue" onclick="/**/SuperManagerSalesCashierSelectDangkouStore('<?php echo $rowdangkou["dangkou_bianhao"]?>','<?php echo $rowdangkou["dangkou_name"]?>','<?php echo $rowdangkou["dangkou_type"]?>')"><?php echo $rowdangkou["dangkou_name"] ?></div>
+        </div>
+        <?php
+        }
+        ?>
+    </div>
+
+</div>
+<div id="layer_warehousechuku_select_store" style="float:left; width:250px; padding:25px; overflow:visible; display:none">
+    <div style="float:left; width:100%; margin:10px 0; padding:10px 0; font-size:14px; color:#e43c3f; border-bottom:1px dashed #cccccc; overflow:hidden; display:block">请选择销售档口！</div>
+    <?php
+    $p=cselect("*","ydf_dangkou",array("dangkou_type='1' and dangkou_boss_m_bianhao=?",$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"]),"","dangkou_bianhao");
+    while ($rowdangkou=$p[0]->fetch())
+    {
+        $havewarehouse_type="no";
+
+        $rswarehouse=mysql_query("SELECT * FROM ydf_dangkou_warehouse WHERE dangkou_warehouse_dangkou_bianhao='".$rowdangkou["dangkou_bianhao"]."'" , $dbconn);
+        if ($rowwarehouse=mysql_fetch_array($rswarehouse))
+        {
+            $havewarehouse_type="yes";
+        }
+    ?>
+    <div style="float:left; width:100%; padding:5px 0; display:block">
+        <div class="listtypevalue" onclick="/**/WarehouseChukuSelectStore('<?php echo $rowdangkou["dangkou_bianhao"]?>','<?php echo $rowdangkou["dangkou_name"]?>')"><?php echo $rowdangkou["dangkou_name"] ?></div>
+    </div>
+    <?php
+    }
+    ?>
+</div>
+
+<div id="layer_chuku_add_seller">
+    <div class="add_seller_box">
+        <p class="add_seller_box_p1">
+            <span class="seller_box_p1_1"><span>*</span> 手机号：</span>
+            <span class="seller_box_p1_2">
+            <input name="chuku_add_seller_mobile" id="chuku_add_seller_mobile" type="text" maxlength="50"/>
+            </span>
+        </p>
+        <p class="add_seller_box_p2">
+            <span class="seller_box_p1_2"><span>*</span> 卖家昵称：</span>
+            <span class="seller_box_p1_2">
+            <input name="chuku_add_seller_name" id="chuku_add_seller_name" type="text" maxlength="50"/>
+            </span>
+        </p>
+        <p class="add_seller_box_p3">
+            <span class="seller_box_p3_3"><span>*</span> 账期：</span>
+            <span class="seller_box_p1_2">
+                <select id="chuku_add_seller_cycle" name="chuku_add_seller_cycle">
+                  <option value="" selected>请选择</option>
+                  <option value="0">现结</option>
+                  <option value="7">7天</option>
+                  <option value="14">14天</option>
+                  <option value="21">21天</option>
+                  <option value="28">28天</option>
+                </select>
+            </span>
+        </p>
+    </div>
+    <div class="chuku_add_seller_tip_notice_box">
+        <span id="chuku_add_seller_tip_notice"></span>
+    </div>
+    <div class="sdsy_add">
+        <span onclick="/**/PostChukuAddSeller()">确认添加</span>
+    </div>                
+</div>
+
+<div id="layer_sales_cashier_giveup_pickup_select_storewarehouse" style="float:left; width:650px; padding:25px; overflow:visible; display:none"/>
+
+<div id="layer_chuku_order_paystatus"/>
+<script type="text/javascript">
+chuku_order_type="xsck";
+chuku_select_storewarehouse_bianhao="<?php echo !empty($_SESSION["ERP_ACCOUNT_USER_DANGKOU_BIANHAO"])?$_SESSION["ERP_ACCOUNT_USER_DANGKOU_BIANHAO"]:"" ?>"; 
+chuku_select_storewarehouse_name="<?php echo !empty($_SESSION["ERP_ACCOUNT_USER_DANGKOU_NAME"])?$_SESSION["ERP_ACCOUNT_USER_DANGKOU_NAME"]:"" ?>";
+chuku_select_storewarehouse_type="<?php echo !empty($_SESSION["ERP_ACCOUNT_USER_DANGKOU_TYPE"])?$_SESSION["ERP_ACCOUNT_USER_DANGKOU_TYPE"]:"" ?>";
+chuku_order_to_dangkou_bianhao="";
+chuku_order_to_dangkou_name="";
+
+function PostSelectChukuSeller(){
+$(".fram_search_tab").empty();
+    var status_userpurview_sales_cashier=true;
+    $.ajax({
+        url:"model-get-orderseller", 
+        async: false,
+        type: "POST",
+        data:{var_order_seller_name:$("#chuku_seller_name").val()},
+        dataType:"json",
+        success: function(html){
+            if (parseInt(html["state"])==1001)
+            {
+                alert("对不起，此昵称卖家不存在！");
+                status_userpurview_sales_cashier=false;
+            }
+            else
+            {
+                chuku_order_seller_bianhao=html["order_seller_bianhao"];
+                chuku_order_seller_name=html["order_seller_name"];
+                chuku_order_seller_cycle=html["order_seller_cycle"];
+            }
+        }
+    });
+    
+    if (status_userpurview_sales_cashier==true && chuku_select_storewarehouse_bianhao=="")
+    {
+        $.ajax({
+            url:"check-storewarehouse-userpurview", 
+            async: false,
+            type: "POST",
+            data:"",
+            dataType:"json",
+            success: function(html){
+                if (parseInt(html["state"])==1001 || parseInt(html["state"])==1003)
+                {
+                    chuku_select_storewarehouse_bianhao=html["current_master_bianhao"]; 
+                    chuku_select_storewarehouse_name=html["current_master_name"];
+                    chuku_select_storewarehouse_type=html["current_master_type"];
+                    
+                    if (chuku_select_storewarehouse_type=="2")
+                    {
+                        index_layer_warehousechuku_select_store=layer.open({
+                            type: 1,
+                            area: ['320px', '400px'],
+                            title: false,
+                            content:$('#layer_warehousechuku_select_store')
+                        });
+                    }
+                    else
+                    {
+                        mount_to_frame("view_sales_cashier_submit",1,"frame_sales_cashier");
+                    }
+                }
+                else if (parseInt(html["state"])==1002)
+                {
+                    index_layer_sales_cashier_select_storewarehouse=layer.open({
+                        type: 1,
+                        area: ['720px', '300px'],
+                        title: false,
+                        content:$('#layer_sales_cashier_select_storewarehouse')
+                    });
+                }
+            }
+        });
+    }
+    else if (status_userpurview_sales_cashier==true && chuku_select_storewarehouse_bianhao!="")
+    {
+        if (chuku_select_storewarehouse_type=="2")
+        {
+            index_layer_warehousechuku_select_store=layer.open({
+                type: 1,
+                area: ['320px', '400px'],
+                title: false,
+                content:$('#layer_warehousechuku_select_store')
+            });
+        }
+        else
+        {
+            mount_to_frame("view_sales_cashier_submit",1,"frame_sales_cashier");
+        }
+    }
+}
+
+function SuperManagerSalesCashierSelectDangkouStore(dangkou_bianhao,dangkou_name,dangkou_type){
+    chuku_select_storewarehouse_bianhao=dangkou_bianhao;
+    chuku_select_storewarehouse_name=dangkou_name;
+    chuku_select_storewarehouse_type=dangkou_type;
+    
+    layer.close(index_layer_sales_cashier_select_storewarehouse);    
+    
+    if (dangkou_type=="2")
+    {
+        index_layer_warehousechuku_select_store=layer.open({
+            type: 1,
+            area: ['320px', '400px'],
+            title: false,
+            content:$('#layer_warehousechuku_select_store')
+        });
+    }
+    else
+    {
+        mount_to_frame("view_sales_cashier_submit",1,"frame_sales_cashier");
+    }
+}
+
+function WarehouseChukuSelectStore(dangkou_bianhao,dangkou_name)
+{
+    layer.close(index_layer_warehousechuku_select_store);
+    
+    chuku_order_to_dangkou_bianhao=dangkou_bianhao;
+    chuku_order_to_dangkou_name=dangkou_name;
+
+    mount_to_frame("view_sales_cashier_submit",1,"frame_sales_cashier");
+}
+
+function ShowGiveupPickupSelectDangkouStore(order_bianhao){
+    $.ajax({
+        url:"view-get-order-giveup-pickup", 
+        async: false,
+        type: "POST",
+        data:{var_order_bianhao:order_bianhao},
+        success: function(html){
+            $('#layer_sales_cashier_giveup_pickup_select_storewarehouse').html(html);
+        }
+    });
+    
+    index_layer_sales_cashier_giveup_pickup_select_storewarehouse=layer.open({
+        type: 1,
+        area: ['720px', '300px'],
+        title: false,
+        content:$('#layer_sales_cashier_giveup_pickup_select_storewarehouse')
+    });
+}
+
+function PostGiveupPickup(order_bianhao,seller_bianhao,dangkou_bianhao){
+    $.ajax({
+        url:"model-order-post", 
+        async: false,
+        type: "POST",
+        data:{order_type:"phth", order_bianhao:order_bianhao, order_seller_bianhao:seller_bianhao, order_is_pickup:"2",giveup_dangkou_id:dangkou_bianhao},
+        success: function(html){
+            refresh_inner("view_sales_cashier?"+$("#form_sdsy").serialize() );
+            layer.close(index_layer_sales_cashier_giveup_pickup_select_storewarehouse);
+        }
+    });   
+}
+
+function SelectListChukuAccountType(obj){
+    if (obj.val()=="xjphd")
+    {
+        $("#layer_search_chuku_pay_status").show();
+    }
+    else
+    {
+        $("#layer_search_chuku_pay_status").hide();
+    }
+}
+
+function ShowSetChukuOrderPayStatus(order_bianhao){
+    $.ajax({
+        url:"view-get-order-paystatus", 
+        async: false,
+        type: "POST",
+        data:{var_order_bianhao:order_bianhao},
+        success: function(html){
+            $('#layer_chuku_order_paystatus').html(html);
+        }
+    });
+    
+    index_layer_chuku_order_paystatus=layer.open({
+        type: 1,
+        area: ['520px', '300px'],
+        title: false,
+        content:$('#layer_chuku_order_paystatus')
+    });
+
+}
+
+function PostSetChukuOrderPayStatus(opt_is_dangkou,order_current_is_pay){
+    if (opt_is_dangkou=="0" && !$("#order_bill_bank").val() && order_current_is_pay=="0")
+    {
+        $("#chuku_order_paystatus_tip_notice").html("<span style='font-size:14px; color:red'>亲，请先选择收款资金账户哦！</span>");
+        return false;        
+    }
+    
+    $.ajax({
+        url:"model-set-chukuorderpaystatus", 
+        async: false,
+        type: "POST",
+        data:$("#form_order_set_paystatus").serialize(),
+        success: function(html){
+            layer.close(index_layer_chuku_order_paystatus);    
+            refresh_inner("view_sales_cashier?"+$("#form_sdsy").serialize() );
+        }
+    }); 
+}
+
+function ContinueChuku(order_bianhao)
+{
+    $.ajax({
+        url:"get-continueorderseller", 
+        async: false,
+        type: "POST",
+        data:{var_continue_order_bianhao:order_bianhao},
+        dataType:"json",
+        success: function(html){
+            chuku_order_seller_bianhao=html["order_seller_bianhao"];
+            chuku_order_seller_name=html["order_seller_name"];
+            chuku_order_seller_cycle=html["order_seller_cycle"];
+            chuku_select_storewarehouse_bianhao=html["order_master_bianhao"];
+            chuku_select_storewarehouse_name=html["order_master_name"];
+        }
+    });
+    
+    mount_to_frame("view_sales_cashier_submit?var_order_temp_bianhao="+order_bianhao,1,"frame_sales_cashier");
+}
+
+function ShowChukuAddSeller(){
+    index_layer_chuku_add_seller=layer.open({
+        type: 1,
+        area: ['420px', '300px'],
+        title: false,
+        content:$('#layer_chuku_add_seller')
+    });
+}
+
+function PostChukuAddSeller(){ 
+    if(!$("#chuku_add_seller_mobile").val())
+    {
+        $("#chuku_add_seller_tip_notice").html("<span style='font-size:14px; color:red'>亲，卖家手机不能为空哦！</span>");
+        return false;
+    }
+    
+    if(!$("#chuku_add_seller_name").val())
+    {
+        $("#chuku_add_seller_tip_notice").html("<span style='font-size:14px; color:red'>亲，卖家昵称不能为空哦！</span>");
+        return false;
+    }
+    
+    if(!$("#chuku_add_seller_cycle").val())
+    {
+        $("#chuku_add_seller_tip_notice").html("<span style='font-size:14px; color:red'>亲，请选择卖家账期哦！</span>");
+        return false;
+    }
+
+    var status_userpurview_sales_cashier=true;
+            
+    $.ajax({
+        url:"model-post-addseller", 
+        async: false,
+        type: "POST",
+        data:{var_seller_mobile:$("#chuku_add_seller_mobile").val(),var_seller_name:$("#chuku_add_seller_name").val(),var_seller_cycle:$("#chuku_add_seller_cycle").val()},
+        dataType:"json",
+        success: function(html){
+            if (html["state"]=="ok")
+            {
+                layer.close(index_layer_chuku_add_seller);
+                
+                chuku_order_seller_bianhao=html["seller_id"];
+                chuku_order_seller_name=$("#chuku_add_seller_name").val();
+                chuku_order_seller_cycle=$("#chuku_add_seller_cycle").val();
+            }
+            else
+            {
+                $("#chuku_add_seller_tip_notice").html("<span style='font-size:14px; color:red'>"+html["desc"]+"</span>");
+            }
+        }
+    });
+    
+    if (status_userpurview_sales_cashier==true && chuku_select_storewarehouse_bianhao=="")
+    {
+        $.ajax({
+            url:"check-storewarehouse-userpurview", 
+            async: false,
+            type: "POST",
+            data:"",
+            dataType:"json",
+            success: function(html){
+                if (parseInt(html["state"])==1001 || parseInt(html["state"])==1003)
+                {
+                    chuku_select_storewarehouse_bianhao=html["current_master_bianhao"]; 
+                    chuku_select_storewarehouse_name=html["current_master_name"];
+                    mount_to_frame("view_sales_cashier_submit",1,"frame_sales_cashier");
+                }
+                else if (parseInt(html["state"])==1002)
+                {
+                    index_layer_sales_cashier_select_storewarehouse=layer.open({
+                        type: 1,
+                        area: ['720px', '300px'],
+                        title: false,
+                        content:$('#layer_sales_cashier_select_storewarehouse')
+                    });
+                }
+            }
+        });
+    }
+    else if (status_userpurview_sales_cashier==true && chuku_select_storewarehouse_bianhao!="")
+    {
+        mount_to_frame("view_sales_cashier_submit",1,"frame_sales_cashier");
+    } 
+}
+
+$('#layer_chuku_add_seller').on('keydown',function(e){
+    if(e.keyCode == 13){
+        //模拟点击登陆按钮，触发上面的 Click 事件
+        $('#layer_chuku_add_seller input,select').blur();
+        $(".sdsy_add>span").click();
+    }
+});
+</script>

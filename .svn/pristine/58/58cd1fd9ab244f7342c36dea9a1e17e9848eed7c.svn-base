@@ -1,0 +1,14 @@
+<?php
+include_once("check_login.php");
+?>
+<div class="frame_main_div" >
+    <div class="frame_tab_panel">
+        <div class="frame_tab_line">
+            <span class="frame_tab_item_select">个人信息设置</span>
+        </div>
+    </div>    
+    <div id="frame_personal" />
+</div>
+<script>
+mount_to_frame('view_personal_set',0,'frame_personal');
+</script>

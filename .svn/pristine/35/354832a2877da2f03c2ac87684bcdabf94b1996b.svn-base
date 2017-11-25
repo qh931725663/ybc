@@ -1,0 +1,30 @@
+<?php 
+include_once "{$root_path}/model/model_bi.php";
+
+list($historys,$addup) = get_stream_mjdz("day",@$_REQUEST["var_seller_id"]);
+$rowcount=count($addup);
+debug($addup);
+$ret=[];
+foreach ($addup as $key=>$value)
+{
+    $ret[]=$value;
+}
+debug($ret);
+for ($i=0;$i<$rowcount;$i++)
+{
+    $idx=$rowcount-1-$i;
+    $row=$historys[$ret[$idx]["now"]];
+    debug($row);
+    $p_seller=cselect("*","ydf_seller",array("seller_bianhao=?",$_REQUEST["var_seller_id"]));
+?>
+    <div class="report_table_row">
+        <div style="width:30%; height:15px"></div>
+        <div style="width:15%;text-align:center">-</div>
+        <div style="width:15%;text-align:center">-</div>
+        <div style="width:15%;text-align:center">-</div>
+        <div style="width:15%;text-align:center">-</div>
+        <div style="width:10%; height:15px"></div>
+    </div>
+<?php
+}
+?>

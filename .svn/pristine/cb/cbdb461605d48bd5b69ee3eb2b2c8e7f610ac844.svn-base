@@ -1,0 +1,206 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>优百仓档口专用管理系统</title>
+<script type="text/javascript" src="/pc/js/jquery-min.js"></script> 
+<script type="text/javascript" src="/pc/layer/layer.js"></script>
+
+<style type="text/css">
+<!--
+*{
+   margin:0;
+   padding:0;
+}
+body{
+    font-size:12px;
+    color:#333333;
+    background:#ffffff;    
+}
+html, body{height:100%;}
+img {border:0 none;}
+ul,li{ list-style-type:none;}
+a{color:#333333;text-decoration:none}a:hover{color:#cc0000}
+a.linkred{color:#e43c3f;text-decoration:none}a.linkred:hover{color:#FF0000}
+
+.head_menu_normal{position:relative; float:left; padding:10px 15px; margin-left:5px; font-family:Microsoft YaHei; font-size:14px; text-align:center; display:block; cursor:pointer}
+.head_menu_normal:hover{background:#e43c3f; color:#ffffff}
+
+.TabSelect{float:left; width:50%; padding:10px 0; font-size:14px; font-weight:bold; text-align:center; color:#e43c3f; background:#ffffff; overflow:hidden; display:block; cursor:pointer}
+.TabNormal{float:left; width:50%; padding:10px 0; font-size:14px; font-weight:bold; text-align:center; color:#333333; overflow:hidden; display:block; cursor:pointer}
+.TabItem{position:relative; width:100%; min-height:200px; margin:5px auto; padding:5px 10px; overflow:hidden; display:block}
+
+.btn_login{float:left;width:260px; margin:10px; padding:10px 0; background:#e43c3f; font-size:14px; font-weight:bold; color:#ffffff; text-align:center; overflow:hidden; display:block; cursor:pointer}
+.btn_login:hover{background:#cc0000; }
+
+.zeng_msgbox_layer, .zeng_msgbox_layer .gtl_ico_succ, .zeng_msgbox_layer .gtl_ico_fail, .zeng_msgbox_layer .gtl_ico_hits, .zeng_msgbox_layer .gtl_ico_clear, .zeng_msgbox_layer .gtl_end{display:inline-block;height:54px;line-height:54px;font-weight:bold;font-size:14px;color:#606060;background-image:url("/pc/login/images/gb_tip_layer.png");_background-image:url("/pc/login/images/gb_tip_layer_ie6.png");background-repeat:no-repeat}
+.zeng_msgbox_layer_wrap{width:100%;position:fixed;_position:absolute;top:46%;left:0;text-align:center;z-index:65533}
+.zeng_msgbox_layer{background-position:0 -161px;background-repeat:repeat-x;padding:0 18px 0 9px;margin:0 auto;position:relative}
+.zeng_msgbox_layer .gtl_ico_succ{background-position:-6px 0;left:-45px;top:0;width:45px;position:absolute}
+.zeng_msgbox_layer .gtl_end{background-position:0 0;position:absolute;right:-6px;top:0;width:6px}
+.zeng_msgbox_layer .gtl_ico_fail{background-position:-6px -108px;position:absolute;left:-45px;top:0;width:45px}
+.zeng_msgbox_layer .gtl_ico_hits{background-position:-6px -54px;position:absolute;left:-45px;top:0;width:45px}
+.zeng_msgbox_layer .gtl_ico_clear{background-position:-6px 0;left:-5px;width:5px;position:absolute;top:0}
+.zeng_msgbox_layer .gtl_ico_loading{width:16px;height:16px;border:0;background-image:url(/pc/login/images/sloading.gif);float:left;margin:19px 10px 0 5px}
+-->
+</style>
+</head>
+
+<body>
+<div style="width:1344px; margin:0 auto; border-bottom:1px solid #cccccc; overflow:hidden; display:block">
+    <div style="width:1200px; margin:0 auto; overflow:hidden; display:block">
+        <div style="width:100%; margin:2% 0; overflow:hidden; display:block">
+            <div style=" float:left; width:106px; overflow:hidden; display:block">
+                <span style="width:106px; height:50px; background:url(/pc/images/logo.png); display:block"></span>
+            </div>
+            <div style=" float:left; width:180px; overflow:hidden; display:block">
+                <span style="float:left; width:100%; margin-top:25px; margin-left:10%; padding-left:10%; border-left:1px solid #cccccc; font-family:Microsoft YaHei; font-size:18px; font-weight:bold; color:#e43c3f; overflow:hidden; display:block">档口专用管理系统</span>
+            </div>
+        </div>
+    </div>
+</div>
+<div style="width:1344px; margin:0 auto; background:#f2f2f2; overflow:hidden; display:block">
+    <div style="position:relative; width:1200px; height:400px; margin:0 auto; background:url(/pc/images/index_banner001.jpg) center center no-repeat; background-size:auto 100%; overflow:hidden; display:block">
+        <div style="position:absolute; width:300px; height:320px; top:50px; right:0px; background:#ffffff; display:block">
+    <form id="conloginform" autocomplete="on" onsubmit="submitForm()">
+            <div id='conlogin' class="TabItem">
+                <div id="tip_pwd_login" style="float:left;width:250px; height:20px; margin:0 10px; padding:0 5px; color:#e43c3f; overflow:hidden; display:block"></div>
+                <div style="float:left;width:250px; height:20px; margin:0 10px 10px 10px; padding:5px; background:#fafafa; border:1px solid #cccccc; overflow:hidden; display:block">
+                    <span style="float:left; width:30px; height:20px; background:url(/pc/login/images/pic_mob.jpg) center center no-repeat; display:block"></span>
+                    <span style="float:left; width:150px; display:block"><input id="p_mob" name="var_mobile" type="text" autocomplete="off" placeholder="手机号码或子账号" maxlength="50" style="width:190px; padding-top:3px; height:13px; background:#fafafa; border:0;"></span>
+                </div>
+                <div style="float:left;width:250px; height:20px; margin:10px; padding:5px; background:#fafafa; border:1px solid #cccccc; overflow:hidden; display:block">
+                    <span style="float:left; width:30px; height:20px; background:url(/pc/login/images/pic_password.jpg) center center no-repeat; display:block"></span>
+                    <span style="float:left; width:150px; display:block">
+                    <input type="password" id="p_pwd" name="var_password" style="width:190px; padding-top:3px; height:13px; color:#cccccc; background:#fafafa; border:0;" placeholder="密码"/>
+                    </span>
+                </div>
+                <div style="float:left;width:250px; height:20px; margin:0 10px; padding:5px 0; overflow:hidden; display:block">
+                    <span style="float:left;display:block">
+                        <input type="checkbox" id="isrem" name="isrem" style="vertical-align:middle;margin:0 0 2px 0;" checked="checked"><label for="isrem" class="linkred">记住登录用户名密码</label>
+                    </span>
+                    <span style="float:right; display:block"><a href="/forgetpwd" class="linkred">忘记密码？</a></span>
+                </div>
+                <div id="btn_pwd_login" class="btn_login">登 录</div>
+            </div>
+    </form>        
+            <div style="position:relative; width:250px; margin:0 10px 0 15px; padding:5px; overflow:hidden; display:block">
+                <span style="float:right; margin-top:5px; color:#e43c3f; display:block"><a href="/reg" class="linkred">我要注册</a></span>
+            </div>
+        </div>
+    </div>
+</div>
+<div style="width:1344px; margin:50px auto; line-height:1.8; text-align:center; overflow:hidden; display:block">
+© 2016 Youbaicang.com All Rights Reserved<br>
+<a href="http://www.miibeian.gov.cn" target="_blank">浙ICP备16030022号</a>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    if (window.location.protocol != "https:" && (window.location.host=="www.youbaicang.com" || window.location.host=="youbaicang.com"))
+        window.location.href = "https:" + window.location.href.substring(window.location.protocol.length);
+
+    $("#menu_001").click(function () { 
+        $('html,body').animate({ scrollTop: 510 }, 500 ,function(){
+        });
+    }); 
+    $("#menu_002").click(function () { 
+        $('html,body').animate({ scrollTop: 1040 }, 500 ,function(){
+        });
+    });
+    $("#menu_003").click(function () { 
+        $('html,body').animate({ scrollTop: 1580 }, 500 ,function(){
+        });
+    });
+    $("#menu_004").click(function () { 
+        $('html,body').animate({ scrollTop: 2120 }, 500 ,function(){
+        });
+    });
+    $("#menu_005").click(function () { 
+        $('html,body').animate({ scrollTop: 2680 }, 500 ,function(){
+        });
+    });
+    $("#menu_006").click(function () { 
+        $('html,body').animate({ scrollTop: 3020 }, 500 ,function(){
+        });
+    });
+    
+    $("#p_mob, #p_pwd").keydown(function(event){ 
+        if(event.keyCode==13){ 
+            $("#btn_pwd_login").click(); 
+        } 
+    }); 
+
+    //$("#p_mob").focus(function(){
+    //    if(this.value=="手机号码或子账号"){this.value=""}
+    //    $(this).css("color","#333333");
+    //});    
+    //    
+    //$("#p_mob").blur(function(){
+    //    if(this.value==""){this.value="手机号码或子账号"; $(this).css("color","#cccccc")}
+    //});
+    
+   // $("input[name=pwdPrompt]").focus(function () {
+       // $("input[name=pwdPrompt]").hide();
+      //  $("input[name=var_password]").show().focus();
+      //  $("input[name=var_password]").css("color","#333333");
+   // });
+    
+    $("input[name=var_password]").blur(function () {
+        //if ($(this).val() == "") {
+           // $("input[name=pwdPrompt]").show();
+           // $("input[name=var_password]").hide();
+       // }
+        if(!$("#p_pwd").val() || !$("#p_pwd").val().match(/^[\w]{6,20}$/)){$("#tip_pwd_login").html("请输入正确格式的密码！")} else {$("#tip_pwd_login").html("")}
+    }) 
+    //登陆成功后检查是否存储用户信息
+    var user=window.localStorage.getItem("user");
+        if(user){
+            var json=JSON.parse(user);
+            $("#p_mob").val(json.user);
+            $("#p_pwd").val(json.pwd);
+    }
+    $("#btn_pwd_login").click(function () {     
+        if($("#p_mob").val()==""){$("#tip_pwd_login").html("请输入手机号码或子账号！");return false} 
+        if(!$("#p_pwd").val() || !$("#p_pwd").val().match(/^[\w]{6,20}$/)){$("#tip_pwd_login").html("请输入正确格式的密码！");return false}
+                //TODO 判断用户是否勾选了"记住用户名和密码"
+                var isrem = document.getElementById("isrem");
+                if(isrem.checked){//TODO 勾选
+                    var user = document.getElementById("p_mob").value;
+                    var pwd = document.getElementById("p_pwd").value;
+                    var json = {
+                        "user" : user,
+                        "pwd" : pwd
+                    }
+                    var jsonString = JSON.stringify(json);
+                    window.localStorage.setItem('user',jsonString);
+                }else{
+                 window.localStorage.clear();
+                }
+        $.ajax({
+            url:"postlogin", 
+            async: false,
+            type: "POST",
+            data:{var_password:$("#p_pwd").val(),var_mobile:$("#p_mob").val()},
+            dataType:"json",
+            success: function(html){
+                if (html["state"]=="ok")
+                {
+                    layer.msg('登录成功！', {time: 2000, icon:1});
+                    setTimeout(function(){
+                        window.location.href="/myaccount";
+                    },2000);
+                }
+                else
+                {
+                    $("#tip_pwd_login").html(html["desc"]);
+                }
+            }
+        });        
+    });
+    
+});
+</script>
+
+</body>
+</html>

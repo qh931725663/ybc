@@ -1,0 +1,18 @@
+<?php
+include_once("check_login.php");
+include_once("check_dangkou_user.php");
+?>
+<div class="frame_main_div" style="min-height:400px;">
+    <div class="frame_tab_panel">
+        <div class="frame_tab_line">
+            <span class="frame_tab_item_select" id="link_sale_cashier_tab">闪电出货</span>
+        </div>
+    </div>    
+    <div id="frame_sales" />
+</div>
+
+<script>
+mount_to_frame('frame_sales_cashier',0,'frame_sales');
+
+num_sound = new NumSound();
+</script>

@@ -1,0 +1,153 @@
+<?php
+$var_type=!empty($_REQUEST["var_type"])?$_REQUEST["var_type"]:"";
+$var_p_huohao=!empty($_REQUEST["var_p_huohao"])?$_REQUEST["var_p_huohao"]:"";
+$var_seller=!empty($_REQUEST["var_seller"])?$_REQUEST["var_seller"]:"";
+$var_xAxis=array();
+
+if ($var_type=="products")
+{
+    $var_series_name_sales_num="销量数量";
+    $var_series_name_thdj_num="退货数量";
+    $var_series_name_client_num="卖家数量";
+
+    $var_series_data_sales_num=array();
+    $var_series_data_thdj_num=array();
+    $var_series_data_client_num=array();
+
+    $where=array("detail_boss_m_bianhao=? and detail_order_day>=? and detail_p_huohao=?",$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"], strtotime(date("Y-m-d",strtotime("-13 day"))),$var_p_huohao );
+    $where=clean_where($where);
+    $p=cselect("detail_p_huohao, detail_order_day,
+    sum(CASE WHEN detail_order_type in ('xsck','phth') THEN detail_order_num ELSE 0 END ) as sales_num,
+    count(distinct CASE WHEN detail_order_type in ('xsck','phth') THEN detail_order_bianhao ELSE 0 END) as client_num,
+    sum(CASE WHEN detail_order_type='thdj' THEN detail_order_num ELSE 0 END ) as thdj_num
+    ",
+    "ydf_order_detail",$where,"detail_order_day","detail_order_day asc",0,14);
+    $i=0;
+    while($row=$p[0]->fetch())
+    {
+        $var_xAxis[$i]=date("m/d",$row["detail_order_day"]);
+        $var_series_data_sales_num[$i]=round($row["sales_num"]);
+        $var_series_data_thdj_num[$i]=round($row["thdj_num"]);
+        $var_series_data_client_num[$i]=round($row["client_num"]);
+        $i++;
+    }
+    $var_highcharts=json_encode(array(
+                                    "chart"=>array("type"=>"spline"),
+                                    "title"=>array("text"=>""),
+                                    "xAxis"=>array("categories"=>$var_xAxis),
+                                    "yAxis"=>array(
+                                                    "min"=>0,
+                                                    "title"=>array("text"=>"")
+                                                  ),
+                                    "legend"=>array(
+                                                    "align"=>"center",
+                                                    "verticalAlign"=>"top"
+                                                    ),
+                                    "tooltip"=>array(
+                                                    "shared"=>true,
+                                                    "crosshairs"=>true
+                                                    ),
+                                    "credits"=>array(
+                                                    "enabled"=>false
+                                                    ),
+                                    "series"=>array(
+                                                    array(
+                                                            "name"=>$var_series_name_sales_num,
+                                                            "marker"=>array("symbol"=>"circle"),
+                                                            "data"=>$var_series_data_sales_num
+                                                         ),
+                                                    array(
+                                                            "name"=>$var_series_name_thdj_num,
+                                                            "marker"=>array("symbol"=>"circle"),
+                                                            "data"=>$var_series_data_thdj_num
+                                                         ),
+                                                    array(
+                                                            "name"=>$var_series_name_client_num,
+                                                            "marker"=>array("symbol"=>"circle"),
+                                                            "data"=>$var_series_data_client_num
+                                                         )
+                                                    )
+                                ));
+}
+elseif ($var_type=="sales")
+{
+    $var_series_name_sales_fund="";
+    $var_series_name_qk="";
+    $var_series_name_thzc="";
+
+    $var_series_data_sales_fund=array();
+    $var_series_data_qk=array();
+    $var_series_data_thzc=array();
+
+    $var_series_name_sales_fund="销售额";
+    $var_series_name_qk="欠款";
+    $var_series_name_thzc="退款";
+
+    $where=array("bill_boss_id=? and bill_day>=? and bill_seller_id=?",$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"], strtotime(date("Y-m-d",strtotime("-13 day"))),$var_seller );
+    $where=clean_where($where);
+    $p=cselect("bill_day, 
+    sum(if(bill_type='xssr',bill_fund,0)) as sales_fund,
+    sum(CASE WHEN bill_type='mjys' AND bill_is_credit_seller=0 AND bill_is_credit=1 THEN bill_fund ELSE 0 END ) as skqk,
+    sum(CASE WHEN bill_type='mjys' AND bill_is_credit_seller=1 THEN bill_fund ELSE 0 END ) as zqqk,
+    sum(CASE WHEN bill_type='mjss' AND bill_is_credit_seller=0 AND bill_is_credit=1 THEN bill_fund ELSE 0 END ) as skhk,
+    sum(CASE WHEN bill_type='mjss' AND bill_is_credit_seller=1 THEN bill_fund ELSE 0 END ) as zqhk,
+    sum(if(bill_type='thzc',bill_fund,0)) as thzc
+    ",
+    "ydf_finance_bill",$where,"bill_day","bill_day asc",0,14);
+    $i=0;
+    while($row=$p[0]->fetch())
+    {
+        $var_xAxis[$i]=date("m/d",$row["bill_day"]);
+        $var_series_data_sales_fund[$i]=round($row["sales_fund"]);
+        $var_series_data_qk[$i]=round($row["skqk"]+$row["zqqk"]-$row["skhk"]-$row["zqhk"]);
+        $var_series_data_thzc[$i]=round($row["thzc"]);
+        $i++;
+    }
+    $var_highcharts=json_encode(array(
+                                    "chart"=>array("type"=>"spline"),
+                                    "title"=>array("text"=>""),
+                                    "xAxis"=>array("categories"=>$var_xAxis),
+                                    "yAxis"=>array(
+                                                    "min"=>0,
+                                                    "title"=>array("text"=>"")
+                                                  ),
+                                    "legend"=>array(
+                                                    "align"=>"center",
+                                                    "verticalAlign"=>"top"
+                                                    ),
+                                    "tooltip"=>array(
+                                                    "shared"=>true,
+                                                    "crosshairs"=>true
+                                                    ),
+                                    "credits"=>array(
+                                                    "enabled"=>false
+                                                    ),
+                                    "series"=>array(
+                                                    array(
+                                                            "name"=>$var_series_name_sales_fund,
+                                                            "marker"=>array("symbol"=>"circle"),
+                                                            "data"=>$var_series_data_sales_fund
+                                                         ),
+                                                    array(
+                                                            "name"=>$var_series_name_qk,
+                                                            "marker"=>array("symbol"=>"circle"),
+                                                            "data"=>$var_series_data_qk
+                                                         ),
+                                                    array(
+                                                            "name"=>$var_series_name_thzc,
+                                                            "marker"=>array("symbol"=>"circle"),
+                                                            "data"=>$var_series_data_thzc
+                                                         )
+                                                    )
+                                ));
+}
+?>
+<script type="text/javascript">  
+$(function(){  
+    Highcharts.setOptions({
+        colors: ['#058DC7', '#50B432', '#ED561B']
+    });
+    $('#lineChart').highcharts(<?php print_r($var_highcharts) ?>);
+});  
+</script> 
+<div id="lineChart" style="width: 100%; height: 250px"/>

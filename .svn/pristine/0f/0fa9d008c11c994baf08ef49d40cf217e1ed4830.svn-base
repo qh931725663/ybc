@@ -1,0 +1,81 @@
+<?php
+$var_xAxis=array();
+$var_series_name="";
+$var_series_data=array();
+
+$var_series_name="销售额";
+$group="";
+$orderby="";
+$limit_from=0;
+$limit_to=0;
+
+$case_day="";
+if ($_REQUEST["var_date_type"]=="day")
+{
+    $group="bill_day";
+    $orderby="bill_day asc";
+    $limit_to=14;
+    $case_day=strtotime(date("Y-m-d",strtotime("-13 day")));
+}
+$case_month="";
+if ($_REQUEST["var_date_type"]=="month")
+{
+    $group="bill_month";
+    $orderby="bill_month asc";
+    $limit_to=6;
+    $case_day=strtotime(date("Y-m",strtotime("-11 month")));
+}
+$where=array("bill_boss_id=? and bill_day>=? and bill_month>=?",$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"], $case_day, $case_month );
+$where=clean_where($where);
+$p=cselect("bill_day, 
+sum(if(bill_type='xssr',bill_fund,0)) as today_sales_fund
+",
+"ydf_finance_bill",$where,$group,$orderby,$limit_from,$limit_to);
+$i=0;
+while($row=$p[0]->fetch())
+{
+    $var_xAxis[$i]=date("d",$row["bill_day"]);
+    $var_series_data[$i]=round($row["today_sales_fund"]);
+    $i++;
+}
+$var_highcharts=json_encode(array(
+                                "chart"=>array("type"=>"line"),
+                                "title"=>array("text"=>""),
+                                "xAxis"=>array("categories"=>$var_xAxis),
+                                "yAxis"=>array(
+                                                "min"=>0,
+                                                "title"=>array("text"=>"")
+                                              ),
+                                "tooltip"=>array(
+                                                "backgroundColor"=>array(
+                                                                            "linearGradient"=>array(0,0,0,60),
+                                                                            "stops"=>array(
+                                                                                            array(0,"#FFFFFF"),
+                                                                                            array(1,"#E0E0E0")
+                                                                                         )
+                                                                        ),
+                                                "borderWidth"=>1,
+                                                "borderColor"=>"#AAA"
+                                              ),
+                                "credits"=>array(
+                                                "enabled"=>false
+                                                ),
+                                "series"=>array(
+                                                array(
+                                                        "name"=>$var_series_name,
+                                                        "marker"=>array("symbol"=>"circle"),
+                                                        "data"=>$var_series_data
+                                                     )
+                                                )
+                            ));
+?>
+<script type="text/javascript" src="/pc/js/highcharts.js"></script>
+<script type="text/javascript">  
+$(function(){  
+    Highcharts.setOptions({
+        colors: ['#50B432']
+    });
+     $('#lineChart').highcharts(<?php print_r($var_highcharts) ?>);  
+});  
+</script> 
+<div id="lineChart" style="width: 100%; height: 500px"></div>  

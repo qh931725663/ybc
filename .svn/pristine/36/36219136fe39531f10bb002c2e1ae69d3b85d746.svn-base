@@ -1,0 +1,243 @@
+<?php 
+
+include_once("check_factory_user.php");
+include_once "{$root_path}/model/model_bi.php";
+?>
+<script type="text/javascript">   
+function click_page_num_sbi(obj)
+{
+    set_page_list_sbi(obj);
+    refresh_inner("view_factory_sales_agent?"+$("#form_sbi").serialize() );
+}
+function set_page_list_sbi(obj)
+{
+    if (obj.attr("id")=="last"||obj.attr("id")=="next")
+    {
+        mobj=$("#pages_sbi").find("#m");
+        if (obj.attr("id")=="last" && Number(mobj.html())-1>=1){
+            var bingo=Number(mobj.html())-1;
+            mobj.html(bingo);
+            click_page_num_sbi(mobj);
+        }
+        if (obj.attr("id")=="next" && Number(mobj.html())+1<=page_count_sbi){
+            var bingo=Number(mobj.html())+1;
+            mobj.html(bingo);
+            click_page_num_sbi(mobj);
+        }
+        return;
+    }
+
+    $("#pages_sbi").find("#ll").html("1");
+    $("#pages_sbi").find("#rr").html(page_count_sbi);
+
+    var bingo=Number(obj.html());
+
+    $("#page_idx_sbi").attr("value",bingo);
+
+    $("#pages_sbi").find("#m").html(bingo);//中间页码
+    $("#pages_sbi").find("#l1").html(bingo-1);//左1页码
+    $("#pages_sbi").find("#l2").html(bingo-2);//左2页码
+    $("#pages_sbi").find("#r1").html(bingo+1);//右1页码
+    $("#pages_sbi").find("#r2").html(bingo+2);//右2页码
+
+    $("#pages_sbi").find(".pagelink").each(function(){
+        var num=Number($(this).html())
+        if (num<=0||num>page_count_sbi){
+            $(this).css("display","none");
+        }else{
+            $(this).css("display","inline");
+        }
+    });
+
+}
+
+function search_sbi()
+{
+    mobj=$("#pages_sbi").find("#m");
+    mobj.html(1);
+    set_page_list_sbi(mobj);
+    refresh_inner("view_factory_sales_agent?"+$("#form_sbi").serialize() );
+}
+
+function click_me_sbi(obj,state)
+{
+    $('#verify_state_sbi').attr('value',state);
+
+    obj.parent().find(".listtypevalue").removeClass('listtypeselect');
+    obj.addClass("listtypeselect");
+    
+    search_sbi();
+}
+
+function clean_search_sbi()
+{
+    mount_to_frame('view_factory_sales_agent',1,'frame_factory_sales_agent');
+}
+</script>
+                        <form id="form_sbi">        
+                        <input  type="hidden" name="bi_time" id="verify_state_sbi" value=""/>
+                        <input  type="hidden" name="get_sales_guige_huohao" id="get_sales_guige_huohao" value=""/>
+                        <input  type="hidden" name="get_sales_guige_color" id="get_sales_guige_color" value=""/>
+                        <input  type="hidden" name="get_sales_guige_time" id="get_sales_guige_time" value=""/>
+                        <div style="float:left; width:100%; overflow:hidden; display:block">
+                            <div  style="float:left; width:100%; margin:10px 0; padding:5px; overflow:hidden; display:block">
+                                <div style="float:left; overflow:hidden; display:block">
+                                    <span class="listtypevalue listtypeselect" onclick='/**/click_me_sbi($(this),"day");'>日报</span>
+                                    <span class="listtypevalue" onclick='/**/click_me_sbi($(this),"week");'>周报</span>
+                                    <span class="listtypevalue" onclick='/**/click_me_sbi($(this),"month");'>月报</span>
+                                    <span class="listtypevalue" onclick='/**/click_me_sbi($(this),"year");'>年报</span>
+                                </div>
+                                <div style="float:right; overflow:hidden; display:block">
+                                    <span style="float:left"><input id="search_sales_bi_huohao" name="search_sales_bi_huohao" type="text" style="width:150px; padding:5px; font-size:14px; color:#cccccc" value="请输入商品货号"/></span>
+                                    <span id="btn_products_search" onclick="/**/search_sbi()" class="btn_normal_blue public_search">搜索</span>
+                                    <span class="clear_search" onclick="mount_to_frame('view_factory_sales_agent',1,'frame_factory_sales_agent')">清空<br>条件</span>
+                                </div>
+                            </div>                        
+                        </div>
+                        <div style="width:100%; margin:0 auto; padding:10px 0; border-bottom:1px solid #cccccc; overflow:hidden; display:block;">
+                            <div style="float:left; width:25%; font-size:14px; color:#999999; text-align:center">日期</div>
+                            <div style="float:left; width:20%; font-size:14px; color:#999999; text-align:center">货号</div>
+                            <div style="float:left; width:15%; font-size:14px; color:#999999; text-align:center">颜色</div>
+                            <div style="float:left; width:15%; font-size:14px; color:#999999; text-align:center">尺码</div>
+                            <div style="float:left; width:15%; font-size:14px; color:#999999; text-align:center">销量</div>
+                            <div style="float:left; width:10%; font-size:14px; color:#999999; text-align:center">详细</div>
+                        </div>
+
+<!-- refresh_begin -->
+<?php
+$boss_id = $_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"];
+@$factory_id=$_SESSION["ERP_ACCOUNT_USER_FACTORY_BIANHAO"];
+
+$ymd=empty($_REQUEST["bi_time"])?"day":$_REQUEST["bi_time"];
+@$search_sales_bi_huohao=$_REQUEST["search_sales_bi_huohao"]=="请输入商品货号"?null:$_REQUEST["search_sales_bi_huohao"];
+if (!empty($_SESSION["ERP_ACCOUNT_USER_DANGKOU_BIANHAO"]))
+    $order_master_id=$_SESSION["ERP_ACCOUNT_USER_DANGKOU_BIANHAO"];
+else
+    $order_master_id="";
+
+@$page=$_REQUEST["page_idx"]?$_REQUEST["page_idx"]:1;$pagesize=50;$offset=($page-1)*$pagesize; 
+$group=array("detail_order_{$ymd}","detail_p_huohao");
+$types=array('thdj', 'phth','xsck');
+$where=array(
+    "detail_boss_m_bianhao=? and detail_master_bianhao=? and detail_order_type in ('". join("','",$types) ."') and detail_p_huohao=? and detail_factory_bianhao=?",
+    $boss_id,$order_master_id,$search_sales_bi_huohao,$factory_id
+);
+function pool_sales($row){
+    return $row["phth"]+$row["xsck"];
+}
+$sums=array();
+foreach($types as $type)
+    $sums[]="sum(CASE WHEN detail_order_type='{$type}' THEN detail_order_num ELSE 0 END ) as {$type}";
+$sums[]="count(distinct CASE WHEN detail_order_type in ('xsck','phth') AND detail_seller_bianhao!=1 THEN detail_seller_bianhao ELSE 0 END) as member_count";
+$sums[]="count(distinct CASE WHEN detail_order_type in ('xsck','phth') AND detail_seller_bianhao=1 THEN detail_order_bianhao ELSE 0 END) as non_member_count";
+$historys=bi_select($sums,"ydf_order_detail",$where,$group,"pool_sales");
+$sorts=sort_rows($historys,$group);
+debug($sorts);
+$rowcount=count($historys);$page_count=ceil($rowcount/$pagesize);  
+//echo json_encode($historys);
+for ($i=$offset;$i<$offset+$pagesize && $i<$rowcount;$i++)
+{
+    $idx=$rowcount-1-$i;//historys是从老到新的顺序,所以从尾巴开始取是最新的
+    $row_main=$historys[$sorts[$idx][0] ];
+?>
+                        <div style="width:100%; margin:0 auto; padding:10px 0; border-bottom:1px dashed #cccccc; overflow:hidden; display:block;">
+                            <div style="float:left; width:25%; font-size:14px; text-align:center">
+                            <?php
+                            if (empty($_REQUEST["bi_time"]) or $_REQUEST["bi_time"]=="day")
+                            {
+                                echo date("Y-m-d",$row_main["detail_order_{$ymd}"]);
+                            }
+                            elseif (empty($_REQUEST["bi_time"]) or $_REQUEST["bi_time"]=="week")
+                            {    
+                                if (strtotime("+6 day",$row_main["detail_order_{$ymd}"])>time())
+                                {
+                                    echo date("Y-m-d",$row_main["detail_order_{$ymd}"]);
+                                }
+                                else
+                                {
+                                    echo date("Y-m-d",strtotime("+6 day",$row_main["detail_order_{$ymd}"]));
+                                }
+                            }
+                            else if (!empty($_REQUEST["bi_time"]) and $_REQUEST["bi_time"]=="month")
+                            {
+                                echo date("Y-m",$row_main["detail_order_{$ymd}"]);
+                            }
+                            elseif (!empty($_REQUEST["bi_time"]) and $_REQUEST["bi_time"]=="year")
+                            {
+                                echo date("Y",$row_main["detail_order_{$ymd}"]);
+                            }
+                            ?>
+                            </div>
+                            <div style="float:left; width:20%; font-size:14px; text-align:center"><?php echo $row_main["detail_p_huohao"] ?></div>
+                            <div style="float:left; width:15%; height:15px"></div>
+                            <div style="float:left; width:15%; height:15px"></div>
+                            <div style="float:left; width:15%; font-size:14px; text-align:center"><?php echo $row_main["pool"] ?></div>
+                            <div style="float:left; width:10%; text-align:center"><span style="font-size:14px; color:#0099FF; cursor:pointer" onclick="/**/ShowSalesProductGuige('<?php echo $row_main["detail_p_huohao"] ?>','<?php echo date("Y-m-d",$row_main["detail_order_{$ymd}"]) ?>')">详细</span></div>
+                        </div>
+                        <div id="layer_sales_product_guige_<?php echo $row_main["detail_p_huohao"] ?>_<?php echo date("Y-m-d",$row_main["detail_order_{$ymd}"]) ?>" style="width:100%; margin:0 auto; overflow:hidden; display:none">
+                        </div>
+<?php
+}
+?>
+                    
+                    
+                    <div style="float:right; margin-top:5px; font-size:14px"> 共 <span style="font-size:14px; color:#d51938; font-weight:bold;"><?php echo $rowcount?></span> 条记录</div>
+
+<script>/*n*/    
+var page_count_sbi=<?php echo $page_count; ?>;
+/**/set_page_list_sbi($("#pages_sbi").find("#m"));
+</script>
+
+<!-- refresh_end -->
+                    <div class="showpage" id="pages_sbi">
+                        <input id="page_idx_sbi" name="page_idx" style="display:none" value="1"/>
+                        <span style="display:block">
+                            <span class="pagelink" id="last" onclick="/**/click_page_num_sbi($(this))" >上一页</span>
+                            <span class="pagelink" id="ll" onclick="/**/click_page_num_sbi($(this))" />
+                            <span class="pageblank"  id="lb">...</span>
+                            <span class="pagelink" id="l2" onclick="/**/click_page_num_sbi($(this))" />
+                            <span class="pagelink" id="l1" onclick="/**/click_page_num_sbi($(this))" />
+                            <span class="pageselect" id="m"  onclick="/**/click_page_num_sbi($(this))"  >1</span>
+                            <span class="pagelink" id="r1" onclick="/**/click_page_num_sbi($(this))" />
+                            <span class="pagelink" id="r2" onclick="/**/click_page_num_sbi($(this))" />
+                            <span class="pageblank"  id="rb">...</span>
+                            <span class="pagelink" id="rr" onclick="/**/click_page_num_sbi($(this))" />
+                            <span class="pagelink" id="next" onclick="/**/click_page_num_sbi($(this))" >下一页</span>
+                        </span>
+                    </div>
+                    </form> <!-- 页码也作为表单项统一处理  -->
+
+<script type="text/javascript">    
+$(function(){
+    $("#search_sales_bi_huohao").focus(function(){
+        if(this.value=="请输入商品货号"){this.value=""}
+        $(this).css("color","#333333");
+    });    
+    $("#search_sales_bi_huohao").blur(function(){
+        if(this.value==""){this.value="请输入商品货号"; $(this).css("color","#cccccc")}
+    }); 
+});
+
+function ShowSalesProductGuige(p_huohao,time)
+{
+    if ($("#layer_sales_product_guige_"+p_huohao+"_"+time).is(":visible")==false)
+    {
+        $('#get_sales_guige_huohao').attr("value",p_huohao);
+        $('#get_sales_guige_time').attr("value",time);
+        $.ajax({
+            url:"view-get-factory-sales-guige", 
+            async: false,
+            type: "POST",
+            data:$("#form_sbi").serialize(),
+            success: function(html){
+                $("#layer_sales_product_guige_"+p_huohao+"_"+time).html(html);
+                $("#layer_sales_product_guige_"+p_huohao+"_"+time).show();
+            }
+        });
+    }
+    else
+    {
+        $("#layer_sales_product_guige_"+p_huohao+"_"+time).hide();
+    }
+}
+</script>

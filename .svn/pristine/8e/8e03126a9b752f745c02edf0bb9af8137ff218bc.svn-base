@@ -1,0 +1,22 @@
+<?php
+include_once("check_login.php");
+include_once("check_dangkou_user.php");
+
+$seller_bianhao=$_REQUEST["var_seller_bianhao"];
+$seller_name=$_REQUEST["var_seller_name"];
+$product_huohao=$_REQUEST["var_product_huohao"];
+$modify_value=$_REQUEST["var_modify_value"];
+
+if (!empty($seller_bianhao))
+{
+    $rspricecheck=mysql_query("select * from ydf_seller_price where seller_price_seller_bianhao='$seller_bianhao' and seller_price_p_huohao='$product_huohao' and seller_price_boss_m_bianhao='".$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"]."'" , $dbconn);
+    if (!$rowpricecheck=mysql_fetch_array($rspricecheck))
+    {    
+        mysql_query("insert into ydf_seller_price set seller_price_boss_m_bianhao='".$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"]."', seller_price_seller_bianhao='$seller_bianhao', seller_price_seller_name='$seller_name', seller_price_p_huohao='$product_huohao', seller_price='$modify_value'", $dbconn);
+    }
+    else
+    {
+        mysql_query("update ydf_seller_price set seller_price='$modify_value' where seller_price_bianhao = '".$rowpricecheck["seller_price_bianhao"]."'", $dbconn);    
+    }
+}
+?>

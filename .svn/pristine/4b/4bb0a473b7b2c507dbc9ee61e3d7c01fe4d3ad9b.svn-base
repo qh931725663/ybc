@@ -1,0 +1,389 @@
+<?php
+include_once("check_login.php");
+include_once("{$root_path}/model/model_seller.php");
+update_seller_cycle();
+
+if ($_SESSION["ERP_ACCOUNT_LOGIN_TYPE"]=="1" or (!empty($_SESSION["ERP_ACCOUNT_USER_TYPE"]) and $_SESSION["ERP_ACCOUNT_USER_TYPE"]=="1"))
+{
+    $p=cselect("*","ydf_dangkou",array("dangkou_type='1' and dangkou_boss_m_bianhao=?",$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"]));
+    if (!$rowdangkou=$p[0]->fetch())
+    {
+        include_once "pc/view_store_apply.php";
+    }
+    else
+    {
+        if (!empty($_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]) and $_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]=="11")
+        {
+?>
+                <div style="float:left; width:96%; min-height:800px; margin:15px 1% 0 1%; padding:10px 1%; background:#ffffff; overflow:hidden; display:block">
+                    <div style="width:60%; margin:0 auto; overflow:hidden; display:block">
+                        <div style="float:left; width:100%; margin-top:50px; overflow:hidden; display:block">
+                            <div style="float:left; width:20%; height:50px; background:url(/pc/images/icon_daishenhe.png) center center no-repeat; overflow:hidden; display:block"></div>
+                            <div style="float:left; width:80%; margin-top:10px; font-family:Microsoft YaHei; font-size:18px; font-weight:bold; color:#ff6000; overflow:hidden; display:block">申请已成功提交，正在审核中...</div>
+                        </div>
+                        <div style="float:left; width:80%; margin-left:20%; margin-top:20px; font-size:14px; overflow:hidden; display:block">服务费 ( <span style="font-size:14px;font-weight:bold; color:#FF0000">12000 元 / 年</span> ) 请转账至支付宝：18591914646</div>
+                        <div style="float:left; width:80%; margin-left:20%; margin-top:20px; font-size:14px; overflow:hidden; display:block">如需帮助请拨打服务热线：13347423798</div>
+                    </div>
+                </div>
+<?php        
+        }
+        elseif ((!empty($_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]) and $_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]=="12") or (!empty($_SESSION["ERP_ACCOUNT_USER_DANGKOU_COUNT"]) and $_SESSION["ERP_ACCOUNT_USER_DANGKOU_COUNT"]>"1") or (!empty($_SESSION["ERP_ACCOUNT_USER_TYPE"]) and $_SESSION["ERP_ACCOUNT_USER_TYPE"]=="1"))
+        {
+?>
+                <div class="index_main_div" >
+                        <div class="index_tab_panel">
+                            <div class="index_tab_line">
+                                <span class="index_tab_item index_tab_item_select" onclick='/**/click_me_tab($(this),"sales_fund")'>
+                                    <span style="width:95%; margin:0 auto; padding-top:10px; font-size:14px; font-weight:bold; overflow:hidden; display:block">销售直播</span>
+                                    <span style="width:95%; margin:0 auto; padding-top:10px; overflow:hidden; display:block">
+                                        <span style="float:left; width:50%; overflow:hidden; display:block">
+                                            <span style="float:left; width:100%; color:#999999; text-align:center; overflow:hidden; display:block">今日销售额</span>
+                                            <span id="today_sales_fund" style="float:left; width:100%; padding-top:10px; font-size:20px; font-weight:bold; color:#e43c3f; text-align:center; overflow:hidden; display:block"></span>
+                                        </span>
+                                        <span style="float:left; width:50%; overflow:hidden; display:block">
+                                            <span style="float:left; width:100%; color:#999999; text-align:center; overflow:hidden; display:block">本月销售额</span>
+                                            <span id="thismonth_sales_fund" style="float:left; width:100%; padding-top:10px; font-size:20px; font-weight:bold; color:#e43c3f; text-align:center; overflow:hidden; display:block"></span>
+                                        </span>
+                                    </span>
+                                    <span style="width:95%; margin:0 auto; padding-top:20px; overflow:hidden; display:block">
+                                        <span style="float:left; width:50%; overflow:hidden; display:block"><span style="float:left; width:50%; color:#999999; text-align:left">今日欠款：</span><span id="today_qk" style="color:#e43c3f"></span></span>
+                                        <span style="float:left; width:50%; overflow:hidden; display:block"><span style="float:left; width:50%; color:#999999; text-align:left">应收欠款：</span><span id="total_qk" style="color:#e43c3f"></span></span>
+                                    </span>
+                                    <span style="width:95%; margin:0 auto; padding-top:10px; overflow:hidden; display:block">
+                                        <span style="float:left; width:50%; overflow:hidden; display:block"><span style="float:left; width:50%; color:#999999; text-align:left">今日退货：</span><span id="today_thzc" style="color:#e43c3f"></span></span>
+                                        <span style="float:left; width:50%; overflow:hidden; display:block"><span style="float:left; width:50%; color:#999999; text-align:left">本月退货：</span><span id="thismonth_thzc" style="color:#e43c3f"></span></span>
+                                    </span>
+                                    <span style="width:95%; margin:0 auto; padding-top:10px; overflow:hidden; display:block">
+                                        <span style="float:left; width:50%; overflow:hidden; display:block"><span style="float:left; width:50%; color:#999999; text-align:left">今日错差：</span><span id="today_diff" style="color:#e43c3f"></span></span>
+                                        <span style="float:left; width:50%; overflow:hidden; display:block"><span style="float:left; width:50%; color:#999999; text-align:left">本月错差：</span><span id="thismonth_diff" style="color:#e43c3f">-</span></span>
+                                    </span>
+                                </span>
+                                <span class="index_tab_item" onclick='/**/click_me_tab($(this),"sales_num")'>
+                                    <span style="width:95%; margin:0 auto; padding-top:10px; font-size:14px; font-weight:bold; overflow:hidden; display:block">销量直播</span>
+                                    <span style="width:95%; margin:0 auto; padding-top:10px; overflow:hidden; display:block">
+                                        <span style="float:left; width:50%; overflow:hidden; display:block">
+                                            <span style="float:left; width:100%; color:#999999; text-align:center; overflow:hidden; display:block">今日销量</span>
+                                            <span id="today_sales_num" style="float:left; width:100%; padding-top:10px; font-size:20px; font-weight:bold; color:#e43c3f; text-align:center; overflow:hidden; display:block">1263</span>
+                                        </span>
+                                        <span style="float:left; width:50%; overflow:hidden; display:block">
+                                            <span style="float:left; width:100%; color:#999999; text-align:center; overflow:hidden; display:block">本月销量</span>
+                                            <span id="thismonth_sales_num" style="float:left; width:100%; padding-top:10px; font-size:20px; font-weight:bold; color:#e43c3f; text-align:center; overflow:hidden; display:block">35672</span>
+                                        </span>
+                                    </span>
+                                    <span style="width:95%; margin:0 auto; padding-top:20px; overflow:hidden; display:block">
+                                        <span style="float:left; width:50%; overflow:hidden; display:block"><span style="float:left; width:50%; color:#999999; text-align:left">今日会员：</span><span id="today_member_count" style="color:#e43c3f"></span></span>
+                                        <span style="float:left; width:50%; overflow:hidden; display:block"><span style="float:left; width:50%; color:#999999; text-align:left">本月会员：</span><span id="thismonth_member_count" style="color:#e43c3f">20000</span></span>
+                                    </span>
+                                    <span style="width:95%; margin:0 auto; padding-top:10px; overflow:hidden; display:block">
+                                        <span style="float:left; width:50%; overflow:hidden; display:block"><span style="float:left; width:50%; color:#999999; text-align:left">今日散客：</span><span id="today_non_member_count" style="color:#e43c3f"></span></span>
+                                        <span style="float:left; width:50%; overflow:hidden; display:block"><span style="float:left; width:50%; color:#999999; text-align:left">日均散客：</span><span id="thismonth_non_member_count" style="color:#e43c3f">20000</span></span>
+                                    </span>
+                                    <span style="width:95%; margin:0 auto; padding-top:10px; overflow:hidden; display:block">
+                                        <span style="float:left; width:50%; overflow:hidden; display:block"><span style="float:left; width:50%; color:#999999; text-align:left">今日退货：</span><span id="today_thdj_num" style="color:#e43c3f"></span></span>
+                                        <span style="float:left; width:50%; overflow:hidden; display:block"><span style="float:left; width:50%; color:#999999; text-align:left">本月退货：</span><span id="thismonth_thdj_num" style="color:#e43c3f">20000</span></span>
+                                    </span>
+                                </span>
+                                <span class="index_tab_item" onclick='/**/click_me_tab($(this),"stock_addup")'>
+                                    <span style="width:95%; margin:0 auto; padding-top:10px; font-size:14px; font-weight:bold; overflow:hidden; display:block">库存直播</span>
+                                    <span style="width:95%; margin:0 auto; padding-top:10px; overflow:hidden; display:block">
+                                        <span style="float:left; width:50%; overflow:hidden; display:block">
+                                            <span style="float:left; width:100%; color:#999999; text-align:center; overflow:hidden; display:block">库存资金</span>
+                                            <span id="stock_fund" style="float:left; width:100%; padding-top:10px; font-size:20px; font-weight:bold; color:#e43c3f; text-align:center; overflow:hidden; display:block">-</span>
+                                        </span>
+                                        <span style="float:left; width:50%; overflow:hidden; display:block">
+                                            <span style="float:left; width:100%; color:#999999; text-align:center; overflow:hidden; display:block">库存数量</span>
+                                            <span id="stock_num" style="float:left; width:100%; padding-top:10px; font-size:20px; font-weight:bold; color:#e43c3f; text-align:center; overflow:hidden; display:block">-</span>
+                                        </span>
+                                    </span>
+                                </span>
+                                <span class="index_tab_item" onclick='/**/click_me_tab($(this),"fund_addup")'>
+                                    <span style="width:95%; margin:0 auto; padding-top:10px; font-size:14px; font-weight:bold; overflow:hidden; display:block">资金直播</span>
+                                    <span style="width:95%; margin:0 auto; padding-top:10px; overflow:hidden; display:block">
+                                        <span style="float:left; width:50%; overflow:hidden; display:block">
+                                            <span style="float:left; width:100%; color:#999999; text-align:center; overflow:hidden; display:block">资金总额：</span>
+                                            <span id="total_fund" style="float:left; width:100%; padding-top:10px; font-size:20px; font-weight:bold; color:#e43c3f; text-align:center; overflow:hidden; display:block">-</span>
+                                        </span>
+                                        <span style="float:left; width:50%; overflow:hidden; display:block">
+                                            <span style="float:left; width:100%; color:#999999; text-align:center; overflow:hidden; display:block">本月毛利：</span>
+                                            <span id="thismonth_probably_profits" style="float:left; width:100%; padding-top:10px; font-size:20px; font-weight:bold; color:#e43c3f; text-align:center; overflow:hidden; display:block">-</span>
+                                        </span>
+                                    </span>
+                                    <span style="width:95%; margin:0 auto; padding-top:20px; overflow:hidden; display:block">
+                                        <span style="float:left; width:50%; overflow:hidden; display:block"><span style="float:left; width:50%; color:#999999; text-align:left">应付货款：</span><span style="color:#e43c3f">-</span></span>
+                                        <span style="float:left; width:50%; overflow:hidden; display:block"><span style="float:left; width:50%; color:#999999; text-align:left">本月开支：</span><span style="color:#e43c3f">-</span></span>
+                                    </span>
+                                    <span style="width:95%; margin:0 auto; padding-top:10px; overflow:hidden; display:block">
+                                        <span style="float:left; width:50%; overflow:hidden; display:block"><span style="float:left; width:50%; color:#999999; text-align:left">未提净利：</span><span style="color:#e43c3f">-</span></span>
+                                        <span style="float:left; width:50%; overflow:hidden; display:block"><span style="float:left; width:50%; color:#999999; text-align:left">本月净利：</span><span style="color:#e43c3f">-</span></span>
+                                    </span>
+                                    <span style="width:95%; margin:0 auto; padding-top:10px; overflow:hidden; display:block">
+                                        <span style="float:left; width:50%; overflow:hidden; display:block"><span style="float:left; width:50%; color:#999999; text-align:left">错差：</span><span style="color:#e43c3f">-</span></span>
+                                        <span style="float:left; width:50%; overflow:hidden; display:block"><span style="float:left; width:50%; color:#999999; text-align:left">应提净利：</span><span style="color:#e43c3f">-</span></span>
+                                    </span>
+                                </span>
+                            </div>
+                        </div>    
+                        <div id="layer_sales_fund_addup" style="float:left; width:100%; background:#ffffff; overflow:hidden; display:block">
+                            <div style="float:left; width:49%; margin-right:1%; overflow:hidden; display:block">
+                                <div  style="width:96%; margin:10px auto; padding:5px 0; overflow:hidden; display:block">
+                                    <div style="float:left; padding:5px 0; font-size:14px; overflow:hidden; display:block">卖家销售排行榜</div>
+                                    <div style="float:right; overflow:hidden; display:block">
+                                        <span class="listaddupbytime listaddupbytimeselect" onclick="click_sales_fund_rank_datetype($(this),'today')">今日</span>
+                                        <span class="listaddupbytime" onclick="click_sales_fund_rank_datetype($(this),'thismonth')">本月</span>
+                                    </div>
+                                </div> 
+                                <div id="index_sales_fund_rank" style="width:96%; height:500px; margin:0 auto; min-height:500px; overflow:auto; display:block"/>
+                            </div>
+                            <div style="float:left; width:49%; margin-left:1%; overflow:hidden; display:block">
+                                <div  style="width:96%; margin:10px auto; padding:5px 0; overflow:hidden; display:block">
+                                    <div style="float:left; margin-right:10px; padding:5px 0; font-size:14px; overflow:hidden; display:block">走势分析</div>
+                                    <div style="float:right; overflow:hidden; display:block">
+                                        <span class="listaddupbytime listaddupbytimeselect">按日</span>
+                                        <span class="listaddupbytime">按月</span>
+                                    </div>
+                                </div> 
+                                <div id="index_sales_fund_charts" style="float:left; width:100%; min-height:500px; overflow:hidden; display:block"/>
+                            </div>
+                        </div>
+                        <div id="layer_sales_num_addup" style="float:left; width:100%; background:#ffffff; overflow:hidden; display:none">
+                            <div style="float:left; width:49%; margin-right:1%; overflow:hidden; display:block">
+                                <div  style="width:96%; margin:10px auto; padding:5px 0; overflow:hidden; display:block">
+                                    <div style="float:left; overflow:hidden; display:block">
+                                        <span class="listaddupbytype listaddupbytypeselect">商品排行榜</span>
+                                        <span class="listaddupbytype">卖家排行榜</span>
+                                    </div>
+                                </div> 
+                                <div id="index_sales_num_rank" style="float:left; width:100%; min-height:500px; overflow:hidden; display:block"/>
+                            </div>
+                            <div style="float:left; width:49%; margin-left:1%; overflow:hidden; display:block">
+                                <div  style="width:96%; margin:10px auto; padding:5px 0; overflow:hidden; display:block">
+                                    <div style="float:left; margin-right:10px; padding:5px 0; font-size:14px; overflow:hidden; display:block">走势分析</div>
+                                    <div style="float:right; overflow:hidden; display:block">
+                                        <span class="listaddupbytime listaddupbytimeselect">按日</span>
+                                        <span class="listaddupbytime">按月</span>
+                                    </div>
+                                </div> 
+                                <div id="index_sales_num_charts" style="float:left; width:100%; min-height:500px; overflow:hidden; display:block"/>
+                            </div>
+                        </div>
+                        <div id="layer_stock_addup" style="float:left; width:100%; background:#ffffff; overflow:hidden; display:none">
+                            <div style="float:left; width:49%; margin-right:1%; overflow:hidden; display:block">
+                                <div  style="width:96%; margin:10px auto; padding:5px 0; overflow:hidden; display:block">
+                                    <div style="float:left; padding:5px 0; font-size:14px; overflow:hidden; display:block">智能补货</div>
+                                </div> 
+                                <div id="index_stock_auto_purchase" style="float:left; width:100%; min-height:500px; overflow:hidden; display:block"/>
+                            </div>
+                            <div style="float:left; width:49%; margin-left:1%; overflow:hidden; display:block">
+                                <div  style="width:96%; margin:10px auto; padding:5px 0; overflow:hidden; display:block">
+                                    <div style="float:left; padding:5px 0; font-size:14px; overflow:hidden; display:block">库存资金走势分析</div>
+                                    <div style="float:right; overflow:hidden; display:block">
+                                        <span class="listaddupbytime listaddupbytimeselect">按日</span>
+                                        <span class="listaddupbytime">按月</span>
+                                    </div>
+                                </div> 
+                                <div id="index_stock_fund" style="float:left; width:100%; min-height:500px; overflow:hidden; display:block"/>
+                            </div>
+                        </div>
+                        <div id="layer_fund_addup" style="float:left; width:100%; background:#ffffff; overflow:hidden; display:none">
+                            <div style="float:left; width:49%; margin-right:1%; overflow:hidden; display:block">
+                                <div  style="width:96%; margin:10px auto; padding:5px 0; overflow:hidden; display:block">
+                                    <div style="float:left; overflow:hidden; display:block">
+                                        <span class="listaddupbytype listaddupbytypeselect">日常报销待付款</span>
+                                        <span class="listaddupbytype">工厂提现待付款</span>
+                                    </div>
+                                </div> 
+                                <div id="index_wait_pay_fund" style="float:left; width:100%; min-height:500px; overflow:hidden; display:block"/>
+                            </div>
+                            <div style="float:left; width:49%; margin-left:1%; overflow:hidden; display:block">
+                                <div  style="width:96%; margin:10px auto; padding:5px 0; overflow:hidden; display:block">
+                                    <div style="float:left; padding:5px 0; font-size:14px; overflow:hidden; display:block">资金走势分析</div>
+                                    <div style="float:right; overflow:hidden; display:block">
+                                        <span class="listaddupbytime listaddupbytimeselect">按日</span>
+                                        <span class="listaddupbytime">按月</span>
+                                    </div>
+                                </div> 
+                                <div id="index_fund_charts" style="float:left; width:100%; min-height:500px; overflow:hidden; display:block"/>
+                            </div>
+                        </div>
+                </div>
+<script type="text/javascript">    
+$(function(){
+    $.ajax({
+        url:"model-addup-bi", 
+        async: false,
+        type: "POST",
+        data:{func:"boss_addup_index"},
+        dataType:"json",
+        success: function(html){
+            $("#today_sales_fund").html(parseInt(html["today_sales_fund"]));
+            $("#thismonth_sales_fund").html(parseInt(html["thismonth_sales_fund"]));
+            $("#today_qk").html(parseInt(html["today_qk"]));
+            $("#total_qk").html(parseInt(html["total_qk"]));
+            $("#today_thzc").html(parseInt(html["today_thzc"]));
+            $("#thismonth_thzc").html(parseInt(html["thismonth_thzc"]));
+            $("#today_diff").html(parseInt(html["today_diff"]));
+            
+            $("#today_sales_num").html(parseInt(html["today_sales_num"]));
+            $("#thismonth_sales_num").html(parseInt(html["thismonth_sales_num"]));
+            $("#today_member_count").html(parseInt(html["today_member_count"]));
+            $("#thismonth_member_count").html(parseInt(html["thismonth_member_count"]));
+            $("#today_non_member_count").html(parseInt(html["today_non_member_count"]));
+            $("#thismonth_non_member_count").html(parseInt(html["thismonth_non_member_count"]));
+            $("#today_thdj_num").html(parseInt(html["today_thdj_num"]));
+            $("#thismonth_thdj_num").html(parseInt(html["thismonth_thdj_num"]));
+        }
+    });
+
+    click_sales_fund_rank_datetype("", "today");
+    
+    click_charts_datetype("", "index_sales_fund_charts", "day");
+});
+
+function click_sales_fund_rank_datetype(obj,datetype)
+{
+    if (obj)
+    {
+        obj.parent().find(".listaddupbytime").removeClass('listaddupbytimeselect');
+        obj.addClass("listaddupbytimeselect");
+    }
+    
+    $.ajax({
+        url:"view-index-get-sales-fund-rank", 
+        async: true,
+        type: "POST",
+        data:{var_date_type:datetype},
+        success: function(html){
+            $("#index_sales_fund_rank").html(html);
+        }
+    });
+}
+
+function click_charts_datetype(obj,layer,datetype)
+{
+    if (obj)
+    {
+        obj.parent().find(".listaddupbytime").removeClass('listaddupbytimeselect');
+        obj.addClass("listaddupbytimeselect");
+    }
+    
+    $.ajax({
+        url:"view-index-get-charts", 
+        async: true,
+        type: "POST",
+        data:{var_date_type:datetype},
+        success: function(html){
+            $("#"+layer).html(html);
+        }
+    });
+}
+
+function click_me_tab(obj,state)
+{
+    obj.parent().find(".index_tab_item").removeClass('index_tab_item_select');
+    obj.addClass("index_tab_item_select");
+
+    if (state=="sales_fund")
+    {
+            $('#layer_sales_fund_addup').show();
+            $('#layer_sales_num_addup').hide();
+            $('#layer_stock_addup').hide();
+            $('#layer_fund_addup').hide();
+    }
+    if (state=="sales_num")
+    {
+            $('#layer_sales_fund_addup').hide();
+            $('#layer_sales_num_addup').show();
+            $('#layer_stock_addup').hide();
+            $('#layer_fund_addup').hide();
+    }
+    if (state=="stock_addup")
+    {
+            $('#layer_sales_fund_addup').hide();
+            $('#layer_sales_num_addup').hide();
+            $('#layer_stock_addup').show();
+            $('#layer_fund_addup').hide();
+    }
+    if (state=="fund_addup")
+    {
+            $('#layer_sales_fund_addup').hide();
+            $('#layer_sales_num_addup').hide();
+            $('#layer_stock_addup').hide();
+            $('#layer_fund_addup').show();
+    }
+}
+</script>
+<?php
+        }
+        elseif (!empty($_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]) and $_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]=="13")
+        {
+?>
+                <div style="float:left; width:96%; min-height:800px; margin:15px 1% 0 1%; padding:10px 1%; background:#ffffff; overflow:hidden; display:block">
+                    <div style="width:60%; margin:0 auto; overflow:hidden; display:block">
+                        <div style="float:left; width:100%; margin-top:50px; overflow:hidden; display:block">
+                            <div style="float:left; width:20%; height:50px; background:url(/pc/images/icon_daishenhe.png) center center no-repeat; overflow:hidden; display:block"></div>
+                            <div style="float:left; width:80%; margin-top:10px; font-family:Microsoft YaHei; font-size:18px; font-weight:bold; color:#ff6000; overflow:hidden; display:block">对不起，此档口管理系统使用时间已到期！</div>
+                        </div>
+                        <div style="float:left; width:80%; margin-left:20%; margin-top:20px; font-size:14px; overflow:hidden; display:block">服务费 ( <span style="font-size:14px;font-weight:bold; color:#FF0000">12000 元 / 年</span> ) 请转账至支付宝：18591914646</div>
+                        <div style="float:left; width:80%; margin-left:20%; margin-top:20px; font-size:14px; overflow:hidden; display:block">如需帮助请拨打服务热线：13347423798</div>
+                    </div>
+                </div>
+<?php
+        }
+    }
+}
+elseif ($_SESSION["ERP_ACCOUNT_LOGIN_TYPE"]=="4" and !empty($_SESSION["ERP_ACCOUNT_USER_TYPE"]) and $_SESSION["ERP_ACCOUNT_USER_TYPE"]<>"1")
+{
+?>
+                <div style="float:left; width:96%; min-height:800px; margin:15px 1% 0 1%; padding:10px 1%; background:#ffffff; overflow:hidden; display:block">
+                    <div style="float:left; width:100%; overflow:hidden; display:block">
+                        <p style="float:left; width:90%; padding:5px 5%; font-size:14px; color:#999999">：-）欢迎您登录优百仓工厂管理系统！</p>                        
+                    </div>
+                </div>
+<?php
+}
+elseif ($_SESSION["ERP_ACCOUNT_LOGIN_TYPE"]=="2")
+{
+    if (empty($_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"]))
+    {
+?>
+                <div style="float:left; width:96%; min-height:800px; margin:15px 1% 0 1%; padding:10px 1%; background:#ffffff; overflow:hidden; display:block">
+                    <div style="float:left; width:100%; margin:10px 0; padding:10px 0; font-size:14px; color:#e43c3f; border-bottom:1px dashed #cccccc; overflow:hidden; display:block">请先选择合作档口负责人：</div>
+                    <div style="float:left; width:100%; display:block">
+                        <?php
+                        $p=cselect("*","ydf_member",array("m_bianhao in (select factory_boss_m_bianhao from ydf_factory where del_state<>'1' and factory_manage='1' and factory_mobile='".$_SESSION["ERP_ACCOUNT_LOGIN_MOBILE"]."')"),"","m_bianhao");
+                        while ($rowboss=$p[0]->fetch())
+                        {
+                        ?>
+                        <div class="listclassvalueblock">
+                            <div class="listclassvalue" onclick="/**/FactorySelectBoss(<?php echo $rowboss["m_bianhao"]?>)"><?php echo $rowboss["m_realname"] ?></div>
+                        </div>
+                        <?php
+                        }
+                        ?>
+                        
+                    </div>
+                </div>
+<?php
+    }
+    else
+    {
+?>
+                <div style="float:left; width:96%; min-height:800px; margin:15px 1% 0 1%; padding:10px 1%; background:#ffffff; overflow:hidden; display:block">
+                    <div style="float:left; width:100%; overflow:hidden; display:block">
+                        <p style="float:left; width:90%; padding:5px 5%; font-size:14px; color:#999999">：-）欢迎您登录优百仓工厂管理系统！</p>                        
+                    </div>
+                </div>
+<?php
+    }
+}
+elseif ($_SESSION["ERP_ACCOUNT_LOGIN_TYPE"]=="3")
+{
+?>
+                <div style="float:left; width:96%; min-height:800px; margin:15px 1% 0 1%; padding:10px 1%; background:#ffffff; overflow:hidden; display:block">
+                    <div style="float:left; width:100%; overflow:hidden; display:block">
+                        <p style="float:left; width:90%; padding:5px 5%; font-size:14px; color:#999999">：-）欢迎您登录优百仓卖家管理系统！</p>                        
+                    </div>
+                </div>
+<?php
+}
+?>

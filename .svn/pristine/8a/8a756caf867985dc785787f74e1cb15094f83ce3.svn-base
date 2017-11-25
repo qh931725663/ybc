@@ -1,0 +1,42 @@
+<form class="seller_review">
+    <div class="report_table_header" style="margin-top:12px; background:#f2f2f2">
+        <div style="color:#999999; width:15%">卖家</div>
+        <div style="color:#999999; width:30%">当前欠款订单总额</div>
+        <div style="color:#999999; width:30%">- 当前退货未付款订单总额</div>
+        <div style="color:#999999; width:25%">= 当前结余欠款</div>
+    </div>
+
+<!-- refresh_begin -->
+<?php
+include_once("{$root_path}/model/model_bi.php");
+@$page=$_REQUEST["page_idx"]?$_REQUEST["page_idx"]:1;$pagesize=20;$offset=($page-1)*$pagesize;
+list($historys,$addup)=get_history_iseller_mjys($ymd="day",@$_REQUEST["seller_id"]);
+debug($historys);
+$rowcount=count($addup);$page_count=ceil($rowcount/$pagesize);
+$p=select("*","ydf_seller",array(@$_REQUEST["seller_id"]);
+while($name=$p->fetch()){
+    $name=$name["seller_name"];
+}
+foreach ($addup as $row)
+{
+debug($row);
+    $row=$historys[$row["now"]];
+
+
+?>
+    <div class="report_table_body" style="border-bottom:1px dashed #cccccc">
+        <div style="width:15%"><span style="color:#e43c3f"><?php echo $name?></span></div>
+        <div style="width:30%"><span style="color:#e43c3f"><?php echo padd(array($row["sum"]["mjys"]),array($row["sum"]["myss"]))?></span></div>
+        <div style="width:30%"><span style="color:#e43c3f"><?php echo padd(array($row["sum"]["mjyf"]),array($row["sum"]["mjsf"]))?></span></div>
+        <div style="width:25%"><span style="color:#e43c3f"><?php echo $row["sum"]["pool"]?></span></div>
+    </div>
+<?php 
+}
+?>
+    <div class="record"> 共 <span class="record_num"><?php echo $rowcount?></span> 条记录</div>
+    <script>    
+    $("#pid_view_finance_reg_seller_review #pages_seller_review").set_page_count("view_finance_reg_seller_review","pages_seller_review",<?php echo $page_count;?>);
+    </script>
+<!-- refresh_end -->
+    <div class="ipages" id="pages_seller_review" page="view_finance_reg_seller_review" form="form_seller_review" count="<?php echo $page_count; ?>"/>
+</form>

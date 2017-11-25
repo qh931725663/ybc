@@ -1,0 +1,11 @@
+<?php 
+include_once "{$root_path}/model/model_bi.php";
+?>
+    <div class="report_table_row">
+        <div style="width:30%; height:15px"></div>
+        <div style="width:15%;text-align:center">-</div>
+        <div style="width:15%;text-align:center">-</div>
+        <div style="width:15%;text-align:center">-</div>
+        <div style="width:15%;text-align:center">-</div>
+        <div style="width:10%; height:15px"></div>
+    </div> 

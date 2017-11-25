@@ -1,0 +1,68 @@
+<?php $new_pid="pid_view_get_agent_finance_detail__".$_REQUEST["var_factory_id"] ?>
+<?php $new_page="view_get_agent_finance_detail__".$_REQUEST["var_factory_id"] ?>
+
+<form id="form_dxdzmx">
+<input id="page_idx2" name="page_idx" type="hidden" value="1">
+<input name="var_factory_id" value="<?php echo $_REQUEST["var_factory_id"] ?>" type="hidden"/>
+</form>
+<!-- refresh_begin -->
+<?php
+include_once "{$root_path}/model/model_bi.php";
+@$page=$_REQUEST["page_idx"]?$_REQUEST["page_idx"]:1;$pagesize=20;$offset=($page-1)*$pagesize;
+$factory_array= get_stream_dxdz(@$_REQUEST["var_factory_id"]);
+$rowcount=count($factory_array);
+$page_count=ceil($rowcount/$pagesize);
+for ($i=$offset;$i<$offset+$pagesize && $i<$rowcount;$i++)
+{
+    $idx=$rowcount-1-$i;
+    $ro=$factory_array[$idx];
+    debug($ro);
+    if($ro["bill_type"]=="sqyf"&&$ro["bill_source_id"]==0){
+        $ro["bill_type"]="主动付款";
+    }
+    if($ro["bill_type"]=="sqyf"&&$ro["bill_source_id"]!=0){
+        $ro["bill_type"]="提现";
+    }
+    if($ro["bill_type"]=="gcyf_dx"){
+        $ro["bill_type"]="发货";
+
+    }
+    if($ro["bill_type"]=="gcys_dx"&&$ro["bill_small_type"]=="qcfc"){
+        $ro["bill_type"]="退货";
+    }
+    if($ro["bill_type"]=="gcys_dx"&&$ro["bill_small_type"]=="thfc"){
+        $ro["bill_type"]="退货";
+    }
+    $p_order=rselect("*","ydf_order",array("order_bianhao=?",$ro['bill_source_id']));
+    debug($p_order);
+    $danhao="";
+    if($ro_a=$p_order->fetch())
+    {
+        $danhao = $ro_a["order_express_bianhao"];
+    }
+    $p_order_d=rselect("sum(detail_order_num)","ydf_order_detail",array("detail_order_bianhao=? and detail_factory_mode=1",$ro_a['order_bianhao']));
+    if($ro_b=$p_order_d->fetch())
+    {
+        $num=$ro_b["sum(detail_order_num)"];
+    }
+?>
+<div class="report_table_body" style="border-bottom:1px dashed #cccccc">
+    <div style="width:13%; height:15px"></div>
+    <div style="width:13%; text-align:center"><?php echo date("Y-m-d H:i:s",$ro["bill_add_time"])?></div>
+    <div style="width:13%; text-align:center;  <?php if($ro["bill_type"]=="发货"){echo "color:#333;";}else{echo "color:red;";}?> "><?php echo $ro["bill_type"] ?></div>
+    <div style="width:12%; text-align:center"><?php echo $danhao ?></div>
+    <div style="width:12%; text-align:center"><?php echo $num ?></div>
+    <div style="width:12%; text-align:center; <?php if($ro["bill_type"]=="发货"){echo "color:#333;";}else{echo "color:red;";}?> "><?php if($ro["bill_type"]=="发货"){echo $ro["bill_fund"];}else{echo "-".$ro["bill_fund"];} ?></div>
+    <div style="width:12%; text-align:center; <?php if($ro["bill_type"]=="发货"){echo "color:#333;";}else{echo "color:red;";}?> "><?php echo $ro["pool"] ?></div>
+</div>
+<?php
+}
+?>
+<div class="record"> 共 <span class="record_num"><?php echo $rowcount?></span> 条记录</div>
+
+<script>/*n*/
+    $("#<?php echo $new_pid ?> #pages_get_agent_finance_detail").set_page_count("<?php echo $new_page ?>","pages_get_agent_finance_detail",<?php echo $page_count;?>);
+</script>
+<!-- refresh_end -->
+<div class="ipages" input_idx_id="#<?php echo $new_pid ?> #page_idx2" id="pages_get_agent_finance_detail" page="<?php echo $new_page ?>" form="form_dxdzmx" count="<?php echo $page_count; ?>"/>
+

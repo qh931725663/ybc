@@ -1,0 +1,151 @@
+<?php
+include_once("check_login.php");
+include_once("check_dangkou_user.php");
+?>
+<form>
+<div class="report">
+    <div class="report_table_tbody">
+        <div style="width:12%;">卖家</div>
+        <div style="width:12%;">上周结余欠款</div>
+        <div style="width:12%;">+ 本周拿货</div>
+        <div style="width:12%;">- 本周收款</div>
+        <div style="width:12%;">- 本周退货</div>
+        <div style="width:12%;">+ 本周退款</div>
+        <div style="width:12%;">= 结余欠款</div>
+        <div style="width:12%;">收款记账</div>
+    </div>
+
+<!-- refresh_begin -->
+<?php
+include_once("{$root_path}/model/model_bi.php");
+include_once("{$root_path}/model/model_bill.php");
+
+$ymd=empty($_REQUEST["bi_time"])?"day":$_REQUEST["bi_time"];
+@$from_day=$_REQUEST["from_day"]?get_ymd($_REQUEST["from_day"])["d"]:null;
+@$to_day=$_REQUEST["to_day"]?get_ymd($_REQUEST["to_day"])["d"]+24*3600-1:null;
+@$page=$_REQUEST["page_idx"]?$_REQUEST["page_idx"]:1;$pagesize=20;$offset=($page-1)*$pagesize; 
+list($historys,$addup) = get_history_sellers($ymd,@$_REQUEST["seller_id"]);
+$group=array("bill_{$ymd}","bill_seller_id");
+$idx=get_idx($historys,$group);
+$addup2=[];
+foreach ($addup as $key=>$value)
+    $addup2[]=$historys[$value["now"] ];
+$sorts=sort_rows($addup2,array("bill_$ymd","bill_seller_id"),1);
+$rowcount=count($addup2);
+$page_count=ceil($rowcount/$pagesize);
+for ($i=$offset;$i<$offset+$pagesize && $i<$rowcount;$i++)
+{
+    $idx=$rowcount-1-$i;
+    $row=$addup2[$sorts[$idx][0] ];
+
+    $pseller=rselect("*","ydf_seller",array("seller_bianhao=?",$row["bill_seller_id"]));
+    $seller_name="";
+    if ($rseller=$pseller->fetch())
+        $seller_name=$rseller["seller_name"];
+
+    $last_idx=$row["last"];
+    $last_pool=0;
+    if ($last_idx>=0) 
+        $row_last=$historys[$last_idx];
+
+    $last_pool=$row_last["sum"]["pool"];
+
+?>
+    <div class="report_table_row">
+        <div style="width:12%;text-align:center;"><?php echo $seller_name?></div>
+        <div style="width:12%;text-align:center;"><?php echo $last_pool?></div>
+        <div style="width:12%;text-align:center;"><?php echo $row["mjys"]?></span></div>
+        <div style="width:12%;text-align:center;"><?php echo $row["mjss"]?></span></div>
+        <div style="width:12%;text-align:center;"><?php echo $row["mjyf"]?></span></div>
+        <div style="width:12%;text-align:center;"><?php echo $row["mjsf"]?></span></div>
+        <div style="width:12%;text-align:center;"><?php echo $row["sum"]["pool"]?></span></div>
+        <div style="width:12%;text-align:center;"><span style="color:#0099FF; cursor:pointer" onclick="ShowReceivableSeller(<?php echo $row["bill_seller_id"]?>,<?php echo $last_pool ?>)">收款记账</span></div>
+
+        <?php
+        $p_factory_bill=cselect("*","ydf_finance_bill",array("bill_type='mjssd' and bill_seller_id=?",$row["bill_seller_id"]),"","bill_id desc");
+        if ($row_factory_bill=$p_factory_bill[0]->fetch())
+        {
+        ?>
+        <div style="width:100%; margin:0 auto; overflow:hidden; display:block;">
+            <div style="float:right; padding:5px 0">
+                <span style="float:left"><span style="color:#999999">最近一次收款日期：</span><?php echo date("Y-m-d H:i:s",$row_factory_bill["bill_add_time"]) ?></span>
+                <span style="float:left; margin-left:10px"><span style="color:#999999">收款人：</span><?php echo $row_factory_bill["bill_add_user_id"] ?></span>
+                <span style="float:left; margin-left:10px"><span style="color:#999999">收款金额：</span><?php echo $row_factory_bill["bill_fund"] ?></span>                                    
+            </div>
+        </div>
+        <?php
+        }
+        ?>
+    </div>                    
+<?php 
+}
+?>
+    <div style="float:right; margin-top:5px; font-size:14px"> 共 <span style="font-size:14px; color:#d51938; font-weight:bold;">0</span> 条记录</div>
+    <script>/*n*//*n*/
+    $("#pid_view_finance_reg_receivable #pages_seller_receivable").set_page_count("","",<?php echo $page_count;?>);
+    </script>
+<!-- refresh_end -->
+    <div class="ipages" id="pages_seller_receivable" page="view_finance_reg_receivable" form="" count="<?php echo $page_count; ?>"/>
+
+</div>
+</form>
+
+<div id="layer_receivable_fund" style="float:left; width:400px; padding:25px; overflow:visible; display:none">
+</div> 
+<script type="text/javascript">                    
+function ShowReceivableSeller(seller_id,receivable_fund){
+    $.ajax({
+        url:"view-get-receivable-seller", 
+        async: false,
+        type: "POST",
+        data:{var_seller_id:seller_id,var_receivable_fund:receivable_fund},
+        success: function(html){
+            $("#layer_receivable_fund").html(html);
+        }
+    });
+    
+    index_layer_receivable_fund=layer.open({
+        type: 1,
+        area: ['450px', '350px'],
+        title: false,
+        content:$('#layer_receivable_fund')
+    });
+}
+
+function PostFactoryPay(){
+    if(!$("#bill_bank").val())
+    {
+        $("#tip_notice_receivable_seller").html("<span style='font-size:12px; color:red'>亲，请选择收款资金账户哦！</span>");
+        return false;
+    }
+    
+    if(!$("#bill_fund").val())
+    {
+        $("#tip_notice_receivable_seller").html("<span style='font-size:12px; color:red'>亲，请填写实收金额哦！</span>");
+        return false;
+    }
+        
+    $.ajax({
+        url:"model-bill-insert", 
+        async: false,
+        type: "POST",
+        dataType:"json",
+        data:$("#vform_receivable_fund").serialize(),
+        error:function(){
+            layer.close(index_layer_receivable_fund);
+            layer.msg('系统异常，请稍后再试:(', {time: 2000, icon:2});
+        },
+        success: function(html){
+            layer.close(index_layer_receivable_fund);
+            if (html.state!="ok"){
+                layer.msg('提交失败！', {time: 2000, icon:2});
+                return;
+            }
+            layer.msg('提交成功！', {time: 2000, icon:1});
+            setTimeout(function(){
+                mount_to_frame('view_finance_reg_receivable',1,'frame_finance_reg_receivable');
+            },0);
+        }
+    });    
+}
+</script>

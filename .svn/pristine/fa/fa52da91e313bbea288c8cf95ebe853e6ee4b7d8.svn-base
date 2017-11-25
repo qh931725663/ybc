@@ -1,0 +1,23 @@
+<?php
+include_once("check_login.php");
+include_once("check_dangkou_user.php");
+?>
+<div class="frame_main_div" style="min-height:400px;">
+    <div style="float:right;">
+        <span style="display:inline-block;width:387px;height:70px;background:#ff6058;text-align:center;line-height:70px;font-size:30px;color:#fff;">出货收银</span>
+        <span style="display:inline-block;width:387px;height:70px;background:#555c6f;text-align:center;line-height:70px;font-size:30px;color:#fff;">出货收银</span>
+    </div>
+    <div class="frame_tab_panel" style="top:71px">
+        <div class="frame_tab_line">
+            <span class="frame_tab_item_select" onclick="mount_to_frame('frame_sales_cashier',0,'frame_cashier')">闪电出货</span>
+            <span class="frame_tab_item"        onclick="mount_to_frame('frame_return_list',0,'frame_cashier')">退货登记</span>
+        </div>
+    </div>    
+    <div id="frame_cashier" />
+</div>
+
+<script>
+mount_to_frame('frame_sales_cashier',0,'frame_cashier');
+
+num_sound = new NumSound();
+</script>

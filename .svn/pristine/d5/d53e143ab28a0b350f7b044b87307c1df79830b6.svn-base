@@ -1,0 +1,292 @@
+<!-- txhz 提现资金汇总 --> 
+<?php 
+include_once("check_login.php");
+include_once("check_factory_user.php");
+
+include_once "{$root_path}/model/model_bi.php";
+
+$p_factory=cselect("factory_bianhao","ydf_factory",array("factory_boss_m_bianhao=? and factory_mobile=?" ,$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"],$_SESSION["ERP_ACCOUNT_LOGIN_MOBILE"]));
+$rowfactory=$p_factory[0]->fetch();
+$factory_id=$rowfactory["factory_bianhao"];
+
+function get_factory_list()
+{
+    $boss_id = $_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"];    
+    $p=select("*","ydf_factory",array("factory_boss_m_bianhao=?",$boss_id));
+    if ($p->errorCode()!="00000")
+        print_r($p->errorInfo());
+    while ($f_row=$p->fetch())
+    {
+        echo '<option value="'.$f_row["factory_bianhao"].'">'.$f_row["factory_name"].'</option>';
+    }
+}
+?>
+<script type="text/javascript">    
+function click_me_bi_txhz(obj,state)
+{
+    $('#verify_state_bi_txhz').attr('value',state);
+
+    obj.parent().find(".listtypevalue").removeClass('listtypeselect');
+    obj.addClass("listtypeselect");
+        
+    list_bi_txhz();
+}
+function click_page_num_bi_txhz(obj)
+{
+    set_page_list_bi_txhz(obj);
+    refresh_inner("view_factory_bill_agent?"+$("#form_bi_txhz").serialize() );
+}
+function set_page_list_bi_txhz(obj)
+{
+    if (obj.attr("id")=="last"||obj.attr("id")=="next")
+    {
+        mobj=$("#pages_bi_txhz").find("#m");
+        if (obj.attr("id")=="last" && Number(mobj.html())-1>=1){
+            var bingo=Number(mobj.html())-1;
+            mobj.html(bingo);
+            click_page_num_bi_txhz(mobj);
+        }
+        if (obj.attr("id")=="next" && Number(mobj.html())+1<=page_count_bi_txhz){
+            var bingo=Number(mobj.html())+1;
+            mobj.html(bingo);
+            click_page_num_bi_txhz(mobj);
+        }
+        return;
+    }
+
+    $("#pages_bi_txhz").find("#ll").html("1");
+    $("#pages_bi_txhz").find("#rr").html(page_count_bi_txhz);
+
+    var bingo=Number(obj.html());
+
+    $("#page_idx_bi_txhz").attr("value",bingo);
+
+    $("#pages_bi_txhz").find("#m").html(bingo);//中间页码
+    $("#pages_bi_txhz").find("#l1").html(bingo-1);//左1页码
+    $("#pages_bi_txhz").find("#l2").html(bingo-2);//左2页码
+    $("#pages_bi_txhz").find("#r1").html(bingo+1);//右1页码
+    $("#pages_bi_txhz").find("#r2").html(bingo+2);//右2页码
+
+    $("#pages_bi_txhz").find(".pagelink").each(function(){
+        var num=Number($(this).html())
+        if (num<=0||num>page_count_bi_txhz){
+            $(this).css("display","none");
+        }else{
+            $(this).css("display","inline");
+        }
+    });
+
+}
+
+function list_bi_txhz()
+{
+    $('#search_factory_bill_from_date').attr("value","");
+    $('#search_factory_bill_to_date').attr("value","");
+        
+    mobj=$("#pages_bi_txhz").find("#m");
+    mobj.html(1);
+    set_page_list_bi_txhz(mobj);
+    refresh_inner("view_factory_bill_agent?"+$("#form_bi_txhz").serialize() );
+}
+
+function search_bi_txhz()
+{
+    $("#btn_factory_bill_search").parent().prev().find(".listtypevalue").removeClass('listtypeselect');
+    
+    mobj=$("#pages_bi_txhz").find("#m");
+    mobj.html(1);
+    set_page_list_bi_txhz(mobj);
+    refresh_inner("view_factory_bill_agent?"+$("#form_bi_txhz").serialize() );
+}
+</script>
+                    <form id="form_bi_txhz">
+                                        <div style="float:left; width:100%; overflow:hidden; display:block">
+                                            <div  style="float:left; width:100%; margin:10px 0; padding:5px; overflow:hidden; display:block">
+                        <div style="float:left">
+                                                    <input  type="hidden" name="bi_time" id="verify_state_bi_txhz" value=""/>            
+                                                    <span class="listtypevalue listtypeselect" onclick='/**/click_me_bi_txhz($(this),"day");'>日报</span>
+                                                    <span class="listtypevalue" onclick='/**/click_me_bi_txhz($(this),"week");'>周报</span>
+                                                    <span class="listtypevalue" onclick='/**/click_me_bi_txhz($(this),"month");'>月报</span>
+                                                    <span class="listtypevalue" onclick='/**/click_me_bi_txhz($(this),"year");'>年报</span>
+                        </div>
+                                                <div style="float:right; overflow:hidden; display:block">
+                                                    <span style="float:left; overflow:hidden; display:block">
+                                                        <span style="padding:5px 0">日期 <input type="text" id="search_factory_bill_from_date" name="search_factory_bill_from_date" onclick="/**/WdatePicker({dateFmt:'yyyy-MM-dd'})" size="10" maxlength="50" readonly="readonly" style="padding:5px"> 至 <input type="text" id="search_factory_bill_to_date" name="search_factory_bill_to_date" onclick="/**/WdatePicker({dateFmt:'yyyy-MM-dd'})" size="10" maxlength="50" readonly="readonly" style="padding:5px">
+                                                        </span>
+                                                    </span>
+                                                    <span id="btn_factory_bill_search" onclick="/**/search_bi_txhz()" class="btn_normal_green">搜索</span>
+                                                </div>
+                                            </div>
+                                        </div>     
+
+<!-- refresh_begin -->
+                    <div style="position:relative; float:left; width:100%; margin-top:0px; background:#f2f2f2; border-bottom:1px solid #cccccc; display:block">
+                        <div style="float:left;width:10%; padding:10px 0; text-align:center">日期</div>
+                        <div style="float:left;width:10%; padding:10px 0; text-align:center">上期结余资产</div>
+                        <div style="float:left;width:8%; padding:10px 0; text-align:center">+ 本期进货</div>
+                        <div style="float:left;width:8%; padding:10px 0; text-align:center">- 本期返厂</div>
+                        <div style="float:left;width:8%; padding:10px 0; text-align:center">- 本期提现</div>
+                        <div style="float:left;width:10%; padding:10px 0; text-align:center">= 本期结余资产 =</div>
+                        <div style="float:left;width:20%; padding:10px 0; text-align:center">本期结余库存</div>
+                        <div style="float:left;width:16%; padding:10px 0; text-align:center">+ 本期交易中</div>
+                        <div style="float:left;width:10%; padding:10px 0; text-align:center">+ 本期结余可提现</div>
+                    </div>
+                    <div id="pagelist" style="float:left; width:100%; overflow:hidden; display:block">
+<?php
+$boss_id = $_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"];    
+$ymd=empty($_REQUEST["bi_time"])?"day":$_REQUEST["bi_time"];
+@$from_day=$_REQUEST["search_factory_bill_from_date"]?get_ymd($_REQUEST["search_factory_bill_from_date"])["d"]:null;
+@$to_day=$_REQUEST["search_factory_bill_to_date"]?get_ymd($_REQUEST["search_factory_bill_to_date"])["d"]+24*3600:null;
+
+@$page=$_REQUEST["page_idx"]?$_REQUEST["page_idx"]:1;$pagesize=20;$offset=($page-1)*$pagesize; 
+
+$historys2=array();
+$historys2_idx=array();
+get_history_agent_pools($ymd,@$_REQUEST["bill_factory_id"],$historys2,$historys2_idx);
+//debug($historys2);
+
+$historys_return=array();
+$historys_return_idx=array();
+get_history_return_pools($ymd,@$_REQUEST["bill_factory_id"],1,$historys_return,$historys_return_idx);
+debug($historys_return);
+
+$historys_fys=array();
+$historys_fys_idx=array();
+get_history_factory_agent_ys($ymd,@$_REQUEST["bill_factory_id"],$historys_fys,$historys_fys_idx);
+debug($historys_fys);
+
+$historys_road=array();
+$historys_road_idx=array();
+get_history_road_stock($ymd,@$_REQUEST["bill_factory_id"],1,$historys_road,$historys_road_idx);
+debug($historys_road);
+
+$group=array("bill_{$ymd}","bill_factory_id");
+$types=array('sjcb','jhcb','rkcb','pypk', 'xscb','qccb','ckcb', 'tfcb','sqyf');
+$where=array(
+    "bill_boss_id=? and bill_factory_id=? and bill_add_time>=? and bill_add_time<=? and bill_mode=1 and bill_is_close!=1",
+    $boss_id,$factory_id,$from_day,$to_day
+);
+function pool_stock($row){
+    return $row["sjcb"]+$row["jhcb"]+$row["rkcb"]+$row["pypk"]-$row["xscb"]-$row["qccb"]-$row["ckcb"];//退返成本不计库存
+}
+$sums=array();
+foreach($types as $type)
+    $sums[]="sum(CASE WHEN bill_type='{$type}' THEN bill_fund ELSE 0 END ) as {$type}";
+$historys=bi_select($sums,"ydf_finance_bill",$where,$group,"pool_stock");
+//$sorts=sort_rows($historys,$group);
+$rowcount=count($historys);$page_count=ceil($rowcount/$pagesize);  
+debug($historys);
+for ($i=$offset;$i<$offset+$pagesize && $i<$rowcount;$i++)
+{
+    $idx=$rowcount-1-$i;//historys是从老到新的顺序,所以从尾巴开始取是最新的
+    //$nfund=$historys[$sorts[$idx][0] ];
+    $nfund=$historys[$idx];
+
+    $freeze_pool=get_freeze_fund_and_his_gen_history($nfund["bill_factory_id"],$nfund["bill_{$ymd}"],$ymd);
+    $bidx=@$historys2_idx[$nfund["bill_{$ymd}"]][$nfund["bill_factory_id"]];
+    $surplus_cash=@$historys2[$bidx]["sum"]["pool"];
+
+    $bidx=@$historys_return_idx[$nfund["bill_{$ymd}"]][$nfund["bill_factory_id"]];
+    $return_pool=@$historys_return[$bidx]["sum"]["pool"];
+
+    $bidx=@$historys_fys_idx[$nfund["bill_{$ymd}"]][$nfund["bill_factory_id"]];
+    $fys_pool=@$historys_fys[$bidx]["sum"]["pool"];
+
+    $bidx=@$historys_road_idx[$nfund["bill_{$ymd}"]][$nfund["bill_factory_id"]];
+    $road_pool=@$historys_road[$bidx]["sum"]["pool"];
+
+    $gcsq=$nfund["sqyf"];
+
+    //得到初始化欠款
+    $init_debt=get_factory_agent_init_debt($nfund["bill_factory_id"]);
+    //得到本期累计欠款
+    $debt=$init_debt+$nfund["sum"]["jhcb"]-$nfund["sum"]["tfcb"]-$nfund["sum"]["qccb"]-$nfund["sum"]["sqyf"];
+
+    //得到上期累计欠款
+    $last_addup=@$historys[$nfund["last"]];
+    $last_debt=$init_debt+$last_addup["sum"]["jhcb"]-$last_addup["sum"]["tfcb"]-$last_addup["sum"]["qccb"]-$last_addup["sum"]["sqyf"];
+
+    $jhcb=$nfund["jhcb"];
+    $qccb_tfcb=$nfund["tfcb"]+$nfund["qccb"];
+    $stock_fund=$nfund["sum"]["pool"];
+?>
+                    <div style="position:relative;width:100%; padding:10px 0; border-bottom:1px dashed #cccccc; overflow:hidden; display:block">
+                            <div style="float:left;width:10%; padding:10px 0; text-align:center">
+                            <?php
+                            if ($nfund["bill_{$ymd}"]>1) 
+                            {
+                                if (empty($_REQUEST["bi_time"]) or $_REQUEST["bi_time"]=="day")
+                                {
+                                    echo date("Y-m-d",$nfund["bill_{$ymd}"]);
+                                }
+                                elseif (empty($_REQUEST["bi_time"]) or $_REQUEST["bi_time"]=="week")
+                                {
+                                    if (strtotime("+6 day",$nfund["bill_{$ymd}"])>time())
+                                    {
+                                        echo date("Y-m-d",$nfund["bill_{$ymd}"]);
+                                    }
+                                    else
+                                    {
+                                        echo date("Y-m-d",strtotime("+6 day",$nfund["bill_{$ymd}"]));
+                                    }
+                                }
+                                else if (!empty($_REQUEST["bi_time"]) and $_REQUEST["bi_time"]=="month")
+                                {
+                                    echo date("Y-m",$nfund["bill_{$ymd}"]);
+                                }
+                                elseif (!empty($_REQUEST["bi_time"]) and $_REQUEST["bi_time"]=="year")
+                                {
+                                    echo date("Y",$nfund["bill_{$ymd}"]);
+                                }
+                            }
+                            else
+                            {
+                                echo "初始化";
+                            }
+                            ?>
+                            </div>
+                            <div style="float:left;width:10%; padding:10px 0; text-align:center"><?php echo echo2($last_debt) ?></div>
+                            <div style="float:left;width:8%; padding:10px 0; text-align:center"><?php echo echo2($jhcb) ?></div>
+                            <div style="float:left;width:8%; padding:10px 0; text-align:center"><?php echo echo2($qccb_tfcb) ?></div>
+                            <div style="float:left;width:8%; padding:10px 0; text-align:center"><?php echo echo2($gcsq) ?></div>
+                            <div style="float:left;width:10%; padding:6px 0; text-align:center"><?php echo "$debt" ?></div>
+              <div style="float:left;width:20%; padding:10px 0; overflow:hidden; display:block">
+                                <span style="float:left; width:100%; text-align:center"><?php echo echo2($stock_fund)+$return_pool+$road_pool ?></span>
+                                <span style="float:left; width:100%; margin-top:5px; color:#999999; text-align:center"><?php echo "未处理退货:$return_pool<br/>在途:$road_pool"?></span>
+                            </div>
+                            <div style="float:left;width:16%; padding:6px 0">
+                                <span style="float:left; width:100%; text-align:center"><?php echo $freeze_pool["freeze_fund"]+$fys_pool ?></span>
+                                <span style="float:left; width:100%; margin-top:5px; color:#999999; text-align:center"><?php echo "卖家欠款:$fys_pool"?></span>
+                            </div>
+                            <div style="float:left;width:10%; padding:6px 0; text-align:center"><?php echo echo2($surplus_cash) ?></div>
+                        </div>
+<?php
+}
+?>
+                    
+                    </div>
+                    <div style="float:right; margin-top:5px; font-size:14px"> 共 <span style="font-size:14px; color:#d51938; font-weight:bold;"><?php echo $rowcount?></span> 条记录</div>
+
+<script>/*n*/    
+var page_count_bi_txhz=<?php echo $page_count; ?>;
+/**/set_page_list_bi_txhz($("#pages_bi_txhz").find("#m"));
+</script>
+
+<!-- refresh_end -->
+                    <div class="showpage" id="pages_bi_txhz">
+                        <input id="page_idx_bi_txhz" name="page_idx" style="display:none" value="1"/>
+                        <span style="display:block">
+                            <span class="pagelink" id="last" onclick="/**/click_page_num_bi_txhz($(this))" >上一页</span>
+                            <span class="pagelink" id="ll" onclick="/**/click_page_num_bi_txhz($(this))" />
+                            <span class="pageblank"  id="lb">...</span>
+                            <span class="pagelink" id="l2" onclick="/**/click_page_num_bi_txhz($(this))" />
+                            <span class="pagelink" id="l1" onclick="/**/click_page_num_bi_txhz($(this))" />
+                            <span class="pageselect" id="m"  onclick="/**/click_page_num_bi_txhz($(this))"  >1</span>
+                            <span class="pagelink" id="r1" onclick="/**/click_page_num_bi_txhz($(this))" />
+                            <span class="pagelink" id="r2" onclick="/**/click_page_num_bi_txhz($(this))" />
+                            <span class="pageblank"  id="rb">...</span>
+                            <span class="pagelink" id="rr" onclick="/**/click_page_num_bi_txhz($(this))" />
+                            <span class="pagelink" id="next" onclick="/**/click_page_num_bi_txhz($(this))" >下一页</span>
+                        </span>
+                    </div>
+                    </form> <!-- 页码也作为表单项统一处理  -->

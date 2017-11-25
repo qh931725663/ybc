@@ -1,0 +1,42 @@
+<?php
+
+include_once("check_dangkou_user.php");
+
+$p_product=cselect("*","ydf_products",array("p_bianhao=?",$_REQUEST["var_p_bianhao"] ) );
+$rowpagedata=$p_product[0]->fetch();
+
+?>
+    <div class="ggs_box">
+        <p>
+            <span class="sp_a">商品货号：</span>
+            <span class="sp_b"><?php echo $rowpagedata["p_huohao"]?></span>
+        </p>
+        <p>
+            <span class="sp_c">卖家指定价：</span>
+            <span class="sp_d">
+                <span class="sp_1">
+                    <span>卖家昵称</span>
+                    <span>指定价</span>
+                    <span>操作</span>
+                </span>
+                <span class="sp_2">
+                    <span><input name="s_name_<?php echo $rowpagedata["p_bianhao"]?>" id="s_name_<?php echo $rowpagedata["p_bianhao"]?>" type="text" maxlength="50" style="width:120px; padding:5px"/></span>
+                    <span><input name="s_price_<?php echo $rowpagedata["p_bianhao"]?>" id="s_price_<?php echo $rowpagedata["p_bianhao"]?>" type="text" maxlength="50" style="width:50px; padding:5px"/></span>
+                    <span onclick="AddGoodsSeller(<?php echo $rowpagedata["p_bianhao"] ?>)">添加</span>
+                </span>
+                <?php
+                $p_seller=cselect("*","ydf_seller_price",array("seller_price_p_huohao=? and seller_price_boss_m_bianhao =?",$rowpagedata["p_huohao"],$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"] ),"","seller_price_bianhao desc");
+                while($rowseller=$p_seller[0]->fetch())
+                {
+                ?>
+                <span class="sp_2">
+                    <span><?php echo $rowseller["seller_price_seller_name"] ?></span>
+                    <span><?php echo $rowseller["seller_price"]; ?></span>
+                    <span onclick="DeleteGoodsSeller(<?php echo $rowpagedata["p_bianhao"] ?>,<?php echo $rowseller["seller_price_bianhao"]; ?>)">删除</span>
+                </span>
+                <?php
+                }
+                ?>
+            </span>
+        </p>
+    </div>

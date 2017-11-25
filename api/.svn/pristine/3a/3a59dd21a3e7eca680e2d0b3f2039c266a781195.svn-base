@@ -1,0 +1,24 @@
+<?php
+$pdo->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
+try
+{
+    $pdo->beginTransaction();
+	if (update("ydf_finance_bill",array("bill_desc"=>$_REQUEST["wrong_reason"]),array("bill_type='jryl' and bill_day=? and bill_dangkou_id=?",$_REQUEST["bill_day"],$_REQUEST["dangkou_id"]) ))
+	{
+		echo "succ";
+	}
+	else
+	{
+		echo "erro";
+	}
+	
+    $pdo->commit();
+    echo json_encode(array("state"=>"ok"));
+}
+catch(PDOException $e)
+{
+    $pdo->rollback();
+    $pdo->setAttribute(PDO::ATTR_AUTOCOMMIT, 1);
+    die(json_encode(array("state"=>$e->getCode(),"desc"=>$e->getMessage(),"trace"=>$e->getTraceAsString() )));
+}
+?>

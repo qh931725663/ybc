@@ -1,0 +1,44 @@
+<div style="float:left; width:100%; padding:10px 0; border-bottom:1px dashed #cccccc; overflow:hidden; display:block;">
+    <div style="float:left; width:60%; color:#999999">卖家</div>
+    <div style="float:left; width:30%; color:#999999; text-align:center">今日销售额</div>
+    <div style="float:left; width:10%; color:#999999; text-align:center">走势分析</div>
+</div>
+<?php
+$case_day="";
+if ($_REQUEST["var_date_type"]=="today")
+    $case_day=strtotime(date("Y-m-d"));
+$case_month="";
+if ($_REQUEST["var_date_type"]=="thismonth")
+    $case_month=strtotime(date("Y-m"));
+$where=array("bill_boss_id=? and bill_day=? and bill_month=?",$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"], $case_day, $case_month );
+$where=clean_where($where);
+$p=cselect("bill_seller_id, 
+sum(if(bill_type='xssr',bill_fund,0)) as today_sales_fund
+",
+"ydf_finance_bill",$where,"bill_seller_id","today_sales_fund desc");
+while($row=$p[0]->fetch())
+{
+    $seller_name="";
+    if ($row["bill_seller_id"]>1)
+    {
+        $p_seller=cselect("*","ydf_seller",array("seller_bianhao=?",$row["bill_seller_id"]) );
+        $rowseller=$p_seller[0]->fetch();
+        $seller_name=$rowseller["seller_name"];
+    }
+    elseif ($row["bill_seller_id"]==1)
+    {
+       $seller_name="匿名"; 
+    }
+    elseif ($row["bill_seller_id"]==0)
+    {
+        $seller_name=$row["bill_seller_id"];
+    }      
+?>
+<div style="float:left; width:100%; padding:10px 0; border-bottom:1px dashed #cccccc; overflow:hidden; display:block;">
+    <div style="float:left; width:60%; padding:5px 0"><?php echo $seller_name ?></div>
+    <div style="float:left; width:30%; padding:5px 0; text-align:center"><?php echo $row["today_sales_fund"]?></div>
+    <div style="float:left; width:10%"><span style="width:20px; height:20px; margin:0 auto; padding:5px; background:url(/pc/images/icon_addup.jpg) center center no-repeat; display:block; cursor:pointer"/></div>
+</div>
+<?php
+}
+?>

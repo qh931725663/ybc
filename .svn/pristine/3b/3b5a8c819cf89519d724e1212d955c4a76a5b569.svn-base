@@ -1,0 +1,46 @@
+<?php
+session_start();
+include_once("check_login.php");
+
+$_SESSION["ERP_ACCOUNT_USER_DANGKOU_TYPE"]=$_REQUEST["var_dangkou_type"];    
+$_SESSION["ERP_ACCOUNT_USER_DANGKOU_BIANHAO"]=$_REQUEST["var_dangkou_bianhao"];
+$_SESSION["ERP_ACCOUNT_USER_DANGKOU_NAME"]=$_REQUEST["var_dangkou_name"];
+
+if (empty($_SESSION["ERP_ACCOUNT_USER_DANGKOU_BIANHAO"]))
+{
+    $p_store=cselect("*","ydf_dangkou",array("dangkou_type='1' and dangkou_endtime>? and dangkou_boss_m_bianhao=?",strtotime(date("Y-m-d H:i:s")),$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"]) );
+    $countdangkou=$p_store[1];    
+    $rowdangkou=$p_store[0]->fetch();
+    
+    $p_warehouse=cselect("*","ydf_dangkou",array("dangkou_type='2' and dangkou_boss_m_bianhao=?",$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"]));
+    $countwarehouse=$p_warehouse[1];
+    $_SESSION["ERP_ACCOUNT_USER_WAREHOUSE_COUNT"]=$countwarehouse;
+    
+    if ($countdangkou=="1")
+    {        
+        $_SESSION["ERP_ACCOUNT_USER_DANGKOU_COUNT"]="1";
+
+        if ($rowdangkou["dangkou_endtime"]=="0")
+        {
+            $_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]="11";
+        }
+        elseif ($rowdangkou["dangkou_endtime"]>strtotime(date("Y-m-d H:i:s")))
+        {                
+            $_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]="12";
+        }
+        else
+        {
+            $_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]="13";
+        }
+    }
+    else
+    {
+        $_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]="1";
+        $_SESSION["ERP_ACCOUNT_USER_DANGKOU_COUNT"]=$countdangkou;
+    }
+}
+elseif ($_REQUEST["var_dangkou_type"]=="1")
+{
+    $_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]=$_REQUEST["var_dangkou_status"];
+}
+?>

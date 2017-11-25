@@ -1,0 +1,153 @@
+<?php
+include_once("check_login.php");
+?>
+    <div class="menu_link menu_link_select" onclick="set_menu_select($(this));mount_to_frame('view_index')">
+        <span style="float:left; width:15px; height:15px; margin:4px 12px; background:url(/pc/images/menu_icon_play.png); overflow:hidden; display:block"></span>
+        <span style="float:left; color:#ffffff">销售直播</span>
+    </div>
+    <div class="menu_link" onclick="set_menu_select($(this));mount_to_frame('frame_cashier')">
+        <span style="width:20px; height:20px; margin:0 auto; background:url(/pc/images/menu_icon_cashier.png); display:block"></span>
+        <span style="float:left; width:100%; padding-top:10px; color:#ffffff; text-align:center; display:block">闪电出货</span>
+    </div>
+    <div class="menu_link" onclick="set_menu_select($(this));mount_to_frame('frame_sales')">
+        <span style="width:20px; height:20px; margin:0 auto; background:url(/pc/images/menu_icon_sales.png); display:block"></span>
+        <span style="float:left; width:100%; padding-top:10px; color:#ffffff; text-align:center; display:block">销售管理</span>
+    </div>
+    <div class="menu_link" onclick="set_menu_select($(this));mount_to_frame('frame_stock')">
+        <span style="width:20px; height:20px; margin:0 auto; background:url(/pc/images/menu_icon_warehouse.png); display:block"></span>
+        <span style="float:left; width:100%; padding-top:10px; color:#ffffff; text-align:center; display:block">库存管理</span>
+    </div>
+    <div class="menu_link" onclick="set_menu_select($(this));mount_to_frame('frame_purchase')">
+        <span style="width:20px; height:20px; margin:0 auto; background:url(/pc/images/menu_icon_purchase.png); display:block"></span>
+        <span style="float:left; width:100%; padding-top:10px; color:#ffffff; text-align:center; display:block">工厂采购</span>
+    </div>
+<?php
+if ($_SESSION["ERP_ACCOUNT_LOGIN_TYPE"]=="1" or $_SESSION["ERP_ACCOUNT_LOGIN_TYPE"]=="4")
+{
+?>
+    <div style="position:relative; float:left; width:100%; padding:5px 0; border-bottom:1px dotted #ffffff; overflow:hidden; display:block">
+        <span style="float:left; width:100%; padding:3px 0" class="menu_link" onclick="mount_to_frame('frame_return')">退货管理</span>
+        <span style="float:left; width:100%; padding:3px 0" class="menu_link" onclick="mount_to_frame('frame_stock')">库存管理</span>
+    </div>
+    <div style="position:relative; float:left; width:100%; padding:5px 0; border-bottom:1px dotted #ffffff; overflow:hidden; display:block">
+<?php
+    if (empty($_SESSION["ERP_ACCOUNT_USER_DANGKOU_TYPE"]) or (!empty($_SESSION["ERP_ACCOUNT_USER_DANGKOU_TYPE"]) and $_SESSION["ERP_ACCOUNT_USER_DANGKOU_TYPE"]<>"2"))
+    {
+?>
+        <span style="float:left; width:100%; padding:3px 0" class="menu_link" onclick="mount_to_frame('frame_finance_dangkou')">档口账务</span>
+        <span style="float:left; width:100%; padding:3px 0" class="menu_link" onclick="mount_to_frame('frame_finance_factory')">工厂账务</span>
+        <span style="float:left; width:100%; padding:3px 0" class="menu_link" onclick="mount_to_frame('frame_finance_bankio')">资金记账</span>
+<?php
+    }
+?>
+        <span style="float:left; width:100%; padding:3px 0" class="menu_link" onclick="mount_to_frame('frame_finance_expence')">日常报销</span>
+    </div>
+    <div style="position:relative; float:left; width:100%; padding:5px 0; border-bottom:1px dotted #ffffff; overflow:hidden; display:block">
+<?php
+    if (empty($_SESSION["ERP_ACCOUNT_USER_DANGKOU_TYPE"]) or (!empty($_SESSION["ERP_ACCOUNT_USER_DANGKOU_TYPE"]) and $_SESSION["ERP_ACCOUNT_USER_DANGKOU_TYPE"]<>"2"))
+    {
+?>
+        <span style="float:left; width:100%; padding:3px 0" class="menu_link" onclick="mount_to_frame('frame_sales_bi')">销售分析</span>
+<?php
+    }
+?>
+        <span style="float:left; width:100%; padding:3px 0" class="menu_link" onclick="mount_to_frame('frame_stock_bi')">库存分析</span>
+<?php
+    if (empty($_SESSION["ERP_ACCOUNT_USER_DANGKOU_TYPE"]) or (!empty($_SESSION["ERP_ACCOUNT_USER_DANGKOU_TYPE"]) and $_SESSION["ERP_ACCOUNT_USER_DANGKOU_TYPE"]<>"2"))
+    {
+?>
+        <span style="float:left; width:100%; padding:3px 0" class="menu_link" onclick="mount_to_frame('frame_factory_bi')">工厂分析</span>
+<?php
+    }
+?>
+<?php
+    if (empty($_SESSION["ERP_ACCOUNT_USER_DANGKOU_TYPE"]))
+    {
+?>
+        <span style="float:left; width:100%; padding:3px 0" class="menu_link" onclick="mount_to_frame('frame_finance_bi')">财务分析</span>
+<?php
+    }
+?>
+    </div>
+    <div style="position:relative; float:left; width:100%; padding:5px 0; border-bottom:1px dotted #ffffff; overflow:hidden; display:block">
+        <span style="float:left; width:100%; padding:3px 0" class="menu_link" onclick="mount_to_frame('frame_products')">商品设置</span>
+        <span style="float:left; width:100%; padding:3px 0" class="menu_link" onclick="mount_to_frame('frame_seller')">卖家设置</span>
+
+<?php
+    if ($_SESSION["ERP_ACCOUNT_LOGIN_TYPE"]=="1" or ($_SESSION["ERP_ACCOUNT_LOGIN_TYPE"]=="4" and $_SESSION["ERP_ACCOUNT_USER_TYPE"]=="1"))
+    {
+?>
+        <span style="float:left; width:100%; padding:3px 0" class="menu_link" onclick="mount_to_frame('frame_store')">档口设置</span>
+        <span style="float:left; width:100%; padding:3px 0" class="menu_link" onclick="mount_to_frame('frame_warehouse')">仓库设置</span>
+        <span style="float:left; width:100%; padding:3px 0" class="menu_link" onclick="mount_to_frame('frame_user')">员工设置</span>
+        <span style="float:left; width:100%; padding:3px 0" class="menu_link" onclick="mount_to_frame('frame_factory')">工厂设置</span>
+        <span style="float:left; width:100%; padding:3px 0" class="menu_link" onclick="mount_to_frame('frame_bank')">资金账户</span>
+<?php
+    }
+?>
+    </div>
+<?php
+}
+?>
+<?php
+if ($_SESSION["ERP_ACCOUNT_LOGIN_TYPE"]=="2")
+{
+?>    
+    <div style="position:relative; float:left; width:100%; padding:5px 0; border-bottom:1px dotted #ffffff; overflow:hidden; display:block">
+        <span style="float:left; width:100%; padding:3px 0" class="menu_link" onclick="mount_to_frame('frame_factory_send')">发货管理</span>
+        <span style="float:left; width:100%; padding:3px 0" class="menu_link" onclick="mount_to_frame('frame_factory_return')">退货管理</span>
+    </div>
+    <div style="position:relative; float:left; width:100%; padding:5px 0; border-bottom:1px dotted #ffffff; overflow:hidden; display:block">
+        <span style="float:left; width:100%; padding:3px 0" class="menu_link" onclick="mount_to_frame('frame_factory_fund')">资金提现</span>
+        <span style="float:left; width:100%; padding:3px 0" class="menu_link" onclick="mount_to_frame('frame_factory_bank')">资金账户</span>
+    </div>
+    <div style="position:relative; float:left; width:100%; padding:5px 0; border-bottom:1px dotted #ffffff; overflow:hidden; display:block">
+        <span style="float:left; width:100%; padding:3px 0" class="menu_link" onclick="mount_to_frame('frame_factory_bill')">资金对账</span>
+        <span style="float:left; width:100%; padding:3px 0" class="menu_link" onclick="mount_to_frame('frame_factory_sales')">销售分析</span>
+        <span style="float:left; width:100%; padding:3px 0" class="menu_link" onclick="mount_to_frame('frame_factory_stock')">库存分析</span>
+    </div>
+    <div style="position:relative; float:left; width:100%; padding:5px 0; border-bottom:1px dotted #ffffff; overflow:hidden; display:block">
+        <span style="float:left; width:100%; padding:3px 0" class="menu_link" onclick="mount_to_frame('frame_factory_products')">商品列表</span>
+    </div>
+<?php
+}
+?>
+<?php
+if ($_SESSION["ERP_ACCOUNT_LOGIN_TYPE"]=="3")
+{
+?>    
+    <div style="position:relative; float:left; width:100%; border-bottom:1px dotted #ffffff; overflow:hidden; display:block">
+        <div style="float:left; width:100%; padding:5px 0; color:#FFFFFF; cursor:pointer" onclick="MenuControl(6)"><span id="icon_item_6" style="float:left; width:11px; height:11px; background:url(/pc/images/menu_jian.png) center center no-repeat; overflow:hidden; display:block"></span><span style="float:left; margin-left:5px; color:#FFFFFF">卖家管理</span></div >
+        <div id="menu_item_6" style="position:relative; float:left; width:100%; overflow:hidden; display:block">
+            <span style="float:left; width:90%; padding:3px 0 5px 10%" class="menu_link" onclick="mount_to_frame('viewmodeltwocangkuchuku')">资金明细</span>
+        </div>
+    </div>
+<?php
+}
+?>
+    <div style="position:relative; float:left; width:100%; padding:5px 0; border-bottom:1px dotted #ffffff; overflow:hidden; display:block">
+<?php
+if ($_SESSION["ERP_ACCOUNT_LOGIN_TYPE"]=="1" or $_SESSION["ERP_ACCOUNT_LOGIN_TYPE"]=="4")
+{
+?>
+        <span style="float:left; width:100%; padding:3px 0" class="menu_link" onclick="mount_to_frame('frame_personal')">个人信息</span>
+<?php
+}
+?>
+        <span style="float:left; width:100%; padding:3px 0" class="menu_link" onclick="mount_to_frame('frame_password')">密码修改</span>
+    </div>
+    <?php if($DEBUG){?>
+    <div style="position:relative; float:left; width:100%; padding:5px 0; border-bottom:1px dotted #ffffff; overflow:hidden; display:block">
+        <span style="float:left; width:100%; padding:3px 0" class="menu_link" onclick="mount_to_frame('frame_debug')">系统调试</span>
+    </div>
+    <?php } ?>
+<script type="text/javascript">
+mount_to_frame('view_index');
+
+function set_menu_select(obj)
+{
+    $(".menu_link").removeClass('menu_link_select');
+    obj.addClass('menu_link_select');
+}
+</script>
+

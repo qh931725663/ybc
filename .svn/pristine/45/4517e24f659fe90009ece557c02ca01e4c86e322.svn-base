@@ -1,0 +1,244 @@
+<?php
+$pdo->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
+try
+{
+	$pdo->beginTransaction();
+	
+    $experience_account=!empty($_REQUEST["var_experience_account"])?$_REQUEST["var_experience_account"]:"0";
+    
+    if ($experience_account=="10000024" or $experience_account=="10000025")
+    {
+        $p=cselect("*","ydf_member",array("m_bianhao=?",$experience_account));
+	}
+    else
+    {
+        $p=cselect("*","ydf_member",array("(m_mobile=? or m_bd_mobile=?) and m_password=?",$_REQUEST["var_mobile"],$_REQUEST["var_mobile"],md5($_REQUEST["var_password"])));
+    }
+    if ($rowcheck=$p[0]->fetch())
+	{
+		$_SESSION["ERP_ACCOUNT_LOGIN_MOBILE"]=$rowcheck["m_mobile"];
+		$_SESSION["ERP_ACCOUNT_LOGIN_REALNAME"]=$rowcheck["m_realname"];
+		$_SESSION["ERP_ACCOUNT_LOGIN_BIANHAO"]=$rowcheck["m_bianhao"];
+		$_SESSION["ERP_ACCOUNT_LOGIN_TYPE"]=$rowcheck["m_type"];
+        
+        $_SESSION["ERP_ACCOUNT_USER_DANGKOU_COUNT"]="0";
+        $_SESSION["ERP_ACCOUNT_USER_WAREHOUSE_COUNT"]="0";
+		
+		if ($rowcheck["m_type"]=="2")
+		{
+			$p_factory=cselect("*","ydf_factory",array("factory_manage='1' and factory_mobile=?",$rowcheck["m_mobile"]));
+			$countstoreboss=$p_factory[1];
+			if ($rowfactory=$p_factory[0]->fetch())
+			{
+				if ($countstoreboss=="1")
+				{
+					$p_boss=cselect("*","ydf_member",array("m_bianhao=?",$rowfactory["factory_boss_m_bianhao"]));
+					$rowboss=$p_boss[0]->fetch();
+					
+					$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"]=$rowfactory["factory_boss_m_bianhao"];
+					$_SESSION["ERP_ACCOUNT_USER_BOSS_NAME"]=$rowboss["m_realname"];
+					$_SESSION["ERP_ACCOUNT_USER_FACTORY_BIANHAO"]=$rowfactory["factory_bianhao"];
+					$_SESSION["ERP_ACCOUNT_USER_SELF_M_BIANHAO"]="0";
+				}
+			}
+			$_SESSION["ERP_ACCOUNT_USER_BOSS_COUNT"]=$countstoreboss;
+		}
+		
+		if ($rowcheck["m_type"]=="4")
+		{
+			$p=cselect("*","ydf_user",array("user_self_m_bianhao=?",$rowcheck["m_bianhao"]));
+			$rowuser=$p[0]->fetch();
+			
+			//老板唯一标识编号
+			$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"]=$rowuser["user_boss_m_bianhao"];
+			
+			//员工唯一标识编号、姓名
+			$_SESSION["ERP_ACCOUNT_USER_SELF_M_BIANHAO"]=$rowuser["user_self_m_bianhao"];
+			$_SESSION["ERP_ACCOUNT_USER_NANME"]=$rowuser["user_name"];
+			
+			//员工角色，1:超级用户 2:档口用户 3:仓库用户
+			$_SESSION["ERP_ACCOUNT_USER_TYPE"]=$rowuser["user_type"];
+						
+			if ($rowuser["user_type"]>"1")
+			{
+				$p=cselect("*","ydf_dangkou",array("dangkou_bianhao=? ",$rowuser["user_dangkou_bianhao"]));
+				$countdangkou=$p[1];	
+				$rowdangkou=$p[0]->fetch();
+				
+				$_SESSION["ERP_ACCOUNT_USER_DANGKOU_COUNT"]="1";
+				
+				//档口用户、仓库用户所属档口或者仓库唯一标识、名称
+				$_SESSION["ERP_ACCOUNT_USER_DANGKOU_TYPE"]=$rowdangkou["dangkou_type"];
+				$_SESSION["ERP_ACCOUNT_USER_DANGKOU_BIANHAO"]=$rowuser["user_dangkou_bianhao"];
+				$_SESSION["ERP_ACCOUNT_USER_DANGKOU_NAME"]=$rowuser["user_dangkou_name"];			
+					
+				if ($rowdangkou["dangkou_endtime"]=="0")
+				{
+					$_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]="11";
+				}
+				elseif ($rowdangkou["dangkou_endtime"]>strtotime(date("Y-m-d H:i:s")))
+				{	
+					$_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]="12";
+				}
+				else
+				{
+					$_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]="13";
+				}
+			}
+			elseif ($rowuser["user_type"]=="1")
+			{
+				$p_store=cselect("*","ydf_dangkou",array("dangkou_type='1' and dangkou_endtime>? and dangkou_boss_m_bianhao=?",strtotime(date("Y-m-d H:i:s")),$rowuser["user_boss_m_bianhao"]));
+				$countdangkou=$p_store[1];	
+				$rowdangkou=$p_store[0]->fetch();
+				
+				$p_warehouse=cselect("*","ydf_dangkou",array("dangkou_type='2' and dangkou_boss_m_bianhao=?",$rowuser["user_boss_m_bianhao"]));
+				$countwarehouse=$p_warehouse[1];
+				$_SESSION["ERP_ACCOUNT_USER_WAREHOUSE_COUNT"]=$countwarehouse;
+				
+				if ($countdangkou=="0")
+				{
+					$_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]="10"; //尚未申请档口
+				}
+				elseif ($countdangkou=="1" and $countwarehouse=="0")
+				{		
+					$_SESSION["ERP_ACCOUNT_USER_DANGKOU_COUNT"]="1";
+			
+					if ($rowdangkou["dangkou_endtime"]=="0")
+					{
+						$_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]="11";
+					}
+					elseif ($rowdangkou["dangkou_endtime"]>strtotime(date("Y-m-d H:i:s")))
+					{				
+						$_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]="12";
+					}
+					else
+					{
+						$_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]="13";
+					}
+				}
+				elseif ($countdangkou=="1" and $countwarehouse>"0")
+				{		
+					$_SESSION["ERP_ACCOUNT_USER_DANGKOU_COUNT"]="1";
+			
+					if ($rowdangkou["dangkou_endtime"]=="0")
+					{
+						$_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]="11";
+					}
+					elseif ($rowdangkou["dangkou_endtime"]>strtotime(date("Y-m-d H:i:s")))
+					{				
+						$_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]="12";
+					}
+					else
+					{
+						$_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]="13";
+					}
+				}
+				else
+				{
+					$_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]="1";
+					$_SESSION["ERP_ACCOUNT_USER_DANGKOU_COUNT"]=$countdangkou;
+				}
+			}
+		}
+		elseif ($rowcheck["m_type"]=="1") //超级管理员登录时操作所需相关标识设置
+		{
+			$p=cselect("*","ydf_user",array("user_self_m_bianhao=?",$rowcheck["m_bianhao"]));
+			$rowuser=$p[0]->fetch();
+			
+			$_SESSION["ERP_ACCOUNT_USER_NANME"]=$rowuser["user_name"];
+			
+			//老板唯一标识编号
+			$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"]=$rowuser["user_boss_m_bianhao"];
+			
+			//操作者唯一标识编号、姓名
+			$_SESSION["ERP_ACCOUNT_USER_SELF_M_BIANHAO"]=$rowuser["user_self_m_bianhao"];
+			
+			//超级用户角色
+			$_SESSION["ERP_ACCOUNT_USER_TYPE"]="1";
+			
+			$p_store=cselect("*","ydf_dangkou",array("dangkou_type='1' and dangkou_endtime>? and dangkou_boss_m_bianhao=?",strtotime(date("Y-m-d H:i:s")),$rowuser["user_boss_m_bianhao"]));
+			$countdangkou=$p_store[1];	
+			$rowdangkou=$p_store[0]->fetch();
+			
+			$p_warehouse=cselect("*","ydf_dangkou",array("dangkou_type='2' and dangkou_boss_m_bianhao=?",$rowuser["user_boss_m_bianhao"]));
+			$countwarehouse=$p_warehouse[1];
+			$_SESSION["ERP_ACCOUNT_USER_WAREHOUSE_COUNT"]=$countwarehouse;
+			
+			if ($countdangkou=="0")
+			{
+				$_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]="10"; //尚未申请档口
+			}
+			elseif ($countdangkou=="1" and $countwarehouse=="0")
+			{		
+				$_SESSION["ERP_ACCOUNT_USER_DANGKOU_COUNT"]="1";
+		
+				if ($rowdangkou["dangkou_endtime"]=="0")
+				{
+					$_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]="11";
+				}
+				elseif ($rowdangkou["dangkou_endtime"]>strtotime(date("Y-m-d H:i:s")))
+				{				
+					$_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]="12";
+				}
+				else
+				{
+					$_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]="13";
+				}
+			}
+			elseif ($countdangkou=="1" and $countwarehouse>"0")
+			{		
+				$_SESSION["ERP_ACCOUNT_USER_DANGKOU_COUNT"]="1";
+		
+				if ($rowdangkou["dangkou_endtime"]=="0")
+				{
+					$_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]="11";
+				}
+				elseif ($rowdangkou["dangkou_endtime"]>strtotime(date("Y-m-d H:i:s")))
+				{				
+					$_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]="12";
+				}
+				else
+				{
+					$_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]="13";
+				}
+			}
+			else
+			{
+				$_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]="1";
+				$_SESSION["ERP_ACCOUNT_USER_DANGKOU_COUNT"]=$countdangkou;
+			}
+		}
+        elseif ($rowcheck["m_type"]=="3")
+        {
+            throw new PDOException("卖家用户请在手机应用中登录使用！");
+        }
+	}
+	else
+	{
+        if ($experience_account<>"10000016" and $experience_account<>"10000024")
+        {
+            $p=cselect("m_password","ydf_member",array("m_mobile=?",$_REQUEST["var_mobile"]));
+            if (!$rowcheckmobile=$p[0]->fetch())
+            {
+                throw new PDOException("此手机号码或子账号尚未注册！请先 <a href='/reg'>注册</a>");
+            }
+            else
+            {
+                if ($rowcheckmobile["m_password"]<>md5($_REQUEST["var_password"]))
+                {
+                    throw new PDOException("密码不正确！");
+                }
+            }
+        }
+	}
+	
+	$pdo->commit();
+	echo json_encode(array("state"=>"ok"));
+}
+catch(PDOException $e)
+{  
+    $pdo->rollback();
+    $pdo->setAttribute(PDO::ATTR_AUTOCOMMIT, 1);
+    die(json_encode(array("state"=>$e->getCode(),"desc"=>$e->getMessage(),"trace"=>$e->getTraceAsString() )));
+}
+?>

@@ -1,0 +1,229 @@
+<!-- dklr 档口利润 -->
+<script type="text/javascript">    
+function click_page_num_order_od_debug(obj)
+{
+    set_page_list_order_od_debug(obj);
+    refresh_inner("view_finance_reg_cash?"+$("#form_order_od_debug").serialize() );
+}
+function set_page_list_order_od_debug(obj)
+{
+    if (obj.attr("id")=="last"||obj.attr("id")=="next")
+    {
+        mobj=$("#pages_order_od_debug").find("#m");
+        if (obj.attr("id")=="last" && Number(mobj.html())-1>=1){
+            var bingo=Number(mobj.html())-1;
+            mobj.html(bingo);
+            click_page_num_order_od_debug(mobj);
+        }
+        if (obj.attr("id")=="next" && Number(mobj.html())+1<=page_count_order_od_debug){
+            var bingo=Number(mobj.html())+1;
+            mobj.html(bingo);
+            click_page_num_order_od_debug(mobj);
+        }
+        return;
+    }
+
+    $("#pages_order_od_debug").find("#ll").html("1");
+    $("#pages_order_od_debug").find("#rr").html(page_count_order_od_debug);
+
+    var bingo=Number(obj.html());
+
+    $("#page_idx_order_od_debug").attr("value",bingo);
+
+    $("#pages_order_od_debug").find("#m").html(bingo);//中间页码
+    $("#pages_order_od_debug").find("#l1").html(bingo-1);//左1页码
+    $("#pages_order_od_debug").find("#l2").html(bingo-2);//左2页码
+    $("#pages_order_od_debug").find("#r1").html(bingo+1);//右1页码
+    $("#pages_order_od_debug").find("#r2").html(bingo+2);//右2页码
+
+    $("#pages_order_od_debug").find(".pagenolink").each(function(){
+        var num=Number($(this).html())
+        if (num<=0||num>page_count_order_od_debug){
+            $(this).css("display","none");
+        }else{
+            $(this).css("display","inline");
+        }
+    });
+}
+
+function search_order_od_debug()
+{
+    mobj=$("#pages_order_od_debug").find("#m");
+    mobj.html(1);
+    set_page_list_order_od_debug(mobj);
+    refresh_inner("view_finance_reg_cash?"+$("#form_order_od_debug").serialize() );
+}
+function click_me_order_od_debug(obj,state)
+{
+    $('#button_state_order_od_debug').attr('value',state);
+    $(".list_button_order_od_debug").removeClass("listclassselect");
+    $(".list_button_order_od_debug").addClass("listclassvalue");
+
+    obj.removeClass("listclassvalue");
+    obj.addClass("listclassselect");
+    search_order_od_debug();
+}
+
+</script>
+                <div style=" float:left; width:98%; min-height:800px; margin-top:0px; padding:15px 1%; background:#ffffff; overflow:hidden; display:block">
+                    <form id="form_order_od_debug">
+                    <div style="float:left; width:100%; margin-top:0px; overflow:hidden; display:block">
+                        <div style="float:left">
+                            <span style="font-size:14px; color:#00cc00; font-weight:bold;">日期：</span> 
+
+                            <input  type="text" name="from_day" class="datepicker" size="12" maxlength="50" readonly="readonly" value="1970-01-01">
+                            至 
+                            <input  type="text" name="to_day" class="datepicker" size="12" maxlength="50" readonly="readonly" value="<?php echo date("Y-m-d")?>">
+                            <span style="font-size:14px; color:#00cc00; font-weight:bold;">工厂：</span> 
+                            <select  name="order_factory_id" style="padding:5px">
+                                <option value="">全部工厂</option>    
+                            </select>
+                            <span id="btn_copy_search" class="btn_normal_green" onclick="/**/search_order_od_debug()" >搜索</span>
+                        </div>
+                    </div>        
+
+<!-- refresh_begin -->
+                    <div style="position:relative; float:left; width:100%; margin-top:0px; background:#f2f2f2; border-bottom:1px solid #cccccc; display:block">
+                        <div style="float:left;width:7%; padding:10px 0; text-align:center;">更新时间</div>
+                        <div style="float:left;width:7%; padding:10px 0; text-align:center">操作</div>
+                        <div style="float:left;width:7%; padding:10px 0; text-align:center">类型</div>
+                        <div style="float:left;width:7%; padding:10px 0; text-align:center">单号</div>
+                        <div style="float:left;width:7%; padding:10px 0; text-align:center;">源</div>
+                        <div style="float:left;width:7%; padding:10px 0; text-align:center">master</div>
+                        <div style="float:left;width:7%; padding:10px 0; text-align:center">slave</div>
+                        <div style="float:left;width:7%; padding:10px 0; text-align:center">用户</div>
+                        <div style="float:left;width:7%; padding:10px 0; text-align:center">卖家</div>
+                        <div style="float:left;width:7%; padding:10px 0; text-align:center">工厂</div>
+                        <div style="float:left;width:7%; padding:10px 0; text-align:center">verify</div>
+                        <div style="float:left;width:7%; padding:10px 0; text-align:center;">reallystocknum</div>
+                        <div style="float:left;width:7%; padding:10px 0; text-align:center;">添加时间</div>
+                    </div>
+                    <div id="pagelist" style="float:left; width:100%; overflow:hidden; display:block">
+<?php
+$boss_id = $_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"];    
+$user_id = $boss_id;
+
+@$from_day=$_REQUEST["from_day"]?get_ymd($_REQUEST["from_day"])["d"]:null;
+@$to_day=$_REQUEST["to_day"]?get_ymd($_REQUEST["to_day"])["d"]+24*3600:null;
+$where=@array("detail_boss_m_bianhao=? and detail_order_addtime>=? and detail_order_add_time<=? and del_state in (0,1,2)" ,
+        $boss_id,$from_day,$to_day 
+        );
+$where=clean_where($where);
+echo $where[0];
+
+@$page=$_REQUEST["page_idx"]?$_REQUEST["page_idx"]:1;
+$pagesize=50;
+$offset=($page-1)*$pagesize; 
+
+$p=cselect("*","ydf_order_detail",$where,"","update_time desc,detail_bianhao desc",$offset,$pagesize);
+if ($p[0]->errorCode()!="00000")
+    print_r($p[0]->errorInfo());
+$rowcount = $p[1];
+$page_count=ceil($rowcount/$pagesize);  
+$color="";$last_time=0;
+while($row_bill=$p[0]->fetch(PDO::FETCH_ASSOC))
+{
+    $p_member=select("*","ydf_user",array("user_self_m_bianhao=?",$row_bill["detail_user_m_bianhao"]) );
+    $user_name="";
+    if ($row_member=$p_member->fetch()){
+        $user_name=$row_member["user_name"]; 
+    }
+    $p_member=select("*","ydf_seller",array("seller_bianhao=?",$row_bill["detail_seller_bianhao"]) );
+    $seller_name="匿名卖家";
+    if ($row_member=$p_member->fetch()){
+        $seller_name=$row_member["seller_name"]; 
+    }
+    $factory_name="";
+    $p_member=select("*","ydf_factory",array("factory_bianhao=?",$row_bill["detail_factory_bianhao"]) );
+    if ($row_member=$p_member->fetch()){
+        $factory_name=$row_member["factory_name"]; 
+    }
+    $p_member=select("*","ydf_dangkou",array("dangkou_bianhao=?",$row_bill["detail_master_bianhao"]) );
+    $master_name="";
+    if ($row_member=$p_member->fetch()){
+        $master_name=$row_member["dangkou_name"]; 
+    }
+    $p_member=select("*","ydf_dangkou",array("dangkou_bianhao=?",$row_bill["detail_slave_bianhao"]) );
+    $slave_name="";
+    if ($row_member=$p_member->fetch()){
+        $slave_name=$row_member["dangkou_name"]; 
+    }
+
+    $op="";
+    $del_state_show=array(0=>"insert",1=>"delete",2=>"update");
+    if ($row_bill["update_time"]==$row_bill["detail_order_addtime"] && $row_bill["del_state"]==2)
+        $op="insert-update";
+    else
+        $op=$del_state_show[$row_bill['del_state']];
+
+    if ($row_bill["update_time"]!=$last_time)
+    {
+        $last_time=$row_bill["update_time"];
+        if ($color=="")
+            $color="background:#FFF5EE;";
+        else
+            $color="";
+    }
+?>
+    <div style="position:relative;width:100%;<?php echo $color?> padding:10px 0; border-bottom:1px dashed #cccccc; overflow:hidden; display:block">
+        <div style="float:left;width:7%; height:25px; padding:10px 0; text-align:center"><?php echo echo2(date("Y-m-d H:i:s",$row_bill["update_time"])) ?></div>
+        <div style="float:left;width:7%; height:25px; padding:10px 0; text-align:center"><?php echo $op?></div>
+        <div style="float:left;width:7%; height:25px; padding:10px 0; text-align:center"><?php echo echo2($row_bill["detail_order_type"])   ?></div>
+        <div style="float:left;width:7%; height:25px; padding:10px 0; text-align:center"><?php echo echo2($row_bill["detail_bianhao"])      ?></div>
+        <div style="float:left;width:7%; height:25px; padding:10px 0; text-align:center"><?php echo $row_bill["detail_order_bianhao"]       ?></div>
+        <div style="float:left;width:7%; height:25px; padding:10px 0; text-align:center"><?php echo $row_bill["detail_master_bianhao"]."-$master_name"      ?></div>
+        <div style="float:left;width:7%; height:25px; padding:10px 0; text-align:center"><?php echo $row_bill["detail_slave_bianhao"]."-$slave_name"       ?></div>
+        <div style="float:left;width:7%; height:25px; padding:10px 0; text-align:center"><?php echo $row_bill["detail_user_m_bianhao"]."-$user_name"?></div>
+        <div style="float:left;width:7%; height:25px; padding:10px 0; text-align:center"><?php echo $row_bill["detail_seller_bianhao"]."-$seller_name" ?></div>
+        <div style="float:left;width:7%; height:25px; padding:10px 0; text-align:center"><?php echo $row_bill["detail_factory_bianhao"]."-$factory_name" ?></div>
+        <div style="float:left;width:7%; height:25px; padding:10px 0; text-align:center"><?php echo $row_bill["detail_is_verify"] ?></div>
+        <div style="float:left;width:7%; height:25px; padding:10px 0; text-align:center"><?php echo $row_bill["detail_really_stock_num"] ?></div>
+        <div style="float:left;width:7%; height:25px; padding:10px 0; text-align:center"><?php echo date("Y-m-d H:i:s",$row_bill["detail_order_addtime"]) ?></div>
+        <div style="float:left;width:100%; height:25px; padding:10px 0; text-align:right"><?php 
+        echo "条码:{$row_bill["detail_p_barcode_bianhao"]};"; 
+        echo "合作模式:{$row_bill["detail_factory_mode"]};"; 
+        echo "货号:{$row_bill["detail_p_huohao"]};"; 
+        echo "颜色:{$row_bill["detail_p_color"]};"; 
+        echo "尺码:{$row_bill["detail_p_size"]};"; 
+        echo "成本价:{$row_bill["detail_valueprice"]};"; 
+        echo "卖价:{$row_bill["detail_price"]};"; 
+        ?></div>
+    </div>
+<?php
+}
+?>
+                    
+                    
+                    </div>
+                    <div style="float:right; margin-top:5px; font-size:14px"> 共 <span style="font-size:14px; color:#d51938; font-weight:bold;"><?php echo $rowcount?></span> 个报销记录</div>
+
+<script>/*n*/    
+var page_count_order_od_debug=<?php echo $page_count; ?>;
+/**/set_page_list_order_od_debug($("#pages_order_od_debug").find("#m"));
+</script>
+
+<!-- refresh_end -->
+                    <div class="showpage" id="pages_order_od_debug">
+                        <input id="page_idx_order_od_debug" name="page_idx" style="display:none" value="1"/>
+                        <span style="display:block">
+                            <span class="pagenolink" id="last" onclick="/**/click_page_num_order_od_debug($(this))" >上一页</span>
+                            <span class="pagenolink" id="ll" onclick="/**/click_page_num_order_od_debug($(this))" />
+                            <span class="pageblank"  id="lb">...</span>
+                            <span class="pagenolink" id="l2" onclick="/**/click_page_num_order_od_debug($(this))" />
+                            <span class="pagenolink" id="l1" onclick="/**/click_page_num_order_od_debug($(this))" />
+                            <span class="pageselect" id="m"  onclick="/**/click_page_num_order_od_debug($(this))"  >1</span>
+                            <span class="pagenolink" id="r1" onclick="/**/click_page_num_order_od_debug($(this))" />
+                            <span class="pagenolink" id="r2" onclick="/**/click_page_num_order_od_debug($(this))" />
+                            <span class="pageblank"  id="rb">...</span>
+                            <span class="pagenolink" id="rr" onclick="/**/click_page_num_order_od_debug($(this))" />
+                            <span class="pagenolink" id="next" onclick="/**/click_page_num_order_od_debug($(this))" >下一页</span>
+                        </span>
+                    </div>
+                    </form> <!-- 页码也作为表单项统一处理  -->
+                </div>
+<script type="">
+    $(document).ready(function() {
+        $(".datepicker").datepicker({duration:""});
+        $(".datepicker").datepicker({duration:""});//绑定输入框
+    });
+</script>

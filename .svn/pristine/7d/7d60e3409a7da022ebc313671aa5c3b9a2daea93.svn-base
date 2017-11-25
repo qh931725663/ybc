@@ -1,0 +1,17 @@
+<?php
+    $p = cselect("*","ydf_bank",array("bank_boss_id=?",$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"]));
+    while ($row=$p[0]->fetch()){
+        $bank_user_name = $row["bank_user_name"];
+        $bank_type = $row["bank_type"];
+        $bank_user_account = $row["bank_user_account"];
+        $factory_bank=array();
+        if($bank_type==3){
+            $factory_bank=array("bank_user_account"=>$bank_user_account);
+        }
+        if($bank_type==2){
+            $factory_bank=array("bank_user_account"=>$bank_user_account,"bank_user_name"=>$bank_user_name);
+
+        }
+    }
+echo json_encode($factory_bank);
+?>

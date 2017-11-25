@@ -1,0 +1,15 @@
+<?php
+
+include_once("check_dangkou_user.php");
+?>
+<div class="frame_main_div" >
+    <div class="frame_tab_panel">
+        <div class="frame_tab_line">
+            <span class="frame_tab_item_select">工厂设置</span>
+        </div>
+    </div>    
+    <div id="frame_factory" />
+</div>
+<script>
+mount_to_frame('view_factory_list',0,'frame_factory');
+</script>

@@ -1,0 +1,339 @@
+<?php
+include_once("check_login.php");
+include_once("check_factory_user.php");
+
+$last_order_bianhao=!empty($_REQUEST["var_last_order_bianhao"])?$_REQUEST["var_last_order_bianhao"]:"0";
+
+$order_master_bianhao=!empty($_REQUEST["var_master_bianhao"])?$_REQUEST["var_master_bianhao"]:"";
+$order_master_name=!empty($_REQUEST["var_master_name"])?$_REQUEST["var_master_name"]:"";
+
+$order_boss_bianhao="";
+$order_factory_bianhao="";
+$order_factory_name="";
+
+if (!empty($_REQUEST["var_factory_bianhao"]))
+{    
+    $rsfactory=mysql_query("SELECT * FROM ydf_factory WHERE factory_bianhao = '".$_REQUEST["var_factory_bianhao"]."'" , $dbconn);
+    if($rowfactory=mysql_fetch_array($rsfactory))
+    {
+        $order_boss_bianhao=$rowfactory["factory_boss_m_bianhao"];
+        $order_factory_bianhao=$rowfactory["factory_bianhao"];
+        $order_factory_name=$rowfactory["factory_name"];
+    }
+}
+?>
+<div style="float:left; width:100%; margin-top:20px; overflow:hidden; display:block;">
+    <span style="float:left; margin-left:35px">当前工厂：<span style="font-size:24px; font-weight:bold; color:#e43c3f"><?php echo $order_factory_name?></span></span>
+    <span style="float:right">
+        <span class="btn_normal_red" onclick="/**/mount_to_frame('view_factory_send_list',1,'frame_factory_send_list')">返回</span>
+    </span>
+</div>
+<div id="step_main" style="width:100%; overflow:hidden; display:block">
+    <div style="width:98%; margin:20px auto 0 auto; background:#ffffff; border:1px solid #cccccc; overflow:hidden; display:block">
+        <div id="factorysendlist_left" style="float:left; width:50%; min-height:800px; padding:0 2%; border-right:1px solid #cccccc; overflow:hidden; display:block">
+
+            <div style="float:left; width:98%; padding:10px 1%">
+                <span style="float:left">已选择商品列表</span>
+                <span style="float:right">
+                    <span style="font-size:18px; color:#999999">数量总计：<span id="factorysend_total_num" style=" font-size:24px; color:#e43c3f">0</span>, 金额总计：<span id="factorysend_total_money" style="font-size:24px; color:#e43c3f">0</span></span>
+                </span>
+            </div>
+            <form method="post" id="factorysend_order_form">
+            <div style="float:left; width:98%; padding:5px 1%; display:block">
+                <div style="width:100%; margin:0 auto; padding:10px 0; border-bottom:1px solid #cccccc; overflow:hidden; display:block;">
+                    <div style="float:left; width:15%; font-size:12px; color:#999999">货号</div>
+                    <div style="float:left; width:15%; font-size:12px; color:#999999; text-align:center">颜色</div>
+                    <div style="float:left; width:15%; font-size:12px; color:#999999; text-align:center">尺码</div>
+                    <div style="float:left; width:15%; font-size:12px; color:#999999; text-align:center">成本价</div>
+                    <div style="float:left; width:30%; font-size:12px; color:#999999; text-align:center">拿货数量</div>
+                    <div style="float:left; width:10%; font-size:12px; color:#999999; text-align:center">删除</div>
+                </div>
+                <div id="factorysend_list_barcode" style="width:100%; overflow:hidden; display:block;"></div>
+            </div>
+            <div style="width:98%; margin:20px auto; overflow:hidden; display:block">
+                <div style="float:right; width:150px; overflow:hidden; display:block">
+                    <div id="btn_factorysend_putintoorder" class="btn_putintoorderlist">确认发货</div>
+                </div>
+            </div>
+            <input type="hidden" name="order_boss_bianhao" value="<?php echo $order_boss_bianhao ?>">
+            <input type="hidden" name="order_type" value="gcfh">
+            <input type="hidden" name="order_factory_bianhao" value="<?php echo $order_factory_bianhao ?>">
+            <input type="hidden" name="order_factory_name" value="<?php echo $order_factory_name ?>">
+            <input type="hidden" name="order_source_bianhao" value="<?php echo $last_order_bianhao ?>">
+            <input type="hidden" name="order_slave_bianhao" value="<?php echo $order_master_bianhao ?>">
+            <input type="hidden" name="order_slave_name" value="<?php echo $order_master_name ?>">
+            </form>                            
+        </div>
+        <div id="factorysendlist_right" style="float:left; width:41%; padding:0 2%; overflow:hidden; display:block">
+        
+            <div style="float:left; width:98%; padding:10px 1%">
+                <span style="float:left">快速选择商品</span>
+            </div>
+            <div style="float:left; width:98%; padding:5px 1%">
+                <div style="position: relative; width:100%; margin:5px 0; padding:5px 0; border-bottom:1px dashed #cccccc; overflow:hidden; display:block">
+                    <div style="float:left; width:20%; padding:5px 0; color:#999999; text-align:right; overflow:hidden; display:block">货号：</div>
+                    <div class="choosebox">
+                        <ul>
+                                <?php
+                                $rsfactory = mysql_query("SELECT p_barcode_p_bianhao FROM ydf_products_barcode where p_barcode_factory_bianhao='".$_REQUEST["var_factory_bianhao"]."' group by p_barcode_p_bianhao order by p_barcode_bianhao desc", $dbconn); 
+                                while($rowfactory=mysql_fetch_array($rsfactory))
+                                {
+                                    $rsfactoryhuohao = mysql_query("SELECT p_huohao FROM ydf_products where p_bianhao='".$rowfactory["p_barcode_p_bianhao"]."'", $dbconn); 
+                                    $rowfactoryhuohao=mysql_fetch_array($rsfactoryhuohao);
+                                ?>
+                                <li>
+                                    <span class="select_factorysend_factory_huohao_radioToggle" onclick="/**/ShowFactorysendFactoryProductOrderLayer($(this), '<?php echo $order_factory_name ?>', '<?php echo $rowfactoryhuohao["p_huohao"] ?>')"><?php echo $rowfactoryhuohao["p_huohao"] ?></span>
+                                </li>
+                                <?php
+                                }
+                                ?>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        
+        </div>
+    
+    </div>    
+    <div id="layer_factorysend_productorder" style="float:left; width:350px; padding:25px; overflow:visible; display:none">
+    
+    </div>
+
+</div>
+
+<div id="step_saving" style="width:100%; overflow:hidden; display:none">
+    <div style="width:98%; margin:20px auto 0 auto; background:#ffffff; border:1px solid #cccccc; overflow:hidden; display:block">
+        <div style="width:100%; height:100px; margin:0 auto; background:url(/pc/wholesale/images/loading.gif) center center no-repeat; display:block">
+        </div>    
+    </div>
+</div>
+            
+<script type="text/javascript">    
+var order_factorysend_idx=0;
+function get_factorysend_barcode_str(info)
+{
+    var factorysend_barcode_str = "" +
+        "<div style='width:100%; margin:0 auto; padding:10px 0; border-bottom:1px dashed #cccccc; overflow:hidden; display:block;'>" +
+        "    <div style='float:left; width:15%; height:20px; font-size:12px; color:#999999'>"+info["huohao"]+"</div>" +
+        "    <div style='float:left; width:15%; height:20px; font-size:12px; color:#999999; text-align:center'>"+info["color"]+"</div>" +
+        "    <div style='float:left; width:15%; height:20px; font-size:12px; color:#999999; text-align:center'>"+info["size"]+"</div>" +
+        "    <div style='float:left; width:15%; height:20px; text-align:center'><span style='font-size:14px; font-weight:bold; color:#e43c3f'>" +info["valueprice"]+ "</span>"+
+        "       <input name='table["+order_factorysend_idx+"][order_barcode]' type='hidden' value='" +info["barcode"]+ "'>"+
+        "       <input name='table["+order_factorysend_idx+"][order_p_bianhao]' type='hidden' class='factorysend_order_p_bianhao' value='" +info["p_bianhao"]+ "'>"+
+        "       <input name='table["+order_factorysend_idx+"][order_p_type_bianhao]' type='hidden' value='" +info["p_type_bianhao"]+ "'>"+
+        "       <input name='table["+order_factorysend_idx+"][order_factory_bianhao]' type='hidden' value='" +info["factory_bianhao"]+ "'>"+
+        "       <input name='table["+order_factorysend_idx+"][order_huohao]' type='hidden' value='" +info["huohao"]+ "'>"+
+        "       <input name='table["+order_factorysend_idx+"][order_color]' type='hidden' value='" +info["color"]+ "'>"+
+        "       <input name='table["+order_factorysend_idx+"][order_size]' type='hidden' value='" +info["size"]+ "'>"+
+        "       <input name='table["+order_factorysend_idx+"][order_valueprice]' type='hidden' value='" +info["valueprice"]+ "'>"+
+        "       <input name='table["+order_factorysend_idx+"][order_factory_mode]' type='hidden' value='" +info["factory_mode"]+ "'>"+
+        "       <input name='table["+order_factorysend_idx+"][order_factory_cycle]' type='hidden' value='" +info["factory_cycle"]+ "'>"+
+        "   </div>" +
+        "    <div style='float:left; width:30%; height:20px; font-size:12px; color:#999999; text-align:center'>" +
+        "        <span class='add_chose'>" +
+        "            <span class='reduce' onclick='/**/setfactorysendListAmountReduce($(this).parent().children(\":eq(1)\"))'/>" +
+        "                <input name='table["+order_factorysend_idx+"][order_num]' class='factorysend_order_num text12' value='" +info["num"]+ "' type='text' onKeyUp='/**/setfactorysendListAmountModify($(this))'>" +
+        "            <span class='add' onclick='/**/setfactorysendListAmountAdd($(this).parent().children(\":eq(1)\"))'/>" +
+        "        </span>" +
+        "    </div>" +
+        "    <div style='float:left; width:10%; height:20px; font-size:12px; color:#3366FF; text-align:center; cursor:pointer' onclick='/**/DeletefactorysendSelectProduct($(this))'>删除</div>" +
+        "</div>";                        
+    order_factorysend_idx++;
+    return factorysend_barcode_str;
+}
+
+var factorysend_select_factory_barcode;
+
+$(function(){
+    //获取所有商品编码及属性
+    $.ajax({
+        url:"get-allfactoryproductsbarcode", 
+        async: false,
+        type: "POST",
+        data:{var_factory_bianhao:<?php echo $_REQUEST["var_factory_bianhao"] ?>},
+        dataType:"json",
+        success: function(html){
+            factorysend_select_factory_barcode=html;
+        }
+    });
+
+    <?php
+    if(!empty($_REQUEST["var_last_order_bianhao"]))
+    {
+    ?>
+    var gcfh_order_detail_barcode;
+    $.ajax({
+        url:"get-purchaseorderdetailbarcode", 
+        async: false,
+        type: "POST",
+        data:{var_order_bianhao:"<?php echo $_REQUEST["var_last_order_bianhao"] ?>"},
+        dataType:"json",
+        success: function(html){
+            gcfh_order_detail_barcode=html;
+        }
+    });
+    
+    for (key in gcfh_order_detail_barcode)
+    {
+        if (key>0)
+        {
+            var info={
+                "huohao":factorysend_select_factory_barcode[key]["p_barcode_huohao"],
+                "color":factorysend_select_factory_barcode[key]["p_barcode_color"],
+                "size":factorysend_select_factory_barcode[key]["p_barcode_size"],
+                "price": factorysend_select_factory_barcode[key]["p_seller_price"], 
+                "barcode":key, 
+                "p_bianhao":factorysend_select_factory_barcode[key]["p_barcode_p_bianhao"], 
+                "p_type_bianhao":factorysend_select_factory_barcode[key]["p_barcode_p_type_bianhao"], 
+                "factory_bianhao":factorysend_select_factory_barcode[key]["p_barcode_factory_bianhao"],
+                "valueprice":factorysend_select_factory_barcode[key]["p_barcode_valueprice"], 
+                "factory_mode":factorysend_select_factory_barcode[key]["p_barcode_factory_mode"], 
+                "factory_cycle":factorysend_select_factory_barcode[key]["p_barcode_factory_cycle"], 
+                "num":gcfh_order_detail_barcode[key]["detail_order_num"]
+            }
+            $("#factorysend_list_barcode").prepend(get_factorysend_barcode_str(info));
+        }
+    }
+    
+    var order_sum=0;
+    var order_total_money=0;
+    $(".factorysend_order_num").each(function(){
+       order_sum += parseInt($(this).val());
+       order_total_money+=$(this).val()*parseFloat($(this).parent().parent().prev().children().html());
+    })
+
+    $('#factorysend_total_num').html(order_sum);
+    $('#factorysend_total_money').html(parseFloat(order_total_money.toFixed(2)));
+    <?php
+    }
+    ?>
+
+    $('#btn_factorysend_putintoorder').click(function(){
+        if($(".factorysend_order_num").length==0)
+        {
+            alert("暂无商品");
+            return false;
+        }
+        
+                
+        $.ajax({
+            url:"model-order-post", 
+            async: false,
+            type: "POST",
+            dataType:"json",
+            data:$('#factorysend_order_form').serialize(),
+            success: function(html){
+                if (html.state!="ok"){
+                    layer.msg("提交订单失败！", {time: 2000, icon:2});
+                    return false;
+                }
+                
+                $('#step_main').hide();    
+                $('#step_saving').show();
+                layer.msg("订单提交成功！", {time: 2000, icon:1});
+                setTimeout(function(){
+                    mount_to_frame('view_factory_send_list',1,'frame_factory_send_list');
+                },2000);
+            }
+        });        
+    });
+});
+
+function ShowFactorysendFactoryProductOrderLayer(obj, factory_name, p_huohao){
+    $('.select_factorysend_factory_huohao_radioToggle').removeClass('current');
+    obj.addClass('current');
+    
+    $.ajax({
+        url:"view-get-factorysend-selectfactoryproductorder", 
+        async: false,
+        type: "POST",
+        data:{var_order_type:"factorysend",var_boss_bianhao:<?php echo $order_boss_bianhao ?>,var_factory:factory_name,var_p_huohao:p_huohao},
+        success: function(html){
+            $("#layer_factorysend_productorder").html(html);
+        }
+    });
+    
+    index_factorysend_showfactoryproductorder=layer.open({
+        type: 1,
+        area: ['420px', '500px'],
+        title: false,
+        content:$('#layer_factorysend_productorder')
+    });
+}
+
+function setfactorysendListAmountAdd(obj)
+{
+    obj.val(parseInt(obj.val())+1);
+    
+    var order_sum=0;
+    var order_total_money=0;
+    $(".factorysend_order_num").each(function(){
+       order_sum += parseInt($(this).val());
+       order_total_money+=$(this).val()*parseFloat($(this).parent().parent().prev().children().html());
+    })
+
+    $('#factorysend_total_num').html(order_sum);
+    $('#factorysend_total_money').html(parseFloat(order_total_money.toFixed(2)));
+    $(this).val("");
+}
+
+function setfactorysendListAmountReduce(obj)
+{
+    if ((parseInt(obj.val())-1)<1)
+    {
+        alert("入库数量不能小于1！");
+        obj.val("1");
+    }
+    else
+    {
+        obj.val(parseInt(obj.val())-1);    
+    }
+
+    var order_sum=0;
+    var order_total_money=0;
+    $(".factorysend_order_num").each(function(){
+       order_sum += parseInt($(this).val());
+       order_total_money+=$(this).val()*parseFloat($(this).parent().parent().prev().children().html());
+    })
+
+    $('#factorysend_total_num').html(order_sum);
+    $('#factorysend_total_money').html(parseFloat(order_total_money.toFixed(2)));
+    $(this).val("");
+}
+
+function setfactorysendListAmountModify(obj)
+{
+    if (parseInt(obj.val())<1)
+    {
+        alert("入库数量不能小于1！");
+        obj.val("1");
+    }
+
+    var order_sum=0;
+    var order_total_money=0;
+    $(".factorysend_order_num").each(function(){
+       order_sum += parseInt($(this).val());
+       order_total_money+=$(this).val()*parseFloat($(this).parent().parent().prev().children().html());
+    })
+
+    $('#factorysend_total_num').html(order_sum);
+    $('#factorysend_total_money').html(parseFloat(order_total_money.toFixed(2)));
+    $(this).val("");
+}
+
+function DeletefactorysendSelectProduct(obj)
+{
+    obj.parent().remove();
+
+    var order_sum=0;
+    var order_total_money=0;
+    $(".factorysend_order_num").each(function(){
+       order_sum += parseInt($(this).val());
+       order_total_money+=$(this).val()*parseFloat($(this).parent().parent().prev().children().html());
+    })
+
+    $('#factorysend_total_num').html(order_sum);
+    $('#factorysend_total_money').html(parseFloat(order_total_money.toFixed(2)));
+    $(this).val("");
+}
+</script>

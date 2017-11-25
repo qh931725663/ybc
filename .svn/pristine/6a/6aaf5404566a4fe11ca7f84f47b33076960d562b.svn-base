@@ -1,0 +1,22 @@
+<?php
+include_once("check_login.php");
+include_once("check_dangkou_user.php");
+?>
+<div class="frame_main_div" style="min-height:400px;">
+    <div class="frame_tab_panel">
+        <div class="frame_tab_line">
+            <span class="frame_tab_item_select" onclick="mount_to_frame('frame_arrange_up',0,'frame_sales')">退货上架</span>
+            <span class="frame_tab_item"        onclick="mount_to_frame('frame_arrange_factory',0,'frame_sales')">退货返厂</span>
+             <span class="frame_tab_item"        onclick="mount_to_frame('frame_finance_reg_receivable',0,'frame_sales')">卖家应收</span>
+            <span class="frame_tab_item"        onclick="mount_to_frame('frame_finance_seller_receivable',0,'frame_sales')">卖家对账</span>
+            <span class="frame_tab_item"        onclick="mount_to_frame('frame_sales_bi_seller_time',0,'frame_sales')">卖家统计</span>
+            <span class="frame_tab_item"        onclick="mount_to_frame('frame_finance_bi_sales_time',0,'frame_sales')">资金统计</span>
+            <span class="frame_tab_item"        onclick="mount_to_frame('frame_sales_bi_sales_time',0,'frame_sales')">销量统计</span>
+        </div>
+    </div>    
+    <div id="frame_sales" />
+</div>
+
+<script>
+mount_to_frame('frame_arrange_up',0,'frame_sales');
+</script>

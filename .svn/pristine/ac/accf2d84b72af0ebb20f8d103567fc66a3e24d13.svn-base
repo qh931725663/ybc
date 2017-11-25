@@ -1,0 +1,298 @@
+<!-- 761 -->
+<?php 
+function get_user_list()
+{
+    $boss_id = $_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"];    
+    $p=select("*","ydf_user",array("user_boss_m_bianhao=?",$boss_id));
+    if ($p->errorCode()!="00000")
+        print_r($p->errorInfo());
+    while ($user=$p->fetch())
+    {
+        $p_member=select("*","ydf_member",array("m_bianhao=?",$user["user_self_m_bianhao"]));
+        if($member=$p_member->fetch()){ 
+            echo '<option value="'.$user["user_self_m_bianhao"].'">'.$member["m_name"].'</option>';
+        }
+    }
+}
+function get_type_view($e_type){
+    $bankio_type=array("1001"=>"餐饮",  
+        "1002"=>"交通",  
+        "1003"=>"住宿",  
+        "1004"=>"办公用品",  
+        "1005"=>"营销广告",
+        "1006"=>"员工工资",  
+        "1007"=>"其他"); 
+    return $bankio_type[$e_type];
+}
+?>
+<script type="text/javascript">    
+function list_sdsy()
+{
+    //重置value
+    $('#chuku_from_day').attr("value","");
+    $('#chuku_to_day').attr("value","");
+    /* $('#chuku_searchwords').attr("placeholder","请输入卖家昵称"); */
+    /* $('#chuku_searchwords').css("color","#cccccc") */
+
+    $("#pid_view_finance_reg_bankio #pages_761").set_page_num("view_finance_reg_bankio","pages_761",1);
+
+    refresh_inner("view_finance_reg_bankio?"+$("#form_761").serialize() );
+}
+
+function search_sdsy()
+{
+    $("#btn_chukuorder_search").parent().prev().find(".listtypevalue").removeClass('listtypeselect');
+
+    $("#pid_view_finance_reg_bankio #pages_761").set_page_num("view_finance_reg_bankio","pages_761",1);
+
+    refresh_inner("view_finance_reg_bankio?"+$("#form_761").serialize() );
+}
+
+function search_761()
+{
+    mobj=$("#pages_761").find("#m");
+    mobj.html(1);
+    click_page_num_761(mobj);
+    refresh_inner("view_finance_reg_bankio?"+$("#form_761").serialize() );
+}
+function click_me_761(obj,state)
+{
+    $('#verify_state_761').attr('value',state);
+    $(".list_button_761").removeClass("listclassselect");
+    $(".list_button_761").addClass("listclassvalue");
+
+    obj.removeClass("listclassvalue");
+    obj.addClass("listclassselect");
+    search_761();
+}
+
+function verify_it_761(obj)
+{
+    var par=obj.parent().parent();
+    $("#verify_bankio_761").attr("value",par.find("#bankio_761").html());
+    $("#verify_bankio_id_761").attr("value",par.find("#bankio_id_761").html());
+    index_layerstatus=layer.open({
+        type: 1,
+        shade: [0],
+        area: ['auto', 'auto'],
+        title: "报销确认",
+        border: [0],
+        page: {dom : '#layer_verify_761'}
+    });
+}
+
+function post_verify_761(state){ 
+    $("#layer_verify_state_761").attr("value",state);
+    if(!$("#verify_bankio_761").val())
+    {
+        layer.msg("确认金额不能为空:(", {time: 2000, icon:2});
+        return false;
+    }
+    if(state==2)
+    {
+        $("#verify_bankio_761").attr("value","0");
+    }
+        
+    $.ajax({
+        url:"model-expence-update", 
+        async: false,
+        type: "POST",
+        dataType:"json",
+        data:$("#form_verify_761").serialize(),
+        error:function(){
+            layer.close(index_layerstatus);
+            layer.msg("系统异常，请稍后再试:(", {time: 2000, icon:2});
+        },
+        success: function(html){
+            layer.close(index_layerstatus);
+            layer.msg("确认成功！", {time: 2000, icon:1});
+            setTimeout(function(){
+                refresh_inner("view_finance_reg_bankio?"+$("#form_761").serialize() );
+            },0);
+        }
+    });    
+}
+</script>
+                    <form id="form_761">
+                    <div style="float:left; width:100%; margin-top:10px; overflow:hidden; display:block;">
+                        <div style="float:right">
+                            <span class="btn_normal_green" id="btn_normal_green">我要记账</span>
+                        </div>
+                    </div>
+                    <div  style="float:left; width:100%; margin:10px 0; padding:5px; overflow:hidden; display:block">
+                        <div style="float:left; overflow:hidden; display:block">
+                            <input type="hidden" id="order_type" name="order_type"/>
+                            <span class="listtypevalue listtypeselect" onclick="/**/click_me_kcdb($(this),'')">全部</span>
+                        </div>
+                        <div style="float:right; overflow:hidden; display:block">
+                            <span style="float:left; overflow:hidden; display:block">
+                                <span style="padding:5px 0">日期 <input type="text" class="datepicker" name="search_store_dangkoubuhuo_from_date"  size="12" maxlength="50" readonly="readonly" style="padding:5px"> 至 <input type="text" class="datepicker" name="search_sotre_dangkoubuhuo_to_date" size="12" maxlength="50" readonly="readonly" style="padding:5px">
+                                </span>
+                            </span>
+                            <span id="btn_chukuorder_search" class="btn_normal_green">搜索</span>
+                        </div>
+                    </div>
+
+<!-- refresh_begin -->
+                    <div class="title_stalls" style="position:relative; float:left; width:100%; margin-top:0px; background:#f2f2f2; border-bottom:1px solid #cccccc; display:block">
+                        <div style="width:12%;">日期</div>
+                        <div style="width:12%;">资金金额</div>
+                        <div style="width:12%;">资金方向</div>
+                        <div style="width:12%;">来源账单类型</div>
+                        <div style="width:12%;">来源账单单号</div>
+                        <div style="width:12%;">经办人</div>
+                        <div style="width:16%;">资金说明</div>
+                        <div style="width:12%;">操作</div>
+                    </div>
+                    <div id="pagelist" style="float:left; width:100%; overflow:hidden; display:block">
+<?php
+$boss_id = $_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"];    
+$user_id = $boss_id;
+
+@$from_day=$_REQUEST["from_day"]?get_ymd($_REQUEST["from_day"])["d"]:null;
+@$to_day=$_REQUEST["to_day"]?get_ymd($_REQUEST["to_day"])["d"]+24*3600-1:null;
+@$where=array("bill_boss_id=? and bill_add_user_id=?  and bill_type in ('yhcr','yhzc')   
+        and bill_add_time>=? and bill_add_time<=?" ,
+        $boss_id,$_REQUEST["bill_add_user_id"],
+        $from_day,$to_day 
+        );
+$where=clean_where($where);
+//print_r($where);
+$p=select("count(*)","ydf_finance_bill",$where);
+$rows = $p->fetch();
+$rowcount = $rows[0];
+@$page=$_REQUEST["page_idx"]?$_REQUEST["page_idx"]:1;
+$pagesize=10;$page_count=ceil($rowcount/$pagesize);  
+$offset=($page-1)*$pagesize; 
+
+$p=select("*","ydf_finance_bill",$where,"bill_add_time desc",$offset,$pagesize);
+if ($p->errorCode()!="00000")
+    print_r($p->errorInfo());
+$row_bankio=$p->fetch(PDO::FETCH_ASSOC);
+do{
+?>
+                        <div class="list_stalls" style="position:relative;width:100%; padding:10px 0; border-bottom:1px dashed #cccccc; overflow:hidden; display:block">
+                            <div style="width:12%; height:25px;"><?php echo echo2(date("Y-m-d",$row_bankio["bill_add_time"])) ?></div>
+                            <div style="width:12%; height:25px;"><?php echo echo2($row_bankio["bill_fund"])?></div>
+                            <div style="width:12%; height:25px;"><?php echo echo2($row_bankio["bill_type"])?></div>
+                            <div style="width:12%; height:25px;"><?php echo echo2($row_bankio["bill_small_type"])?></div>
+                            <div style="width:12%; height:25px;"><?php echo echo2($row_bankio["bill_bank_id"])?></div>
+                            <div style="width:12%; height:25px;"></div>
+                            <div style="width:16%; height:25px;"><?php echo echo2($row_bankio["bill_desc"])?></div>
+                            <div style="width:12%;"><a onclick="/**/verify_it_761($(this))" >修改</a> | 删除</div>
+                        </div>
+<?php
+}while($row_bankio=$p->fetch(PDO::FETCH_ASSOC))
+?>
+                    
+                    
+                    </div>
+                    <div style="float:right; margin-top:5px; font-size:14px"> 共 <span style="font-size:14px; color:#d51938; font-weight:bold;"><?php echo $rowcount?></span> 个报销记录</div>
+
+<script>/*n*//*n*/
+$("#pid_view_finance_reg_bankio #pages_761").set_page_count("view_finance_reg_bankio","pages_761",<?php echo $page_count;?>);
+</script>
+
+<!-- refresh_end -->
+                    <div class="ipages" id="pages_761" page="view_finance_reg_bankio" form="form_761" count="<?php echo $page_count; ?>"/>
+                    </form> <!-- 页码也作为表单项统一处理  -->
+
+                    <form id="form_verify_761">
+                    <div id="layer_verify_761" style="float:left; width:350px; max-height:400px; padding:30px; border:2px solid #cccccc; overflow:hidden; display:none">
+                        <div style="float:left; width:100%; line-height:1.8; overflow:hidden; display:block">
+                            <p style="float:left; width:100%; padding:5px 0; display:block">
+                                <span style="float:left; width:150px;font-size:12px; margin:5px 0; text-align:right"><span style="color:red">*</span> 报销单号：</span>
+                                <span style="float:left;">
+                                <input id="verify_bankio_id_761" name="bankio_id" type="text" maxlength="50" style="width:150px; padding:5px" />
+                                </span>
+                            </p>
+                            <p style="float:left; width:100%; padding:5px 0; display:block">
+                                <span style="float:left; width:150px;font-size:12px; margin:5px 0; text-align:right"><span style="color:red">*</span> 确认金额：</span>
+                                <span style="float:left;">
+                                <input id="verify_bankio_761" name="verify_bankio" type="text" maxlength="50" style="width:150px; padding:5px"/>
+                                </span>
+                            </p>
+                            <p style="float:left; width:100%; padding:5px 0; display:block">
+                                <span style="float:left; width:150px;font-size:12px; margin:5px 0; text-align:right"><span style="color:red">*</span> 确认说明：</span>
+                                <span style="float:left;">
+                                <input id="verify_detail_761" name="verify_detail" type="text" maxlength="50" style="width:150px; padding:5px"/>
+                                <input id="layer_verify_state_761" name="verify_state" type="text" style="display:none"/>
+                                </span>
+                            </p>
+                        </div>
+                        <div style="float:left; width:100%; margin-top:10px; overflow:hidden; display:block">
+                            <span onclick="/**/post_verify_761(1)" style="float:right;  margin:10px; padding:7px 20px; background:#e43c3f; color:#FFFFFF; cursor:pointer">提交确认</span>
+                            <span onclick="/**/post_verify_761(2)" style="float:right;   margin:10px; padding:7px 20px; background:#e43c3f; color:#FFFFFF; cursor:pointer">驳回请求</span>
+                        </div>                
+                    </div>
+                    </form>
+                    <div id="layer_account_add" style="float:left; width:650px; padding:25px; overflow:visible; display:none">
+                        <form id="form_want_account">
+                            <div style="float:left; width:100%; line-height:1.8; overflow:hidden; display:block">
+                                <p style="float:left; width:100%; padding:5px 0; display:block">
+                                    <span style="float:left; width:100px; margin:5px 0; color:#999999; text-align:right">类型:：</span>
+                                        <select id="table[<?php echo $i ?>][zjsz]" name="table[<?php echo $i ?>][billi_type]" style="padding:5px">
+                                         <option value="" selected>请选择</option>
+                                         <option value="0" selected>其他收入</option>
+                                         <option value="1" selected>其他支出</option>
+                                        </select>
+                                </p>
+                                <p style="float:left; width:100%; padding:5px 0; display:block">
+                                    <span style="float:left; width:100px; margin:5px 0; color:#999999; text-align:right">金额:</span>
+                                    <input id="capital" name="table[<?php echo $i ?>][capital]" type="text" style="height:24px;"/>
+                                </p>
+                                <p style="float:left; width:100%; padding:5px 0; display:block">
+                                    <span style="float:left; width:100px; color:#999999; margin:5px 0; text-align:right"><span style="color:red">*</span> 资金账户：</span>
+                                    <span style="float:left;">
+                                        <select id="bill_bank" name="table[<?php echo $i ?>][bill_bank]" style="padding:5px;width:250px;">
+                                            <option value="" selected>请选择</option>
+                                                <?php
+                                                $p=cselect("*","ydf_bank",array("bank_isstaff='0' and bank_boss_id=?",$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"]),"","bank_id desc");
+                                                while ($rowbank=$p[0]->fetch())
+                                                {
+                                                ?>
+                                                  <option value="<?php echo $rowbank["bank_id"]?>"><?php echo $rowbank["bank_type"]=="4"?"系统账户":($rowbank["bank_type"]=="3"?$rowbank["bank_user_account"]:$rowbank["bank_name"]." ".$rowbank["bank_user_account"]." ".$rowbank["bank_user_name"])?></option>
+                                                <?php
+                                                }
+                                                ?>
+                                        </select>
+                                    </span>
+                                </p>
+                                <p style="float:left; width:100%; padding:5px 0; display:block">
+                                    <span  style="float:left; width:100px; color:#999999; margin:5px 0; text-align:right">备注：</span>
+                                    <span style="float:left;">
+                                    <input name="table[<?php echo $i ?>][statement_notes]" type="text" maxlength="50" style="width:150px; padding:5px;width:236px;"/>
+                                    </span>
+                                </p>
+                            </div>
+                            <div style="float:left; width:100%; margin-top:10px; overflow:hidden; display:block">
+                                <span id="confirm_account_btn" style="float:left; margin-left:100px; margin-bottom:50px; padding:7px 20px; background:#e43c3f; color:#FFFFFF; cursor:pointer">确认记账</span>
+                            </div>
+                        </form>
+                    </div>
+<script>
+$(document).ready(function() {
+    $(".datepicker").datepicker({duration:""});
+    $(".datepicker").datepicker({duration:""});//绑定输入框
+
+});
+$("#btn_normal_green").click(function(){//我要记账
+   index_layer_account_add=layer.open({
+        type: 1,
+        area: ['720px', '400px'],
+        title: false,
+        content:$('#layer_account_add')
+   });
+});
+/*$("#confirm_account_btn").click(function(){//确认记账
+    $.ajax({
+        url:"xxxx.php",
+        async: false,
+        type: "POST",
+        data:data:$("#form_want_account").serialize(),
+        success: function(html){
+        $("#xxxx").html(html);
+    });
+});*/
+</script>
+                

@@ -1,0 +1,248 @@
+<!-- dklr 档口利润 -->
+<script type="text/javascript">    
+function click_page_num_debug(obj)
+{
+    set_page_list_debug(obj);
+    refresh_inner("view_finance_reg_cash?"+$("#form_debug").serialize() );
+}
+function set_page_list_debug(obj)
+{
+    if (obj.attr("id")=="last"||obj.attr("id")=="next")
+    {
+        mobj=$("#pages_debug").find("#m");
+        if (obj.attr("id")=="last" && Number(mobj.html())-1>=1){
+            var bingo=Number(mobj.html())-1;
+            mobj.html(bingo);
+            set_page_list_debug(mobj);
+        }
+        if (obj.attr("id")=="next" && Number(mobj.html())+1<=page_count_debug){
+            var bingo=Number(mobj.html())+1;
+            mobj.html(bingo);
+            set_page_list_debug(mobj);
+        }
+        return;
+    }
+
+    $("#pages_debug").find("#ll").html("1");
+    $("#pages_debug").find("#rr").html(page_count_debug);
+
+    var bingo=Number(obj.html());
+
+    $("#page_idx_debug").attr("value",bingo);
+
+    $("#pages_debug").find("#m").html(bingo);//中间页码
+    $("#pages_debug").find("#l1").html(bingo-1);//左1页码
+    $("#pages_debug").find("#l2").html(bingo-2);//左2页码
+    $("#pages_debug").find("#r1").html(bingo+1);//右1页码
+    $("#pages_debug").find("#r2").html(bingo+2);//右2页码
+
+    $("#pages_debug").find(".pagenolink").each(function(){
+        var num=Number($(this).html())
+        if (num<=0||num>page_count_debug){
+            $(this).css("display","none");
+        }else{
+            $(this).css("display","inline");
+        }
+    });
+}
+
+function search_debug()
+{
+    mobj=$("#pages_debug").find("#m");
+    mobj.html(1);
+    set_page_list_debug(mobj);
+    refresh_inner("view_debug_bill?"+$("#form_debug").serialize() );
+}
+function click_me_debug(obj,state)
+{
+    $('#button_state_debug').attr('value',state);
+    $(".list_button_debug").removeClass("listclassselect");
+    $(".list_button_debug").addClass("listclassvalue");
+
+    obj.removeClass("listclassvalue");
+    obj.addClass("listclassselect");
+    search_debug();
+}
+
+</script>
+                <div style=" float:left; width:98%; min-height:800px; margin-top:0px; padding:15px 1%; background:#ffffff; overflow:hidden; display:block">
+                    <form id="form_debug">
+                    <div style="float:left; width:100%; margin-top:0px; overflow:hidden; display:block">
+                        <div style="float:left">
+                            <span style="font-size:14px; color:#00cc00; font-weight:bold;">卖家姓名：</span> 
+                            <input class="iinput name_imme ino_ime_input" type="text" name="seller_name" placeholder="请输入卖家拼音首字母" autocomplete="off"/>
+                            <span style="font-size:14px; color:#00cc00; font-weight:bold;">日期：</span> 
+                            <input  type="text" name="from_day" class="datepicker" size="12" maxlength="50" readonly="readonly" value="1970-01-01">
+                            至 
+                            <input  type="text" name="to_day" class="datepicker" size="12" maxlength="50" readonly="readonly" value="<?php echo date("Y-m-d")?>">
+                            <span id="btn_copy_search" class="btn_normal_green" onclick="/**/search_debug()" >搜索</span>
+                        </div>
+                    </div>        
+
+<!-- refresh_begin -->
+                    <div style="position:relative; float:left; width:100%; margin-top:0px; background:#f2f2f2; border-bottom:1px solid #cccccc; display:block">
+                        <div style="float:left;width:8%; padding:10px 0; text-align:center;">更新时间</div>
+                        <div style="float:left;width:8%; padding:10px 0; text-align:center">操作</div>
+                        <div style="float:left;width:8%; padding:10px 0; text-align:center">类型</div>
+                        <div style="float:left;width:12%; padding:10px 0; text-align:center">单号</div>
+                        <div style="float:left;width:8%; padding:10px 0; text-align:center;">金额</div>
+                        <div style="float:left;width:8%; padding:10px 0; text-align:center">模式|verify</div>
+                        <div style="float:left;width:8%; padding:10px 0; text-align:center">工厂</div>
+                        <div style="float:left;width:8%; padding:10px 0; text-align:center">卖家</div>
+                        <div style="float:left;width:8%; padding:10px 0; text-align:center">档口</div>
+                        <div style="float:left;width:8%; padding:10px 0; text-align:center">银行</div>
+                        <div style="float:left;width:8%; padding:10px 0; text-align:center;">添加时间</div>
+                        <div style="float:left;width:8%; padding:10px 0; text-align:center;">生效时间</div>
+                    </div>
+                    <div id="pagelist" style="float:left; width:100%; overflow:hidden; display:block">
+<?php
+$bill_seller_id=null;
+if (!empty($_REQUEST["seller_name"])){
+    $tp=rselect("*","ydf_seller",array("seller_name=?",$_REQUEST["seller_name"]));
+    if ($trow=$tp->fetch())
+    {
+        $bill_seller_id=$trow["seller_bianhao"];
+    }
+}
+
+
+$boss_id = $_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"];    
+$user_id = $boss_id;
+@$from_day=$_REQUEST["from_day"]?get_ymd($_REQUEST["from_day"])["d"]:null;
+@$to_day=$_REQUEST["to_day"]?get_ymd($_REQUEST["to_day"])["d"]+24*3600:null;
+$where=@array("bill_boss_id=? and bill_factory_id=? and bill_is_close=?  
+        and bill_add_time>=? and bill_add_time<=? and  bill_seller_id=? and del_state in (0,1,2)" ,
+        $boss_id,$_REQUEST["bill_factory_id"],$_REQUEST["bill_is_close"],
+        $from_day,$to_day,$bill_seller_id 
+        );
+$where=clean_where($where);
+print_r($where);
+
+@$page=$_REQUEST["page_idx"]?$_REQUEST["page_idx"]:1;
+$pagesize=50;
+$offset=($page-1)*$pagesize; 
+
+$p=cselect("*","ydf_finance_bill",$where,"","update_time desc,bill_id desc",$offset,$pagesize);
+if ($p[0]->errorCode()!="00000")
+    print_r($p[0]->errorInfo());
+$rowcount = $p[1];
+$page_count=ceil($rowcount/$pagesize);  
+$color="";$last_time=0;
+while($row_bill=$p[0]->fetch(PDO::FETCH_ASSOC))
+{
+
+
+    $p_member=select("*","ydf_user",array("user_self_m_bianhao=?",$row_bill["bill_user_id"]) );
+    $user_name="";
+    if ($row_member=$p_member->fetch()){
+        $user_name=$row_member["user_name"]; 
+    }
+    $p_member=select("*","ydf_seller",array("seller_bianhao=?",$row_bill["bill_seller_id"]) );
+    $seller_name="匿名卖家";
+    if ($row_member=$p_member->fetch()){
+        $seller_name=$row_member["seller_name"]; 
+    }
+    $factory_name="";
+    $p_member=select("*","ydf_factory",array("factory_bianhao=?",$row_bill["bill_factory_id"]) );
+    if ($row_member=$p_member->fetch()){
+        $factory_name=$row_member["factory_name"]; 
+    }
+    $p_member=select("*","ydf_dangkou",array("dangkou_bianhao=?",$row_bill["bill_dangkou_id"]) );
+    $dangkou_name="";
+    if ($row_member=$p_member->fetch()){
+        $dangkou_name=$row_member["dangkou_name"]; 
+    }
+
+
+    include_once "{$root_path}/model/model_bill.php";
+    $op="";
+    $del_state_show=array(0=>"insert",1=>"delete",2=>"update");
+    if ($row_bill["update_time"]==$row_bill["bill_add_time"] && $row_bill["del_state"]==2)
+        $op="insert-update";
+    else
+        $op=$del_state_show[$row_bill['del_state']];
+
+    if ($row_bill["update_time"]!=$last_time)
+    {
+        $last_time=$row_bill["update_time"];
+        if ($color=="")
+            $color="background:#FFF5EE;";
+        else
+            $color="";
+    }
+    $tp=rselect("*","ydf_bank",array("bank_id=?",$row_bill["bill_bank_id"]));
+    $bank_type=0;
+    if ($trow=$tp->fetch())
+        $bank_type=$trow["bank_type"];
+?>
+                        <div style="position:relative;width:100%;<?php echo $color?> padding:10px 0; border-bottom:1px dashed #cccccc; overflow:hidden; display:block">
+                            <div style="float:left;width:8%; height:25px; padding:10px 0; text-align:center"><?php echo echo2(date("Y-m-d H:i:s",$row_bill["update_time"])) ?></div>
+                            <div style="float:left;width:8%; height:25px; padding:10px 0; text-align:center"><?php echo $op?></div>
+                            <div style="float:left;width:8%; height:25px; padding:10px 0; text-align:center"><?php echo $row_bill["bill_type"];echo "({$row_bill["bill_small_type"]})"?></div>
+                            <div style="float:left;width:12%; height:25px; padding:10px 0; text-align:center"><?php echo $row_bill["bill_id"];echo "({$row_bill['bill_source_id']})" ?></div>
+                            <div style="float:left;width:8%; height:25px; padding:10px 0; text-align:center"><?php echo $row_bill["bill_fund"]?></div>
+                            <div style="float:left;width:8%; height:25px; padding:10px 0; text-align:center"><?php echo $row_bill["bill_mode"] ;echo "|{$row_bill['bill_verify_state']}" ?></div>
+                            <div style="float:left;width:8%; height:25px; padding:10px 0; text-align:center"><?php echo $row_bill["bill_factory_id"];echo "($factory_name)" ?></div>
+                            <div style="float:left;width:8%; height:25px; padding:10px 0; text-align:center"><?php echo $row_bill["bill_seller_id"];echo "($seller_name)" ?></div>
+                            <div style="float:left;width:8%; height:25px; padding:10px 0; text-align:center"><?php echo $row_bill["bill_dangkou_id"];echo "-".$dangkou_name ?></div>
+                            <div style="float:left;width:8%; height:25px; padding:10px 0; text-align:center"><?php echo $row_bill["bill_bank_id"];echo "($bank_type)"; ?></div>
+                            <div style="float:left;width:8%; height:25px; padding:10px 0; text-align:center"><?php echo date("Y-m-d H:i:s",$row_bill["bill_add_time"]) ?></div>
+                            <div style="float:left;width:8%; height:25px; padding:10px 0; text-align:center"><?php echo date("Y-m-d H:i:s",$row_bill["bill_active_time"]) ?></div>
+                            
+                            <div style="float:right;width:100%; height:25px; padding:10px 0; text-align:right">
+<?php 
+    echo "range:{$row_bill['bill_credit_range']};"; 
+    echo "boss:{$row_bill['bill_boss_id']};";
+    echo "add:{$row_bill['bill_add_user_id']};"; 
+    echo "当事人:{$row_bill['bill_user_id']};"; 
+    echo "是否账期卖家:{$row_bill['bill_is_credit_seller']};"; 
+    echo "是否赊账:{$row_bill['bill_is_credit']};"; 
+    $range=explode("-",$row_bill["bill_credit_range"]);
+    if (count($range)==2){
+        $range[0]=date("D Y-m-d H:i:s", $range[0]);
+        $range[1]=date("D Y-m-d H:i:s", $range[1]);
+    }
+    $range=join("-",$range);
+    echo "账期起止:{$range}"; 
+?>
+                            </div>
+                        </div>
+<?php
+}
+?>
+                    
+                    
+                    </div>
+                    <div class="record"> 共 <span class="record_num"><?php echo $rowcount?></span> 个报销记录</div>
+
+<script>/*n*/    
+var page_count_debug=<?php echo $page_count; ?>;
+/**/set_page_list_debug($("#pages_debug").find("#m"));
+</script>
+
+<!-- refresh_end -->
+                    <div class="showpage" id="pages_debug">
+                        <input id="page_idx_debug" name="page_idx" style="display:none" value="1"/>
+                        <span style="display:block">
+                            <span class="pagenolink" id="last" onclick="/**/click_page_num_debug($(this))" >上一页</span>
+                            <span class="pagenolink" id="ll" onclick="/**/click_page_num_debug($(this))" />
+                            <span class="pageblank"  id="lb">...</span>
+                            <span class="pagenolink" id="l2" onclick="/**/click_page_num_debug($(this))" />
+                            <span class="pagenolink" id="l1" onclick="/**/click_page_num_debug($(this))" />
+                            <span class="pageselect" id="m"  onclick="/**/click_page_num_debug($(this))"  >1</span>
+                            <span class="pagenolink" id="r1" onclick="/**/click_page_num_debug($(this))" />
+                            <span class="pagenolink" id="r2" onclick="/**/click_page_num_debug($(this))" />
+                            <span class="pageblank"  id="rb">...</span>
+                            <span class="pagenolink" id="rr" onclick="/**/click_page_num_debug($(this))" />
+                            <span class="pagenolink" id="next" onclick="/**/click_page_num_debug($(this))" >下一页</span>
+                        </span>
+                    </div>
+                    </form> <!-- 页码也作为表单项统一处理  -->
+                </div>
+<script type="text/javascript">
+    $(document).ready(function() {
+            $(".datepicker").datepicker({duration:""});
+            $(".datepicker").datepicker({duration:""});//绑定输入框
+        });
+</script>
+

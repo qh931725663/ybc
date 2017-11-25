@@ -1,0 +1,193 @@
+<!-- 711 -->
+<script type="text/javascript">    
+function click_page_num_711(obj)
+{
+    set_page_list_711(obj);
+    refresh_inner("view_finance_reg_sales_fund?"+$("#form_711").serialize() );
+}
+function set_page_list_711(obj)
+{
+    if (obj.attr("id")=="last"||obj.attr("id")=="next")
+    {
+        mobj=$("#pages_711").find("#m");
+        if (obj.attr("id")=="last" && Number(mobj.html())-1>=1){
+            var bingo=Number(mobj.html())-1;
+            mobj.html(bingo);
+            click_page_num_711(mobj);
+        }
+        if (obj.attr("id")=="next" && Number(mobj.html())+1<=page_count_711){
+            var bingo=Number(mobj.html())+1;
+            mobj.html(bingo);
+            click_page_num_711(mobj);
+        }
+        return;
+    }
+
+    $("#pages_711").find("#ll").html("1");
+    $("#pages_711").find("#rr").html(page_count_711);
+
+    var bingo=Number(obj.html());
+
+    $("#page_idx_711").attr("value",bingo);
+
+    $("#pages_711").find("#m").html(bingo);//中间页码
+    $("#pages_711").find("#l1").html(bingo-1);//左1页码
+    $("#pages_711").find("#l2").html(bingo-2);//左2页码
+    $("#pages_711").find("#r1").html(bingo+1);//右1页码
+    $("#pages_711").find("#r2").html(bingo+2);//右2页码
+
+    $("#pages_711").find(".pagenolink").each(function(){
+        var num=Number($(this).html())
+        if (num<=0||num>page_count_711){
+            $(this).css("display","none");
+        }else{
+            $(this).css("display","inline");
+        }
+    });
+
+}
+
+function search_711()
+{
+    mobj=$("#pages_711").find("#m");
+    mobj.html(1);
+    click_page_num_711(mobj);
+    refresh_inner("view_finance_reg_sales_fund?"+$("#form_711").serialize() );
+}
+function click_me_711(obj)
+{
+    $(".list_button_711").removeClass("listclassselect");
+    $(".list_button_711").addClass("listclassvalue");
+
+    obj.removeClass("listclassvalue");
+    obj.addClass("listclassselect");
+}
+
+</script>
+                <div style=" float:left; width:98%; min-height:800px; margin-top:0px; padding:0px 0px; background:#ffffff; overflow:hidden; display:block">
+                    <form id="form_711">
+                    <div style="float:left; width:100%; margin-top:20px; overflow:hidden; display:block">
+                        <div style="float:left">
+                            <span style="font-size:14px; color:#00cc00; font-weight:bold;">日期：</span> 
+                            <input  type="text" name="from_day" onclick="/**/WdatePicker({dateFmt:'yyyy-MM-dd'})" size="12" maxlength="50" readonly="readonly" value="1970-01-01">
+                            至 
+                            <input  type="text" name="to_day" onclick="/**/WdatePicker({dateFmt:'yyyy-MM-dd'})" size="12" maxlength="50" readonly="readonly" value="<?php echo date("Y-m-d")?>">
+
+                            <span id="btn_copy_search" class="btn_normal_green" onclick="/**/search_711()" >搜索日记账</span>
+                        </div>
+                        <div style="float:right">
+                            <span id="btn_copy_search" class="btn_normal_green" onclick="/**/mount_to_frame('view_finance_reg_sales_fund_2',0,'frame_finance_reg_sales_fund',1)">登记档口资金情况</span>
+                        </div>
+                    </div>        
+                    <div style="float:left; width:100%; margin-top:20px; overflow:hidden; display:block">
+                        <div class="listclassvalueblock" >
+                            <div class="list_button_711 listclassselect" style="float:left;font-size:14px" onclick="/**/click_me_711($(this)) ;refresh_inner('view_finance_reg_sales_fund')" >全部</div>
+                            <div class="list_button_711 listclassvalue" style="float:left;font-size:14px" onclick="/**/click_me_711($(this)) ;refresh_inner('view_finance_reg_sales_fund')" >未确认</div>
+                        </div>    
+                    </div>    
+<!-- refresh_begin   -->
+<?php    
+$boss_id = $_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"];    
+$dangkou_id = $_SESSION["ERP_ACCOUNT_USER_DANGKOU_BIANHAO"];
+$dangkou_id = 10000011;
+
+@$from_day=$_REQUEST["from_day"]?get_ymd($_REQUEST["from_day"])["d"]:null;
+@$to_day=$_REQUEST["to_day"]?get_ymd($_REQUEST["to_day"])["d"]+24*3600-1:null;
+$dangkou_id=null;
+$where=array("bill_boss_id=? and bill_dangkou_id=? and bill_add_time>=? and bill_add_time<=?",$boss_id,$dangkou_id,$from_day,$to_day);
+$where=clean_where($where);
+print_r($where);
+
+@$page=$_REQUEST["page_idx"]?$_REQUEST["page_idx"]:1;
+$pagesize=10;
+$offset=($page-1)*$pagesize; 
+$pres=cselect("bill_day,
+    sum(bill_fund) as sale_cash,
+    sum(bill_fund) as return_cash, 
+    sum(if(bill_type='xjcr',bill_fund,0)) as save_cash, 
+    sum(if(bill_type='xscr',bill_fund,0)) as online_cash, 
+    sum(if(bill_type='jryl',bill_fund,0)) as reserve_cash
+    ", 
+    "ydf_finance_bill",$where,"bill_day","bill_day desc",$offset,$pagesize);
+$p=$pres[0];
+$page_count=ceil($pres[1]/$pagesize);  
+
+while($row_fund=$p->fetch(PDO::FETCH_ASSOC))
+{
+?>
+                    <div style="width:99%; margin:0 auto 20px auto; background:#ffffff; border:1px solid #cccccc; overflow:hidden; display:block">
+                        <div style="float:left; width:98%; padding:10px 1%; overflow:hidden; display:block">
+                            <div style="width:100%; margin:0 auto; padding:10px 0; overflow:hidden; display:block;">
+                                <div style="float:left; margin-left:0px; padding:5px 0;  ">日期：<?php echo date("Y-m-d",$row_fund["bill_day"]); ?></div>
+                                <div style="float:left; margin-left:10px; padding:5px 0; ">销售额：<?php echo $row_fund["sale_cash"];?></div>
+                                <div style="float:left; margin-left:10px; padding:5px 0; ">退货支出：<?php echo $row_fund["return_cash"];?></div>
+                                <div style="float:left; margin-left:10px; padding:5px 0; ">现金预留：<?php echo $row_fund["reserve_cash"];?></div>
+                                <div style="float:left; margin-left:10px; padding:5px 0; ">银行存入：<?php echo $row_fund["save_cash"];?></div>
+                                <div style="float:left; margin-left:10px; padding:5px 0; ">线上收入：<?php echo $row_fund["online_cash"];?></div>
+                                <div style="float:left; margin-left:10px; padding:5px 0; ">现金错差：<?php echo $row_fund["reserve_cash"];?></div>
+                            </div>
+                            <div style="width:100%; margin:0 auto; padding:10px 0; border-bottom:1px solid #cccccc; overflow:hidden; display:block;">
+                                <div style="float:left; width:25%; font-size:12px; text-align:center">卖家</div>
+                                <div style="float:left; width:25%; font-size:12px; text-align:center">手机号</div>
+                                <div style="float:left; width:25%; font-size:12px; text-align:center">今日欠款</div>
+                                <div style="float:left; width:25%; font-size:12px; text-align:center">今日还款</div>
+                            </div>
+<?php
+$total_credit = 0.0;
+$total_repayment = 0.0;
+
+$where=array("bill_boss_id=? and bill_dangkou_id=? and bill_day=? and bill_is_close=0 and (bill_type='mjys' or bill_type='mjss')",$boss_id,$dangkou_id,$row_fund["bill_day"]);
+$where=clean_where($where);
+print_r($where);
+$pr=select("if(bill_type='mjys',bill_fund,0) as credit,
+    if (bill_type='mjss',bill_fund,0) as repayment,bill_seller_id","ydf_finance_bill",$where);
+
+$row_receivable=$pr->fetch(PDO::FETCH_ASSOC);
+do{
+
+    $ps=select("*","ydf_seller",array("seller_boss_m_bianhao=? and seller_bianhao=?",$boss_id,$row_receivable["bill_seller_id"]) );
+    $ps_r=$ps->fetch();
+?>        
+                            <div style="width:100%; margin:0 auto; padding:10px 0; border-bottom:1px dashed #cccccc; overflow:hidden; display:block;">
+                                <div style="float:left; width:25%; height:20px; font-size:12px; color:#999999; text-align:center"><?php echo echo2($ps_r["seller_name"])?></div>
+                                <div style="float:left; width:25%; height:20px; font-size:12px; color:#999999; text-align:center"><?php echo echo2($ps_r["seller_mobile"]) ?></div>
+                                <div style="float:left; width:25%; height:20px; font-size:12px; color:#999999; text-align:center"><?php echo echo2($row_receivable["credit"])?></div>
+                                <div style="float:left; width:25%; height:20px; font-size:12px; color:#ee583d; text-align:center"><?php echo echo2($row_receivable["repayment"]) ?></div>
+                            </div>
+<?php
+    $total_credit+=$row_receivable["credit"];
+    $total_repayment+=$row_receivable["repayment"];
+}while($row_receivable=$pr->fetch(PDO::FETCH_ASSOC))
+?>
+                            <div style="width:100%; padding:10px 0; text-align:right; overflow:hidden; display:block;">
+                                <span style="font-size:12px; color:#333333">今日总欠款：<span style=" font-size:12px; color:#ee583d"><?php echo $total_credit?></span>, 今日总还款：<span style="font-size:12px; color:#ee583d"><?php echo $total_repayment?></span></span>
+                            </div>
+                        </div>
+                    </div>
+<?php
+}
+?>
+<script>/*n*/    
+var page_count_711=<?php echo $page_count; ?>;
+/**/set_page_list_711($("#pages_711").find("#m"));
+</script>
+                    <!-- refresh_end -->
+                    <div class="showpage" id="pages_711">
+                        <input id="page_idx_711" name="page_idx" style="display:none" value="1"/>
+                        <span style="display:block">
+                            <span class="pagenolink" id="last" onclick="/**/click_page_num_711($(this))" >上一页</span>
+                            <span class="pagenolink" id="ll" onclick="/**/click_page_num_711($(this))" />
+                            <span class="pageblank"  id="lb">...</span>
+                            <span class="pagenolink" id="l2" onclick="/**/click_page_num_711($(this))" />
+                            <span class="pagenolink" id="l1" onclick="/**/click_page_num_711($(this))" />
+                            <span class="pageselect" id="m"  onclick="/**/click_page_num_711($(this))"  >1</span>
+                            <span class="pagenolink" id="r1" onclick="/**/click_page_num_711($(this))" />
+                            <span class="pagenolink" id="r2" onclick="/**/click_page_num_711($(this))" />
+                            <span class="pageblank"  id="rb">...</span>
+                            <span class="pagenolink" id="rr" onclick="/**/click_page_num_711($(this))" />
+                            <span class="pagenolink" id="next" onclick="/**/click_page_num_711($(this))" >下一页</span>
+                        </span>
+                    </div>
+                    </form>
+                </div>
+                

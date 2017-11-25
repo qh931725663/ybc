@@ -1,0 +1,16 @@
+<?php 
+include_once "{$root_path}/model/model_bi.php";
+@$page=$_REQUEST["page_idx"]?$_REQUEST["page_idx"]:1;$pagesize=20;$offset=($page-1)*$pagesize;
+$factory_array= get_stream_jxdz(@$_REQUEST["var_factory_id"]);
+$rowcount=count($factory_array);
+debug($factory_array);
+$page_count=ceil($rowcount/$pagesize);
+for ($i=$offset;$i<$offset+$pagesize && $i<$rowcount;$i++)
+{
+    $ro=$factory_array[$i];
+    debug($ro);
+?>
+
+<?php
+}
+?>

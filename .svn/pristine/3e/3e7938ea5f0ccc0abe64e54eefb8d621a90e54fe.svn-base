@@ -1,0 +1,18 @@
+<?php
+$seller_arr=[];
+$p=cselect("seller_name,seller_pinyin","ydf_seller",array("seller_boss_m_bianhao=?",$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"]));
+while ($row=$p[0]->fetch())
+{
+    $sell=$row["seller_pinyin"];
+    echo json_encode($sell);
+    if(sizeof($sell)>1){
+        print_r(explode(" ",$sell));
+        foreach($sell as $key){
+            $seller_arr[$key]=$row["seller_name"];
+        }
+    }else{
+        $seller_arr[$row["seller_pinyin"]]=$row["seller_name"];
+    }
+}
+echo json_encode($seller_arr);
+?>

@@ -1,0 +1,66 @@
+<?php $new_pid="pid_view_get_seller_finance_detail__".$_REQUEST["var_seller_id"] ?>
+<?php $new_page="view_get_seller_finance_detail__".$_REQUEST["var_seller_id"] ?>
+
+<form id="form_mjdz">
+<input id="page_idx2" name="page_idx" type="hidden" />
+<input name="var_seller_id" value="<?php echo $_REQUEST["var_seller_id"] ?>" type="hidden"/>
+</form>
+<div class="report">
+    <div class="report_table_tbody">
+        <div style="width:15%">卖家</div>
+        <div style="width:15%">最近交易时间</div>
+        <div style="width:15%">类型</div>
+        <div style="width:15%">数量</div>
+        <div style="width:15%">金额</div>
+        <div style="width:15%">应收</div>
+    </div>
+
+    <!-- refresh_begin -->
+    <?php
+    include_once "{$root_path}/model/model_bi.php";
+    @$page=$_REQUEST["page_idx"]?$_REQUEST["page_idx"]:1;$pagesize=20;$offset=($page-1)*$pagesize;
+    $seller_array= get_stream_mjdz(@$_REQUEST["var_seller_id"]);
+    $rowcount=count($seller_array);
+    debug($seller_array);
+    $page_count=ceil($rowcount/$pagesize);
+    for ($i=$offset;$i<$offset+$pagesize && $i<$rowcount;$i++)
+    {
+        $idx=$rowcount-1-$i;
+        $ro=$seller_array[$idx];
+        debug($ro);
+        $p=rselect("sum(detail_order_num) as sum","ydf_order_detail",array("detail_bianhao=?",$ro["bill_source_id"]));
+        debug($ro["bill_source_id"]);
+        var_dump($p);
+        $num="";
+        while($row=$p->fetch()){
+            $num=$row["sum"];
+        }
+    ?>
+        <div class="report_table_row">
+            <div style="width:9%; height:15px;text-align:center;margin-left:18%;"><?php echo date("Y-m-d H:i:s",$ro["update_time"]) ?></div>
+            <?php
+                if($ro["bill_type"]=='mjss'){
+                    $ro["bill_type"]="<span style='color:red;'>"."还款"."</span>";
+                }else if($ro["bill_type"]=='mjys'){
+                    $ro["bill_type"]="拿货";
+                }else if($ro["bill_type"]=='mjyf'){
+                    $ro["bill_type"]="<span style='color:red;'>"."退货"."</span>";
+                }else if($ro["bill_type"]=='mjsf'){
+                    $ro["bill_type"]="<span style='color:red;'>"."已退款"."</span>";
+                }
+            ?>
+            <div style="width:9%;text-align:center;margin-left:6%"><?php echo $ro["bill_type"] ?></div>
+            <div style="width:9%;text-align:center;margin-left:6%"><?php echo $num ?></div>
+            <div style="width:12%;text-align:center;margin-left:5%"><?php echo $ro["bill_fund"] ?></div>
+            <div style="width:11%;text-align:center;margin-left:3%"><?php echo $ro["pool"] ?></div>
+        </div>
+     <?php
+     }
+     ?>
+     <div class="record"> 共 <span class="record_num"><?php echo $rowcount?></span> 条记录</div>
+<script>/*n*//*n*/
+    $("#<?php echo $new_pid ?> #pages_seller_finace").set_page_count("<?php echo $new_page ?>","pages_seller_finace",<?php echo $page_count;?>);
+</script>
+ <!-- refresh_end -->
+     <div class="ipages" input_idx_id="#<?php echo $new_pid ?>  #page_idx2" id="pages_seller_finace" page="<?php echo $new_page ?>" form="form_mjdz" count="<?php echo $page_count; ?>"  style="overflow:hidden;margin-left: 5%;"></div>
+ </div>

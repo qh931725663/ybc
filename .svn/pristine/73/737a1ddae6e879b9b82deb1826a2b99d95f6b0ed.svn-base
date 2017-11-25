@@ -1,0 +1,22 @@
+<?php
+
+
+$pdo->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
+try
+{
+    $pdo->beginTransaction();
+
+    update("ydf_member",array("m_password"=>md5($_REQUEST["m_password"])),array("m_bianhao=?",$_SESSION["ERP_ACCOUNT_LOGIN_BIANHAO"]) );
+    
+    $pdo->commit();
+
+    
+    echo json_encode(array("state"=>"ok"));
+}
+catch(PDOException $e)
+{  
+    $pdo->rollback();
+    $pdo->setAttribute(PDO::ATTR_AUTOCOMMIT, 1);
+    die(json_encode(array("state"=>$e->getCode(),"desc"=>$e->getMessage(),"trace"=>$e->getTraceAsString() )));
+}
+?>

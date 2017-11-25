@@ -1,0 +1,415 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>优百仓档口管家</title>
+<script type="text/javascript" src="/pc/js/jquery-min.js"></script>
+<script type="text/javascript" src="/pc/layer/layer.js"></script>
+<script type="text/javascript" src="/pc/js/superslide.2.1.js"></script>
+
+<style type="text/css">
+<!--
+*{
+   margin:0;
+   padding:0;
+}
+body{
+    font-family:Microsoft YaHei;
+    font-size:12px;
+    color:#333333;
+    background:#ffffff;
+}
+html, body{height:100%;}
+img {border:0 none;}
+ul,li{ list-style-type:none;}
+a{color:#333333;text-decoration:none}a:hover{color:#d64126}
+a.linkred{color:#ee583d;text-decoration:none}a.linkred:hover{color:#d64126}
+a.linkblue{color:#30c0db;text-decoration:none}a.linkblue:hover{color:#d64126}
+.link_span_experience{color:#30c0db;text-decoration:none; cursor:pointer}.link_span_experience:hover{color:#d64126}
+
+.head_menu_normal{position:relative; float:left; padding:10px 15px; margin-left:5px; font-family:Microsoft YaHei; font-size:14px; text-align:center; display:block; cursor:pointer}
+.head_menu_normal:hover{background:#ee583d; color:#ffffff}
+
+.TabSelect{float:left; width:50%; padding:10px 0; font-size:14px; font-weight:bold; text-align:center; color:#ee583d; background:#ffffff; overflow:hidden; display:block; cursor:pointer}
+.TabNormal{float:left; width:50%; padding:10px 0; font-size:14px; font-weight:bold; text-align:center; color:#333333; overflow:hidden; display:block; cursor:pointer}
+.TabItem{position:relative; width:94%; min-height:200px; margin:5px auto; padding:5px 3%; overflow:hidden; display:block}
+
+.btn_red{width:260px; margin:10px auto; padding:10px 0; background:#ee583d; font-size:14px; font-weight:bold; color:#ffffff; text-align:center; overflow:hidden; display:block; cursor:pointer}
+.btn_red:hover{background:#d64126; }
+
+.btn_blue{width:260px; margin:20px auto; padding:10px 0; background:#30c0db; font-size:14px; font-weight:bold; color:#ffffff; text-align:center; overflow:hidden; display:block; cursor:pointer}
+.btn_blue:hover{background:#2796aa; }
+
+.shuoming li{
+	width:9%;
+	padding:0 3px;
+	display:inline-block;
+}
+.shuoming li a{
+	width:100%;
+	text-align: center;
+	color:#999;
+	font-size:14px;
+	display:block;
+	line-height: 36px;
+}
+
+.icon-xm{
+	width:68px;
+	height:68px;
+	margin:0 auto;
+	cursor:pointer;
+	background:url(/pc/images/index_menu_icon.png) no-repeat 0 0;
+	transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    -webkit-transition: 0.3s ease;
+    -moz-transition: 0.3s ease;
+    -o-transition: 0.3s ease;
+    transition: 0.3s ease;
+}
+.shuoming li.hover .icon-xm {
+    transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    -webkit-transition: 0.3s ease;
+    -moz-transition: 0.3s ease;
+    -o-transition: 0.3s ease;
+    transition: 0.3s ease;
+}
+
+.icon11{
+	background-position: 0 0 ;
+}
+.icon12{
+	background-position: -112px 0 ;
+}
+.icon13{
+	background-position: -232px 0 ;
+}
+.icon14{
+	background-position: -352px 0 ;
+}
+.icon15{
+	background-position: -464px 0 ;
+}
+.icon16{
+	background-position: -582px 0 ;
+}
+.icon17{
+	background-position: -694px 0 ;
+}
+.icon18{
+	background-position: -812px 0 ;
+}
+.icon19{
+	background-position: -927px 0 ;
+}
+.icon20{
+	background-position: -1046px 0 ;
+}
+
+.fullSlide{width:100%;position:relative;height:350px}
+.fullSlide .bd{margin:0 auto;position:relative;z-index:0;overflow:hidden;}
+.fullSlide .bd ul{width:100% !important;}
+.fullSlide .bd li{width:100% !important;height:350px;overflow:hidden;text-align:center;}
+.fullSlide .bd li a{display:block;height:350px;}
+.fullSlide .hd{width:100%;position:absolute;z-index:1;bottom:0;left:0;height:45px;line-height:30px;}
+.fullSlide .hd ul{text-align:center;}
+.fullSlide .hd ul li{cursor:pointer;display:inline-block;*display:inline;zoom:1;width:15px;height:15px;margin:2px;overflow:hidden;background:#000;filter:alpha(opacity=50);opacity:0.5;line-height:999px;}
+.fullSlide .hd ul .on{background:#f00;}
+.fullSlide .prev,.fullSlide .next{display:block;position:absolute;z-index:1;top:94%;margin-top:-30px;left:15%;z-index:1;width:40px;height:60px;background:url(/pc/images/slider-arrow.png) -126px -137px #000 no-repeat;cursor:pointer;filter:alpha(opacity=50);opacity:0.5;display:none;}
+.fullSlide .next{left:auto;right:15%;background-position:-6px -137px;}
+-->
+</style>
+<script type="text/javascript">
+$(function(){  
+	var myar = setInterval('autoScroll(".scroll")', 3000);
+	//当鼠标放上去的时候，滚动停止，鼠标离开的时候滚动开始
+	$(".scroll").hover(function () { clearInterval(myar); }, function () { myar = setInterval('autoScroll(".scroll")', 3000) });
+}) 
+
+function autoScroll(obj){  
+	$(obj).find(".list").animate({  
+		marginTop : "-180px"  
+	},500,function(){  
+		$(this).css({marginTop : "0px"}).find("li:first").appendTo(this);  
+	})  
+} 
+</script>
+</head>
+
+<body>
+<div style="width:100%; margin:0 auto; background:rgb(52,56,59); overflow:hidden; display:block">
+    <div style="width:1200px; margin:0 auto; overflow:hidden; display:block">
+        <div style="width:100%; margin:20px 0; overflow:hidden; display:block">
+            <div style=" float:left; width:186px; overflow:hidden; display:block">
+                <span style="width:186px; height:35px; background:url(/pc/images/logo_white.png); display:block"></span>
+            </div>
+            <div style="float:right; margin-top:15px; overflow:hidden; display:block">
+                <span style="float:left; font-size:16px; color:#e3e5e4; font-weight:bold">服务热线</span>
+                <span style="float:left; margin-left:10px; font-size:16px; color:#ffff00; font-weight:bold">0571-22810690</span>
+            </div>
+        </div>
+    </div>
+</div>
+<div style="width:1344px; margin:0 auto; background:#f2f2f2; overflow:hidden; display:block">
+    <div style="position:relative; width:100%; height:350px; margin:0 auto; overflow:hidden; display:block">
+    
+        <div class="fullSlide">
+			<div class="bd">
+				<ul>
+					<li _src="url(/pc/images/index_banner001.jpg)"></li>
+					<li _src="url(/pc/images/index_banner002.jpg)"></li>
+				</ul>
+			</div>
+			<div class="hd"><ul></ul></div>
+			<span class="prev"></span>
+			<span class="next"></span>
+		</div>
+        
+        <div style="position:absolute; width:300px; height:280px; top:35px; right:0px; background:#ffffff; display:block">
+            <?php
+            if (empty($_SESSION["ERP_ACCOUNT_LOGIN_BIANHAO"]))
+            {
+            ?>
+            <form id="conloginform" autocomplete="on" onsubmit="submitForm()">
+            <div id='conlogin' class="TabItem">
+                <div id="tip_pwd_login" style="float:left;width:250px; height:20px; margin:0 10px; padding:0 5px; color:#ee583d; overflow:hidden; display:block"></div>
+                <div style="float:left;width:250px; height:20px; margin:0 10px 10px 10px; padding:5px; background:#fafafa; border:1px solid #cccccc; overflow:hidden; display:block">
+                    <span style="float:left; width:30px; height:20px; background:url(/pc/login/images/pic_mob.jpg) center center no-repeat; display:block"></span>
+                    <span style="float:left; width:150px; display:block"><input id="p_mob" name="var_mobile" type="text" autocomplete="off" placeholder="手机号码或子账号" maxlength="50" style="width:190px; padding-top:3px; height:13px; background:#fafafa; border:0;outline:none;"></span>
+                </div>
+                <div style="float:left;width:250px; height:20px; margin:10px; padding:5px; background:#fafafa; border:1px solid #cccccc; overflow:hidden; display:block">
+                    <span style="float:left; width:30px; height:20px; background:url(/pc/login/images/pic_password.jpg) center center no-repeat; display:block"></span>
+                    <span style="float:left; width:150px; display:block">
+                    <input type="password" id="p_pwd" name="var_password" style="width:190px; padding-top:3px; height:13px;background:#fafafa; border:0;outline:none;" placeholder="密码"/>
+                    </span>
+                </div>
+                <div style="float:left;width:250px; height:20px; margin:0 10px; padding:5px 0; overflow:hidden; display:block">
+                    <span style="float:left;display:block">
+                        <input type="checkbox" id="isrem" name="isrem" style="vertical-align:middle;margin:0 0 2px 0;" checked="checked"><label for="isrem" class="linkred">记住登录用户名密码</label>
+                    </span>
+                    <span style="float:right; display:block"><a href="/forgetpwd" class="linkred">忘记密码？</a></span>
+                </div>
+                <div id="btn_pwd_login" class="btn_blue">登 录</div>
+            </div>
+            </form>
+            <div style="position:relative; width:250px; margin:0 10px 0 15px; padding:5px; overflow:hidden; display:block">
+                <span style="float:left; margin-left:10px; display:block"><a href="/reg" class="linkred">我要注册</a></span>
+                <span style="float:right; color:#30c0db; display:block"><span class="link_span_experience" onclick="LinkExperienceAccount('10000024')">档口体验</span> | <span class="link_span_experience" onclick="LinkExperienceAccount('10000025')">工厂体验</span></span>
+
+            </div>
+            <?php
+            }
+            else
+            {
+                $account_type="";
+                if ($_SESSION["ERP_ACCOUNT_LOGIN_TYPE"]=="1")
+                {
+                    $account_type="档口";
+                }
+                elseif ($_SESSION["ERP_ACCOUNT_LOGIN_TYPE"]=="2")
+                {
+                    $account_type="工厂";
+                }
+                elseif ($_SESSION["ERP_ACCOUNT_LOGIN_TYPE"]=="3")
+                {
+                    $account_type="卖家";
+                }
+                elseif ($_SESSION["ERP_ACCOUNT_LOGIN_TYPE"]=="4")
+                {
+                    if ($_SESSION["ERP_ACCOUNT_USER_TYPE"]=="1")
+                    {
+                        $account_type="超级用户";
+                    }
+                    elseif ($_SESSION["ERP_ACCOUNT_USER_TYPE"]=="2")
+                    {
+                        $account_type="档口用户";
+                    }
+                    elseif ($_SESSION["ERP_ACCOUNT_USER_TYPE"]=="3")
+                    {
+                        $account_type="仓库用户";
+                    }
+                }
+            ?>
+            <div style="width:90%; margin:50px auto 0 auto; overflow:hidden; display:block">
+                <?php
+                echo "<span style='float:left; width:30%; color:#999999; text-align:right'>".($_SESSION["ERP_ACCOUNT_LOGIN_TYPE"]=="4"?"登录子账号： ":"登录手机号： ")."</span><span style='float:left; color:#ee583d'>".$_SESSION["ERP_ACCOUNT_LOGIN_MOBILE"]."</span>";
+                ?>
+            </div>
+            <div style="width:90%; margin:10px auto 0 auto; overflow:hidden; display:block">
+                <?php
+                echo "<span style='float:left; width:30%; color:#999999; text-align:right'>用户类型：</span><span style='float:left; color:#ee583d'>".$account_type."</span>";
+                ?>
+            </div>
+            <a href="/myaccount"><div class="btn_blue">进入管理</div></a>
+            <a href="/logout"><div class="btn_red">安全退出</div></a>
+            <?php
+            }
+            ?>
+        </div>
+    </div>
+</div>
+<div style="width:1344px; margin:20px auto; overflow:hidden; display:block">
+    <div style="width:1200px; margin:0 auto; font-size:16px; font-weight:bold; overflow:hidden; display:block">操作演示</div>
+    <div style="width:1200px; margin:20px auto 0 auto; overflow:hidden; display:block">
+        <ul class="shuoming">
+            <li onclick="ShowOptPlay('xszb')">
+                <div class="icon-xm icon11"></div>
+                <a href="javascript:;">销售直播</a>
+            </li>
+            <li onclick="ShowOptPlay('sdch')">
+               <div class="icon-xm icon12"></div>
+                <a href="javascript:;">闪电出货</a>
+            </li>
+            <li onclick="ShowOptPlay('xsgl')">
+                <div class="icon-xm icon13"></div>
+                <a href="javascript:;">销售管理</a>
+            </li>
+            <li onclick="ShowOptPlay('kcgl')">
+                <div class="icon-xm icon14"></div>
+                <a href="javascript:;">库存管理</a>
+            </li>
+            <li onclick="ShowOptPlay('gccg')">
+                <div class="icon-xm icon15"></div>
+                <a href="javascript:;">工厂采购</a>
+            </li>
+            <li onclick="ShowOptPlay('cwgl')">
+                <div class="icon-xm icon16"></div>
+                <a href="javascript:;">财务管理</a>
+            </li>
+            <li onclick="ShowOptPlay('spsz')">
+                <div class="icon-xm icon17"></div>
+                <a href="javascript:;">商品设置</a>
+            </li>
+            <li onclick="ShowOptPlay('mjsz')">
+                <div class="icon-xm icon18"></div>
+                <a href="javascript:;">卖家设置</a>
+            </li>
+            <li onclick="ShowOptPlay('gcsz')">
+                <div class="icon-xm icon19"></div>
+                <a href="javascript:;">工厂设置</a>
+            </li>
+            <li onclick="ShowOptPlay('jbsz')">
+                <div class="icon-xm icon20"></div>
+                <a href="javascript:;">基本设置</a>
+            </li>
+        </ul>
+    </div>
+</div>
+<div style="width:1344px; margin:0 auto; padding:50px 0; line-height:1.8; text-align:center; background:#f2f2f2; overflow:hidden; display:block">
+© 2016 Youbaicang.com All Rights Reserved<br>
+<a href="http://www.miibeian.gov.cn" target="_blank">浙ICP备16030022号</a>
+</div>
+
+<div id="layer_show_opt_play" style="float:left; width:995px; overflow:hidden; display:none"/>
+<script type="text/javascript">
+$(function () {
+    if (window.location.protocol != "https:" && (window.location.host=="www.youbaicang.com" || window.location.host=="youbaicang.com"))
+        window.location.href = "https:" + window.location.href.substring(window.location.protocol.length);
+
+    $(".shuoming li").hover(function() {
+        $(this).addClass("hover");
+    },
+    function() {
+        $(this).removeClass("hover");
+    });
+
+    $("input[name=var_password]").blur(function () {
+        if(!$("#p_pwd").val() || !$("#p_pwd").val().match(/^[\w]{6,20}$/)){$("#tip_pwd_login").html("请输入正确格式的密码！")} else {$("#tip_pwd_login").html("")}
+    })
+    //登陆成功后检查是否存储用户信息
+    var user=window.localStorage.getItem("user");
+        if(user){
+            var json=JSON.parse(user);
+            $("#p_mob").val(json.user);
+            $("#p_pwd").val(json.pwd);
+    }
+    $("#btn_pwd_login").click(function () {
+        if($("#p_mob").val()==""){$("#tip_pwd_login").html("请输入手机号码或子账号！");return false}
+        if(!$("#p_pwd").val() || !$("#p_pwd").val().match(/^[\w]{6,20}$/)){$("#tip_pwd_login").html("请输入正确格式的密码！");return false}
+                //TODO 判断用户是否勾选了"记住用户名和密码"
+                var isrem = document.getElementById("isrem");
+                if(isrem.checked){//TODO 勾选
+                    var user = document.getElementById("p_mob").value;
+                    var pwd = document.getElementById("p_pwd").value;
+                    var json = {
+                        "user" : user,
+                        "pwd" : pwd
+                    }
+                    var jsonString = JSON.stringify(json);
+                    window.localStorage.setItem('user',jsonString);
+                }else{
+                 window.localStorage.clear();
+                }
+        $.ajax({
+            url:"postlogin",
+            async: false,
+            type: "POST",
+            data:{var_password:$("#p_pwd").val(),var_mobile:$("#p_mob").val()},
+            dataType:"json",
+            success: function(html){
+                if (html["state"]=="ok")
+                {
+                    layer.msg('登录成功！', {time: 2000, icon:1});
+                    setTimeout(function(){
+                        window.location.href="/myaccount";
+                    },2000);
+                }
+                else
+                {
+                    $("#tip_pwd_login").html(html["desc"]);
+                }
+            }
+        });
+    });
+
+});
+
+function ShowOptPlay(opt_id)
+{
+    $.ajax({
+        url:"view-get-index-opt-play",
+        async: false,
+        type: "POST",
+        data:{var_opt_id:opt_id},
+        success: function(html){
+            $('#layer_show_opt_play').html(html);
+        }
+    });
+
+    index_layer_show_opt_play=layer.open({
+        shade: [0.9, '#000000'],
+        type: 1,
+        area: ['995px', '630px'],
+        title: false,
+        content:$('#layer_show_opt_play')
+    });
+
+}
+
+function LinkExperienceAccount(experience_account)
+{
+    $.ajax({
+        url:"postlogin",
+        async: false,
+        type: "POST",
+        data:{var_experience_account:experience_account},
+        dataType:"json",
+        success: function(html){
+            if (html["state"]=="ok")
+            {
+                window.location.href="/myaccount";
+            }
+        }
+    });
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,23 @@
+<?php
+include_once("check_login.php");
+include_once("check_dangkou_user.php");
+?>
+<div class="frame_main_div" >
+    <div class="frame_tab_panel">
+        <div class="frame_tab_line">
+            <span class="frame_tab_item_select" onclick="click_tab_finance_dangkou($(this));mount_to_frame('frame_finance_reg_pure_sales_fund',0,'frame_finance_dangkou')">档口日记账</span>
+            <span class="frame_tab_item" onclick="click_tab_finance_dangkou($(this));mount_to_frame('frame_finance_reg_expence',0,'frame_finance_dangkou')">日常报销</span>
+            <span class="frame_tab_item" onclick="click_tab_finance_dangkou($(this));mount_to_frame('frame_finance_reg_bankio',0,'frame_finance_dangkou')">利润提现</span>
+            <span class="frame_tab_item" onclick="click_tab_finance_dangkou($(this));mount_to_frame('frame_finance_bi_fund',0,'frame_finance_dangkou')">资金统计</span>
+        </div>
+    </div>    
+    <div id="frame_finance_dangkou" />
+</div>
+<script>
+mount_to_frame('frame_finance_reg_pure_sales_fund',0,'frame_finance_dangkou');
+function click_tab_finance_dangkou(obj)
+{
+    obj.parent().find(".frame_tab_item_select").removeClass('frame_tab_item_select').addClass("frame_tab_item");
+    obj.addClass("frame_tab_item_select");
+}
+</script>

@@ -1,0 +1,497 @@
+<!-- 721 -->
+<?php 
+function get_user_list()
+{
+    $boss_id = $_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"];    
+    $p=select("*","ydf_user",array("user_boss_m_bianhao=?",$boss_id));
+    if ($p->errorCode()!="00000")
+        print_r($p->errorInfo());
+    while ($user=$p->fetch())
+    {
+        $p_member=select("*","ydf_member",array("m_bianhao=?",$user["user_self_m_bianhao"]));
+        if($member=$p_member->fetch()){ 
+            echo '<option value="'.$user["user_self_m_bianhao"].'">'.$member["m_name"].'</option>';
+        }
+    }
+}
+
+?>
+<script type="text/javascript">    
+function list_sdsy()
+{
+    //重置value
+    $('#chuku_from_day').attr("value","");
+    $('#chuku_to_day').attr("value","");
+    /* $('#chuku_searchwords').attr("placeholder","请输入卖家昵称"); */
+    /* $('#chuku_searchwords').css("color","#cccccc") */
+
+    set_page_num("view_finance_reg_expence","pages_721",1);
+
+    refresh_inner("view_finance_reg_expence?"+$("#form_721").serialize() );
+}
+
+function search_sdsy()
+{
+    $("#btn_chukuorder_search").parent().prev().find(".listtypevalue").removeClass('listtypeselect');
+
+    set_page_num("view_finance_reg_expence","pages_721",1);
+
+    refresh_inner("view_finance_reg_expence?"+$("#form_721").serialize() );
+}
+
+function search_721()
+{
+    mobj=$("#pages_721").find("#m");
+    mobj.html(1);
+    set_page_list_721(mobj);
+    refresh_inner("view_finance_reg_expence?"+$("#form_721").serialize() );
+}
+function click_me_721(obj,state)
+{
+    $('#button_state_721').attr('value',state);
+    $(".list_button_721").removeClass("listclassselect");
+    $(".list_button_721").addClass("listclassvalue");
+
+    obj.removeClass("listclassvalue");
+    obj.addClass("listclassselect");
+    search_721();
+}
+
+function delete_bxsq_721(bill_id){ 
+    $.ajax({
+        url:"model-bill-delete", 
+        async: false,
+        type: "POST",
+        dataType:"json",
+        data:{func:"delete_bxsq",bill_id:bill_id},
+        error:function(){
+            layer.msg("系统异常，请稍后再试:(", {time: 2000, icon:2});
+        },
+        success: function(html){
+            if (html.desc.indexOf("have_son_bill")==0 ){
+                layer.msg("删除失败，账单已经确认支付,撤销支付才能删除", {time: 2000, icon:2});
+                return;
+            }
+            if (html.desc=="not_your_bill"){
+                layer.msg("删除失败，账单不属于本人！", {time: 2000, icon:2});
+                return;
+            }
+            if (html.state!="ok"){
+                layer.msg("删除失败！", {time: 2000, icon:2});
+                return;
+            }
+            layer.msg('删除成功！', {time: 2000, icon:1});
+            setTimeout(function(){
+                refresh_inner("view_finance_reg_expence?"+$("#form_721").serialize() );
+            },0);
+        }
+    });    
+}
+function delete_bxyf_721(bill_id)
+{ 
+    if (bill_id=="0"){
+        return;
+    }
+    $.ajax({
+        url:"model-bill-delete", 
+        async: false,
+        type: "POST",
+        dataType:"json",
+        data:{func:"delete_bxyf",bill_id:bill_id},
+        error:function(){
+            layer.msg("系统异常，请稍后再试:(", {time: 2000, icon:2});
+        },
+        success: function(html){
+            if (html.desc.indexOf("have_son_bill")==0){
+                layer.msg("删除失败，账单已经确认支付,除非撤销支付才能删除", {time: 2000, icon:2});
+                return;
+            }
+            if (html.desc=="must_add_user"){
+                layer.msg("删除失败，账单不属于本人！", {time: 2000, icon:2});
+                return;
+            }
+            if (html.state!="ok"){
+                layer.msg("删除失败！", {time: 2000, icon:2});
+                return;
+            }
+            layer.msg('删除成功！', {time: 2000, icon:1});
+            setTimeout(function(){
+                refresh_inner("view_finance_reg_expence?"+$("#form_721").serialize() );
+            },0);
+        }
+    });    
+}
+
+</script>
+                    <form id="form_721">
+                    <div style="float:left; width:100%; margin-top:10px; overflow:hidden; display:block;">
+                        <div style="float:right">
+                            <span class="btn_normal_red" onclick="ShowExpenceAdd()">申请报销</span>
+                        </div>
+                    </div>
+                    <div  style="float:left; width:100%; margin:10px 0; padding:5px; overflow:hidden; display:block">
+                        <div style="float:left; overflow:hidden; display:block">
+                            <input type="hidden" id="order_type" name="order_type"/>
+                            <span class="listtypevalue listtypeselect" onclick="/**/click_me_kcdb($(this),'')">全部</span>
+                        </div>
+                        <div style="float:right; overflow:hidden; display:block">
+                            <span style="float:left; overflow:hidden; display:block">
+                                <span style="padding:5px 0">日期 <input type="text" id="search_store_dangkoubuhuo_from_date" name="search_store_dangkoubuhuo_from_date" onclick="/**/WdatePicker({dateFmt:'yyyy-MM-dd'})" size="12" maxlength="50" readonly="readonly" style="padding:5px"> 至 <input type="text" id="search_sotre_dangkoubuhuo_to_date" name="search_sotre_dangkoubuhuo_to_date" onclick="/**/WdatePicker({dateFmt:'yyyy-MM-dd'})" size="12" maxlength="50" readonly="readonly" style="padding:5px">
+                                </span>
+                            </span>
+                            <span id="btn_chukuorder_search" class="btn_normal_green">搜索</span>
+                        </div>
+                    </div>
+
+<!-- refresh_begin -->
+                    <div class="title_stalls" style="position:relative; float:left; width:100%; margin-top:0px; background:#f2f2f2; border-bottom:1px solid #cccccc; display:block">
+                        <div style="width:12%;">日期</div>
+                        <div style="width:5%;">申请人</div>
+                        <div style="width:10%;">手机号</div>
+                        <div style="width:5%;">类型</div>
+                        <div style="width:10%;">金额</div>
+                        <div style="width:15%;">详情描述</div>
+                        <div style="width:25%;">收款资金账户</div>
+                        <div style="width:5%;">状态</div>
+                        <div style="width:13%;">操作</div>
+                    </div>
+                    <div id="pagelist" style="float:left; width:100%; overflow:hidden; display:block">
+<?php
+$boss_id = $_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"];    
+$user_id = $boss_id;
+$dangkou_id = 10000011;
+
+@$from_day=$_REQUEST["from_day"]?get_ymd($_REQUEST["from_day"])["d"]:null;
+@$to_day=$_REQUEST["to_day"]?get_ymd($_REQUEST["to_day"])["d"]+24*3600:null;
+$where=@array("bill_boss_id=? and bill_add_user_id=? and bill_user_id=? and bill_is_close=?  
+        and bill_add_time>=? and bill_add_time<=? and bill_small_type=? and bill_type='bxsq'" ,
+        $boss_id,$_REQUEST["bill_add_user_id"],$_REQUEST["bill_user"],$_REQUEST["bill_is_close"],
+        $from_day,$to_day,$_REQUEST["bill_small_type"]
+        );
+$where=clean_where($where);
+//echo $where[0];
+
+$p=select("count(*)","ydf_finance_bill",$where);
+$rows = $p->fetch();
+$rowcount = $rows[0];
+@$page=$_REQUEST["page_idx"]?$_REQUEST["page_idx"]:1;
+$pagesize=10;$page_count=ceil($rowcount/$pagesize);  
+$offset=($page-1)*$pagesize; 
+
+$p=select("*","ydf_finance_bill",$where,"bill_add_time desc",$offset,$pagesize);
+if ($p->errorCode()!="00000")
+    print_r($p->errorInfo());
+while($row_bill=$p->fetch(PDO::FETCH_ASSOC))
+{
+    include_once "{$root_path}/model/model_bill.php";
+    $sons=get_son_bill($row_bill["bill_id"],"zdhz");
+    $row_zdhz=array();
+    if (count($sons)==1){ 
+        $p_zdhz=select("*","ydf_finance_bill",array("bill_id=?",$sons[0]) );
+        $row_zdhz=$p_zdhz->fetch();
+        
+        $p_bill_bank_pay=cselect("*","ydf_bank",array("bank_id=?",$row_zdhz["bill_bank_id"]));
+        $row_bill_bank_pay=$p_bill_bank_pay[0]->fetch();
+    }
+    
+    $p_user=cselect("*","ydf_user",array("user_self_m_bianhao=?",$row_bill["bill_add_user_id"]));
+    $row_user=$p_user[0]->fetch();
+    
+    $p_bill_bank=cselect("*","ydf_bank",array("bank_id=?",$row_bill["bill_bank_id"]));
+    $row_bill_bank=$p_bill_bank[0]->fetch();
+?>
+                        <div class="list_stalls" style="position:relative;width:100%; padding:10px 0; border-bottom:1px dashed #cccccc; overflow:hidden; display:block">
+                            <div style="width:12%;"><?php echo echo2(date("Y-m-d H:i:s",$row_bill["bill_add_time"])) ?></div>
+                            <div style="width:5%;"><?php echo $row_user["user_name"] ?></div>
+                            <div style="width:10%;"><?php echo $row_user["user_mobile"] ?></div>
+                            <div style="width:5%;"><?php echo @echo2($EXPENCE_TYPE[(string)$row_bill["bill_small_type"]]  )?></div>
+                            <div style="width:10%; color:#e43c3f;"><?php echo echo2($row_bill["bill_fund"])?></div>
+                            <div style="width:15%;"><?php echo echo2($row_bill["bill_desc"])?></div>
+                            <div style="width:25%;"><?php echo $row_bill_bank["bank_type"]=="3"?$row_bill_bank["bank_user_account"]:$row_bill_bank["bank_name"].$row_bill_bank["bank_user_account"]." "." ".$row_bill_bank["bank_user_name"]?></div>
+                            <div style="width:5%;">
+                            <?php
+                            if ($row_bill["bill_verify_state"]=="0")
+                            {
+                                echo "<span style='color:#e43c3f'>待付款</span>";
+                            }
+                            elseif ($row_bill["bill_verify_state"]=="1")
+                            {
+                                echo "<span style='color:#009900'>已付款</span>";
+                            }
+                            elseif ($row_bill["bill_verify_state"]=="2")
+                            {
+                                echo "<span style='color:#999999'>已驳回</span>";
+                            }
+                            ?>
+                            </div>
+                            <div style="float:left;width:13%;padding:10px 0; text-align:center">
+                                <?php
+                                if ($row_bill["bill_verify_state"]=="0")
+                                {
+                                ?>
+                                <span style="color:#0099FF; cursor:pointer" onclick="ShowExpencePaymentConfirm(<?php echo $row_bill["bill_id"]?>)">付款</span>
+                                <?php
+                                }
+                                else
+                                {
+                                ?>
+                                <span style="color:#999999">付款</span>
+                                <?php
+                                }
+                                ?>
+                                |
+                                <?php
+                                if ($row_bill["bill_verify_state"]=="0")
+                                {
+                                ?>
+                                <span style="color:#0099FF; cursor:pointer" onclick="RefuseExpencePayment(<?php echo $row_bill["bill_id"]?>)">驳回</span>
+                                <?php
+                                }
+                                else
+                                {
+                                ?>
+                                <span style="color:#999999">驳回</span>
+                                <?php
+                                }
+                                ?>
+                                |
+                                <?php
+                                if ($row_bill["bill_add_user_id"]==$_SESSION["ERP_ACCOUNT_USER_SELF_M_BIANHAO"] and $row_bill["bill_verify_state"]<>"1")
+                                {
+                                ?>
+                                <span style="color:#0099FF; cursor:pointer" onclick="DeleteExpence(<?php echo $row_bill["bill_id"]?>)">删除</span>
+                                <?php
+                                }
+                                else
+                                {
+                                ?>
+                                <span style="color:#999999">删除</span>
+                                <?php
+                                }
+                                ?>
+                            </div>
+                            <?php
+                            if ($row_bill["bill_verify_state"]=="1")
+                            {
+                            ?>
+                            <div style="float:left;width:100%; margin:0 auto; padding:10px 0; overflow:hidden; display:block;">
+                                <div style="float:right; padding:5px 0">
+                                    <span style="float:left"><span style="color:#999999">付款日期：</span><?php echo @echo2(date("Y-m-d",$row_zdhz["bill_add_time"])) ?></span>
+                                    <span style="float:left; margin-left:10px"><span style="color:#999999">付款金额：</span><?php echo @echo2($row_zdhz["bill_fund"])?></span>                                    
+                                    <?php
+                                    if (!empty($row_zdhz["bill_desc"]))
+                                    {
+                                    ?>
+                                    <span style="float:left; margin-left:10px"><span style="color:#999999">付款说明：</span><?php echo @echo2($row_zdhz["bill_desc"])?></span>    
+                                    <?php
+                                    }
+                                    ?>
+                                    <span style="float:left; margin-left:10px"><span style="color:#999999">付款资金账户：</span><?php echo $row_bill_bank_pay["bank_type"]=="4"?"系统账户":($row_bill_bank_pay["bank_type"]=="3"?$row_bill_bank_pay["bank_user_account"]:($row_bill_bank_pay["bank_type"]=="2"?$row_bill_bank_pay["bank_name"]." ".$row_bill_bank_pay["bank_user_account"]." ".$row_bill_bank_pay["bank_user_name"]:""))?></span>
+                                    <span style="float:left; margin-left:10px"><span style="color:#999999">付款人：</span><?php echo @echo2($row_zdhz["bill_add_user_id"]) ?></span>
+                                    <span style="float:left; margin-left:10px; color:#0099FF; cursor:pointer" onclick="CancelExpencePayment(<?php echo $row_bill["bill_id"]?>)">撤销</span>
+                                </div>
+                            </div>
+                            <?php
+                            }
+                            ?>
+                        </div>
+<?php
+}
+?>
+                    
+                    
+                    </div>
+                    <div style="float:right; margin-top:5px; font-size:14px"> 共 <span style="font-size:14px; color:#d51938; font-weight:bold;"><?php echo $rowcount?></span> 个报销记录</div>
+
+<script>/*n*//*n*/
+set_page_count("view_finance_reg_expence","pages_721",<?php echo $page_count;?>);
+</script>
+
+<!-- refresh_end -->
+                    <div class="ipages" id="pages_721" page="view_finance_reg_expence" form="form_721" count="<?php echo $page_count; ?>"/>
+                    </form> <!-- 页码也作为表单项统一处理  -->
+
+                    
+                    <div id="layer_expence_add" style="float:left; width:650px; padding:25px; overflow:visible; display:none">
+            
+                    </div> 
+                                        
+                    <div id="layer_expence_payment_confirm" style="float:left; width:500px; padding:25px; overflow:visible; display:none">
+            
+                    </div>          
+<script type="text/javascript">
+function ShowExpenceAdd()
+{
+    $.ajax({
+        url:"view-finance-reg-expence-2", 
+        async: false,
+        type: "POST",
+        data:"",
+        success: function(html){
+            $("#layer_expence_add").html(html);
+        }
+    });
+    
+    index_layer_expence_add=layer.open({
+        type: 1,
+        area: ['720px', '400px'],
+        title: false,
+        content:$('#layer_expence_add')
+    });
+}
+
+function ShowExpencePaymentConfirm(bill_id){
+    $.ajax({
+        url:"get-expence-payment-confirm", 
+        async: false,
+        type: "POST",
+        data:{var_bill_id:bill_id},
+        success: function(html){
+            $("#layer_expence_payment_confirm").html(html);
+        }
+    });
+    
+    index_layer_expence_payment_confirm=layer.open({
+        type: 1,
+        area: ['570px', '400px'],
+        title: false,
+        content:$('#layer_expence_payment_confirm')
+    });
+}
+
+function PostExpencePaymentConfirm(){
+    if(!$("#bill_bank").val())
+    {
+        alert("亲，请选择付款资金账户！");
+        return false;
+    }
+    
+    if(!$("#bill_fund").val())
+    {
+        alert("亲，请填写付款金额！");
+        return false;
+    }
+        
+    $.ajax({
+        url:"model-bill-update", 
+        async: false,
+        type: "POST",
+        dataType:"json",
+        data:$("#vform_factory_getcash_confirm").serialize(),
+        error:function(){
+            layer.close(index_layer_expence_payment_confirm);
+            layer.msg('系统异常，请稍后再试:(', {time: 2000, icon:2});
+        },
+        success: function(html){
+            layer.close(index_layer_expence_payment_confirm);
+            if (html.state!="ok"){
+                layer.msg('提交失败！', {time: 2000, icon:2});
+                return;
+            }
+            layer.msg('提交成功！', {time: 2000, icon:1});
+            setTimeout(function(){
+                mount_to_frame('view_finance_reg_expence',1,'frame_finance_reg_expence');
+            },0);
+        }
+    });    
+}
+
+function RefuseExpencePayment(bill_id){ 
+    if(confirm("确定要驳回选中的信息吗？"))
+    {
+        $.ajax({
+            url:"model-bill-delete", 
+            async: false,
+            type: "POST",
+            dataType:"json",
+            data:{func:"refuse_pay_bxsq",bill_id:bill_id},
+            error:function(){
+                layer.msg('系统异常，请稍后再试:(', {time: 2000, icon:2});
+            },
+            success: function(html){
+                if (html.state=="ok"){
+                    layer.msg("驳回成功！", {time: 2000, icon:1});
+                    setTimeout(function(){
+                        mount_to_frame('view_finance_reg_expence',1,'frame_finance_reg_expence');
+                    },0);
+                }
+                else if (html.state=="fail"){
+                    layer.msg("驳回失败！", {time: 2000, icon:2});
+                    return;
+                }
+                else
+                {
+                    layer.msg(html.desc, {time: 2000, icon:2});
+                    return;
+                }
+            }
+        });    
+    }
+}
+
+function DeleteExpence(bill_id){ 
+    if(confirm("确定要删除选中的信息吗？一旦删除将不能恢复！"))
+    {
+        $.ajax({
+            url:"model-bill-delete", 
+            async: false,
+            type: "POST",
+            dataType:"json",
+            data:{func:"delete_bxsq",bill_id:bill_id},
+            error:function(){
+                layer.msg('系统异常，请稍后再试:(', {time: 2000, icon:2});
+            },
+            success: function(html){
+                if (html.state=="ok"){
+                    layer.msg('删除成功！', {time: 2000, icon:1});
+                    setTimeout(function(){
+                        mount_to_frame('view_finance_reg_expence',1,'frame_finance_reg_expence');
+                    },0);
+                }
+                else if (html.state=="fail"){
+                    layer.msg('删除失败！', {time: 2000, icon:2});
+                    return;
+                }
+                else
+                {
+                    layer.msg(html.desc, {time: 2000, icon:2});
+                    return;
+                }
+            }
+        });    
+    }
+}
+
+function CancelExpencePayment(bill_id){ 
+    if(confirm("确定要撤销选中的信息吗？"))
+    {
+        $.ajax({
+            url:"model-bill-delete", 
+            async: false,
+            type: "POST",
+            dataType:"json",
+            data:{func:"cancel_pay_gcsq",bill_id:bill_id},
+            error:function(){
+                layer.msg('系统异常，请稍后再试:(', {time: 2000, icon:2});
+            },
+            success: function(html){
+                if (html.state=="ok"){
+                    layer.msg("撤销成功！", {time: 2000, icon:1});
+                    setTimeout(function(){
+                        mount_to_frame('view_finance_reg_expence',1,'frame_finance_reg_expence');
+                    },0);
+                }
+                else if (html.state=="fail"){
+                    layer.msg("撤销失败！", {time: 2000, icon:2});
+                    return;
+                }
+                else
+                {
+                    layer.msg(html.desc, {time: 2000, icon:2});
+                    return;
+                }
+            }
+        });    
+    }
+}
+</script>

@@ -1,0 +1,52 @@
+<?php
+include_once("check_login.php");
+include_once("check_dangkou_user.php");
+?>
+<form method="post" id="productaddfactoryform" name="productaddfactoryform">
+    <div class="gapf_box">
+        <p>
+            <span class="sp_a"><span>*</span> 工厂：</span>
+            <span class="lf">
+                <select id="productaddfactory_bianhao" name="productaddfactory_bianhao" style="width:160px; padding:5px">
+                    <option value="">选择</option>
+                    <?php
+                    $p_factory=cselect("*","ydf_factory",array("factory_boss_m_bianhao=?",$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"]),"","factory_bianhao desc");
+                    while ($rowfactory=$p_factory[0]->fetch())
+                    {
+                    ?>
+                    <option value="<?php echo $rowfactory["factory_bianhao"] ?>"><?php echo $rowfactory["factory_name"] ?></option>
+                    <?php
+                    }
+                    ?>
+                </select>
+            </span>
+        </p>
+        <p>
+            <span class="sp_a"><span>*</span> 供货价：</span>
+            <span class="lf">
+            <input id="productaddfactory_valueprice" name="productaddfactory_valueprice" type="text" maxlength="50"/>
+            </span>
+        </p>
+        <p>
+            <span class="sp_a"><span>*</span> 合作方式：</span>
+            <span class="lf">
+                <select id="productaddfactory_mode" name="productaddfactory_mode">
+                  <option value="" selected>请选择</option>
+                  <option value="1">代销</option>
+                  <option value="2">经销</option>
+                </select>
+            </span>
+        </p>
+        <p>
+            <span class="sp_a"> 工厂货号：</span>
+            <span class="lf">
+            <input id="productaddfactory_huohao" name="productaddfactory_huohao" type="text" maxlength="50" style="width:150px; padding:5px"/>
+            </span>
+        </p>
+    </div>
+    <div class="gapf_btn">
+        <input type="hidden" name="p_bianhao" value="<?php echo $_REQUEST["var_p_bianhao"] ?>">
+        <span onclick="PostProductAddFactory(<?php echo $_REQUEST["var_p_bianhao"] ?>)">确认添加</span>
+    </div>
+    <input type="hidden" name="func" value="insert_factory_barcodes"/>
+</form>

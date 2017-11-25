@@ -1,0 +1,15 @@
+<?php 
+include_once "{$root_path}/model/model_bi.php";
+@$page=$_REQUEST["page_idx"]?$_REQUEST["page_idx"]:1;$pagesize=20;$offset=($page-1)*$pagesize;
+$seller_array= get_stream_mjdz(@$_REQUEST["var_seller_id"]);
+$rowcount=count($seller_array);
+debug($seller_array);
+$page_count=ceil($rowcount/$pagesize);
+for ($i=$offset;$i<$offset+$pagesize && $i<$rowcount;$i++)
+{
+    $ro=$seller_array[0];
+    debug($ro);
+?>
+ <?php
+ }
+ ?>

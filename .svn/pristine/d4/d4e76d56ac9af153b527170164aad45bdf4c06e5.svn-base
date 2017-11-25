@@ -1,0 +1,660 @@
+<?php
+include_once("check_login.php");
+include_once("check_dangkou_user.php");
+?>
+                <div style=" float:left; width:98%; margin-top:0px; padding:15px 1%; background:#ffffff; overflow:hidden; display:block">
+                    <div id="step_main" style="width:100%; overflow:hidden; display:block">
+                        <div style="float:left; width:40%; margin-top:0px; overflow:hidden; display:block;">
+                            <div id="pickuporderlist_storewarehouse_name" style="float:left; margin-left:11px"></div>
+                            <div id="pickuporderlist_sales_store_name" style="float:left; margin-left:35px"></div>
+
+                        </div>
+                        <div style="position:relative; float:left; width:100%; margin:-25px 0 10px; overflow:hidden; display:block;">
+                            <div style="float:left; margin-left:9px; margin-top:37px">
+                                当前卖家：<span id="pickuporderlist_seller_name" class="isellername" style="font-size:24px; font-weight:bold; color:#e43c3f"></span><span id="pickup_note_seller_cycle" style="margin-left:10px; font-size:24px; font-weight:bold; color:#e43c3f"></span>
+                            </div>
+                            <div style="float:right; margin-right:125px;">
+                                <span style="float:left; margin-left:10px"><span style="font-size:48px; color:#cccccc">条码：</span><input id="saoma_pickup_barcode" class="ibarcode" name="saoma_pickup_barcode" type="text" size="30" maxlength="100" style="width:300px; padding:5px; font-size:45px" onblur="this.focus()"></span>
+                                <span id="pickup_notice_count" class="inoticecount" style="float:left; margin-left:10px; padding:5px 50px; font-size:48px; font-weight:bold; color:#ffffff; background:#FF0000">0</span>
+                            </div>
+                            <div style="float:right">
+                                <span style="position:absolute; top:4px; right:0;" class="block_btn_normal_red" onclick="/**/mount_to_frame('view_sales_pickup',1,'frame_sales_pickup')">放弃返回</span>
+                            </div>
+                        </div>
+                        <div style="width:98%; margin:0 auto; background:#ffffff; border:1px solid #cccccc; overflow:hidden; display:block">
+                            <div id="pickuporderlist_left" style="float:left; width:56%; min-height:420px; padding:0 2%; border-right:1px solid #cccccc; overflow:hidden; display:block">
+
+                                <div style="float:left; width:98%; padding:10px 1%">
+                                    <span style="float:left">已选择商品列表</span>
+                                    <span style="float:right">
+                                        <span style="font-size:18px; color:#999999">数量总计：<span id="pickup_total_num" class="itotalnum" style=" font-size:24px; color:#e43c3f">0</span>, 金额总计：<span id="pickup_total_money" class="itotalmoney" style="font-size:24px; color:#e43c3f">0</span></span>
+                                    </span>
+                                </div>
+                                <form method="post" id="pickup_order_form">
+                                <div style="max-height:280px; overflow-y:auto; float:left; width:98%; padding:5px 1%; display:block">
+                                    <div style="width:100%; margin:0 auto; padding:10px 0; border-bottom:1px solid #cccccc; overflow:hidden; display:block;">
+                                        <div style="float:left; width:15%; font-size:12px; color:#999999">货号</div>
+                                        <div style="float:left; width:15%; font-size:12px; color:#999999; text-align:center">颜色</div>
+                                        <div style="float:left; width:15%; font-size:12px; color:#999999; text-align:center">尺码</div>
+                                        <div class="iprices" style="float:left; width:15%; font-size:12px; color:#999999; text-align:center">单价</div>
+                                        <div style="float:left; width:30%; font-size:12px; color:#999999; text-align:center">拿货数量</div>
+                                        <div style="float:left; width:10%; font-size:12px; color:#999999; text-align:center">删除</div>
+                                    </div>
+                                    <div id="pickup_list_barcode"  style="width:100%; overflow:hidden; display:block;"></div>
+                                </div>
+                                <div style="width:98%; margin:2px auto 0 auto; overflow:hidden; display:block">
+                                    <div style="float:right; width:150px; overflow:hidden; display:block">
+                                        <div id="btn_pickup_putintoorderlist" class="btn_putintoorderlist" style="margin:3px 0;">确认提交出库</div>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="pickup_order_type" name="order_type">
+                                <input type="hidden" id="pickup_order_seller_bianhao" name="order_seller_bianhao">
+                                <input type="hidden" id="pickup_order_seller_name" name="order_seller_name">
+                                <input type="hidden" id="pickup_order_seller_cycle" name="order_seller_cycle">
+                                <input type="hidden" id="pickup_order_master_bianhao" name="order_master_bianhao">
+                                <input type="hidden" id="pickup_order_master_name" name="order_master_name">
+                                <input type="hidden" id="pickup_order_to_dangkou_bianhao" name="order_slave_bianhao">
+                                <input type="hidden" id="pickup_order_to_dangkou_name" name="order_slave_name">
+                                </form>                            
+                            </div>
+                            <div id="pickuporderlist_right" style="float:left; width:35%; padding:0 2%; overflow:hidden; display:block">
+                            
+                                <div style="float:left; width:98%; padding:10px 1%">
+                                    <span style="float:left">快速选择商品</span>
+                                </div>
+                                <div style="float:left; width:98%; padding:5px 1%">
+                                    <div style="position: relative; width:100%; margin:5px 0; padding:5px 0; border-bottom:1px dashed #cccccc; overflow:hidden; display:block">
+                                        <div class="ikeyboard" onclick_before="view._sales_pickup_submit.click_keyboard"></div>
+                                        <div style="float:left; width:25%; padding:5px 0; color:#999999; text-align:right; overflow:hidden; display:block">货号首字符：</div>
+                                        <div class="choosebox">
+                                            <ul>
+                                                    <li>
+                                                        <span id='select_pickup_char_hot_huohao' class="select_pickup_char_radioToggle" onclick="/**/GetPickupHuohaoByFirstchar($(this),'HOT')">热销货号</span>
+                                                    </li>
+                                                    <?php
+                                                    $p_firstchar=cselect("p_huohao_firstchar","ydf_products",array("p_boss_m_bianhao=?",$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"]),"p_huohao_firstchar","p_huohao_firstchar asc");
+                                                    while ($rowfirstchar=$p_firstchar[0]->fetch())
+                                                    {
+                                                    ?>
+                                                    <li>
+                                                        <span class="select_pickup_char_radioToggle" onclick="/**/GetPickupHuohaoByFirstchar($(this),'<?php echo $rowfirstchar["p_huohao_firstchar"] ?>')"><?php echo $rowfirstchar["p_huohao_firstchar"] ?></span>
+                                                    </li>
+                                                    <?php
+                                                    }
+                                                    ?>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div id="select_pickup_huohao" style="position: relative; width:100%; margin:5px 0; padding:5px 0; border-bottom:1px dashed #cccccc; overflow:hidden; display:none"/>
+                                    <div id="select_pickup_factory" style="position: relative; width:100%; margin:5px 0; padding:5px 0; border-bottom:1px dashed #cccccc; overflow:hidden; display:none"/>
+                                    <div id="select_pickup_color" style="position: relative; width:100%; margin:5px 0; padding:5px 0; border-bottom:1px dashed #cccccc; overflow:hidden; display:none"/>
+                                    <div id="select_pickup_size" style="position: relative; width:100%; margin:5px 0; padding:5px 0; border-bottom:1px dashed #cccccc; overflow:hidden; display:none" />
+                                </div>
+                            
+                            </div>
+                        
+                        </div>
+
+                    </div>
+                    
+                    <div id="step_saving" style="width:100%; overflow:hidden; display:none">
+                        <div style="width:98%; margin:20px auto 0 auto; background:#ffffff; overflow:hidden; display:block">
+                            <div style="width:100%; height:100px; margin:0 auto; background:url(/pc/mages/loading.gif) center center no-repeat; display:block">
+                            </div>    
+                        </div>
+                    </div>
+
+                </div>
+            
+<script type="text/javascript">    
+var order_pickup_idx=0;
+function get_pickup_barcode_str(info)
+{
+    var price_input_html;
+    if (parseInt(pickup_order_seller_bianhao)>1)
+    {    
+        price_input_html="<input name='table["+order_pickup_idx+"][order_price]' type='text' maxlength='100' style='width:50px; padding:2px; text-align:center; background:#dddddd; border:0; color:#e43c3f' value='" +info["price"]+ "' class='order_price iedit_price' onKeyUp='/**/setPickupListPriceModify($(this))'>";
+    }
+    else
+    {
+        price_input_html="<input name='table["+order_pickup_idx+"][order_price]' type='text' maxlength='100' style='width:50px; padding:2px; text-align:center; background:#ffffff; border:0; color:#e43c3f' value='" +info["price"]+ "' class='order_price iedit_price' onKeyUp='/**/setPickupListPriceModify($(this))' readonly>";
+    }
+    
+    
+    var barcode_str = "" +
+        "<div class='iedit'  style='width:100%; margin:0 auto; padding:10px 0; border-bottom:1px dashed #cccccc; overflow:hidden; display:block;'>" +
+        "    <div style='float:left; width:25%; height:20px; font-size:12px; color:#999999'>"+info["huohao"]+" / "+info["factory_name"]+"</div>" +
+        "    <div style='float:left; width:10%; height:20px; font-size:12px; color:#999999; text-align:center'>"+info["color"]+"</div>" +
+        "    <div style='float:left; width:10%; height:20px; font-size:12px; color:#999999; text-align:center'>"+info["size"]+"</div>" +
+        "    <div style='float:left; width:15%; height:20px; text-align:center'>"+ price_input_html +
+        "       <input name='table["+order_pickup_idx+"][order_barcode]' type='hidden' value='" +info["barcode"]+ "'>"+
+        "       <input name='table["+order_pickup_idx+"][order_p_bianhao]' type='hidden' class='pickup_order_p_bianhao' value='" +info["p_bianhao"]+ "'>"+
+        "       <input name='table["+order_pickup_idx+"][order_p_type_bianhao]' type='hidden' value='" +info["p_type_bianhao"]+ "'>"+
+        "       <input name='table["+order_pickup_idx+"][order_factory_bianhao]' type='hidden' value='" +info["factory_bianhao"]+ "'>"+
+        "       <input name='table["+order_pickup_idx+"][order_huohao]' type='hidden' value='" +info["huohao"]+ "'>"+
+        "       <input name='table["+order_pickup_idx+"][order_color]' type='hidden' value='" +info["color"]+ "'>"+
+        "       <input name='table["+order_pickup_idx+"][order_size]' type='hidden' value='" +info["size"]+ "'>"+
+        "       <input name='table["+order_pickup_idx+"][order_valueprice]' type='hidden' value='" +info["valueprice"]+ "'>"+
+        "       <input name='table["+order_pickup_idx+"][order_factory_mode]' type='hidden' value='" +info["factory_mode"]+ "'>"+
+        "       <input name='table["+order_pickup_idx+"][order_factory_cycle]' type='hidden' value='" +info["factory_cycle"]+ "'>"+
+        "   </div>" +
+        "    <div style='float:left; width:30%; height:20px; font-size:12px; color:#999999; text-align:center'>" +
+        "        <span class='add_chose'>" +
+        "            <span class='reduce' onclick='/**/setPickupListAmountReduce($(this).parent().children(\":eq(1)\"))'/>" +
+        "                <input name='table["+order_pickup_idx+"][order_num]' class='pickup_order_num text12 iedit_num' value='" +info["num"]+ "' errmsg='iedit_num' type='text' onKeyUp='/**/setPickupListAmountModify($(this))'>" +
+        "            <span class='add' onclick='/**/setPickupListAmountAdd($(this).parent().children(\":eq(1)\"))'/>" +
+        "        </span>" +
+        "    </div>" +
+        "    <div style='float:left; width:10%; height:20px; font-size:12px; color:#3366FF; text-align:center; cursor:pointer' onclick='/**/DeletePickupSelectProduct($(this))'>删除</div>" +
+        "</div>";                        
+    order_pickup_idx++;
+    return barcode_str;
+}
+
+var pickup_product_system_barcode;
+var pickup_product_customize_barcode;
+var pickup_gethuohaobyfirstchar;
+var pickup_getproductdetailbyhuohao;
+    
+$(function(){
+    if (pickup_select_storewarehouse_bianhao!="")
+    {
+        $("#pickup_order_master_bianhao").val(pickup_select_storewarehouse_bianhao);
+        $("#pickup_order_master_name").val(pickup_select_storewarehouse_name);
+        if (parseInt(pickup_select_storewarehouse_type)==1)
+        {
+            $("#pickuporderlist_storewarehouse_name").html("配货档口：<span style='font-size:24px; font-weight:bold; color:#0099FF'>"+pickup_select_storewarehouse_name+"</span>");
+        }
+        else if (parseInt(pickup_select_storewarehouse_type)==2)
+        {
+            $("#pickuporderlist_storewarehouse_name").html("配货仓库：<span style='font-size:24px; font-weight:bold; color:#0099FF'>"+pickup_select_storewarehouse_name+"</span>");
+        }
+        
+    }
+    
+    if (pickup_order_to_dangkou_bianhao!="")
+    {
+        $("#pickup_order_to_dangkou_bianhao").val(pickup_order_to_dangkou_bianhao);
+        $("#pickup_order_to_dangkou_name").val(pickup_order_to_dangkou_name);
+        $("#pickuporderlist_sales_store_name").html("销售档口：<span style='font-size:24px; font-weight:bold; color:#0099FF'>"+pickup_order_to_dangkou_name+"</span>");
+    }
+    
+    if (pickup_order_seller_name!="")
+    {
+        $("#pickuporderlist_seller_name").html(pickup_order_seller_name);
+    }
+    else
+    {
+        $("#pickuporderlist_seller_name").html("匿名卖家");
+    }
+    
+    if (parseInt(pickup_order_seller_cycle)>0)
+    {
+        $("#pickup_seller_nocycle_status").hide();
+        $("#pickup_note_seller_cycle").html("[账期卖家]");
+    }
+    else
+    {
+        $("#pickup_seller_nocycle_status").show();
+        $("#pickup_note_seller_cycle").html("");
+    }
+    
+    $("#pickup_order_seller_bianhao").val(pickup_order_seller_bianhao);
+    $("#pickup_order_seller_name").val(pickup_order_seller_name);
+    $("#pickup_order_seller_cycle").val(pickup_order_seller_cycle);
+    
+    if (parseInt(pickup_order_to_dangkou_bianhao)>0)
+    {
+        pickup_order_type="ckph";
+        $("#pickup_order_to_dangkou_bianhao").val(pickup_order_to_dangkou_bianhao);
+        $("#pickup_order_to_dangkou_name").val(pickup_order_to_dangkou_name);    
+    }
+    
+    $("#pickup_order_type").val(pickup_order_type);
+    
+    $.ajax({
+        url:"get-allproductsbarcode", 
+        async: false,
+        type: "POST",
+        data:{var_dangkou_bianhao:pickup_select_storewarehouse_bianhao,var_seller_bianhao:pickup_order_seller_bianhao},
+        dataType:"json",
+        success: function(html){
+            pickup_gethuohaobyfirstchar=html["char_idx"];
+            pickup_getproductdetailbyhuohao=html["product_idx"];
+            pickup_product_system_barcode = html["product_system_barcode"];
+            pickup_product_customize_barcode = html["product_customize_barcode"];
+        }
+    });
+                
+    GetPickupHuohaoByFirstchar($("#select_pickup_char_hot_huohao"), "HOT")
+
+    setTimeout("$('#saoma_pickup_barcode').focus()",0);
+    
+    $("#saoma_pickup_barcode").keyup(function(){
+        if (pickup_product_system_barcode[$(this).val()] || pickup_product_customize_barcode[$(this).val()])
+        {
+            if (pickup_product_system_barcode[$(this).val()])
+            {
+                var info={
+                    "huohao":pickup_product_system_barcode[$(this).val()]["p_barcode_huohao"],
+                    "color":pickup_product_system_barcode[$(this).val()]["p_barcode_color"],
+                    "size":pickup_product_system_barcode[$(this).val()]["p_barcode_size"],
+                    "price": pickup_product_system_barcode[$(this).val()]["p_seller_price"], 
+                    "barcode":pickup_product_system_barcode[$(this).val()]["p_barcode_bianhao"],
+                    "p_bianhao":pickup_product_system_barcode[$(this).val()]["p_barcode_p_bianhao"], 
+                    "p_type_bianhao":pickup_product_system_barcode[$(this).val()]["p_barcode_p_type_bianhao"], 
+                    "factory_bianhao":pickup_product_system_barcode[$(this).val()]["p_barcode_factory_bianhao"], 
+                    "factory_name":pickup_product_system_barcode[$(this).val()]["p_barcode_factory_name"], 
+                    "valueprice":pickup_product_system_barcode[$(this).val()]["p_barcode_valueprice"], 
+                    "factory_mode":pickup_product_system_barcode[$(this).val()]["p_barcode_factory_mode"], 
+                    "factory_cycle":pickup_product_system_barcode[$(this).val()]["p_barcode_factory_cycle"], 
+                    "num":1
+                }
+            }
+            else if (pickup_product_customize_barcode[$(this).val()])
+            {
+                var info={
+                    "huohao":pickup_product_system_barcode[pickup_product_customize_barcode[$(this).val()]]["p_barcode_huohao"],
+                    "color":pickup_product_system_barcode[pickup_product_customize_barcode[$(this).val()]]["p_barcode_color"],
+                    "size":pickup_product_system_barcode[pickup_product_customize_barcode[$(this).val()]]["p_barcode_size"],
+                    "price": pickup_product_system_barcode[pickup_product_customize_barcode[$(this).val()]]["p_seller_price"], 
+                    "barcode":pickup_product_system_barcode[pickup_product_customize_barcode[$(this).val()]]["p_barcode_bianhao"],
+                    "p_bianhao":pickup_product_system_barcode[pickup_product_customize_barcode[$(this).val()]]["p_barcode_p_bianhao"], 
+                    "p_type_bianhao":pickup_product_system_barcode[pickup_product_customize_barcode[$(this).val()]]["p_barcode_p_type_bianhao"], 
+                    "factory_bianhao":pickup_product_system_barcode[pickup_product_customize_barcode[$(this).val()]]["p_barcode_factory_bianhao"], 
+                    "factory_name":pickup_product_system_barcode[pickup_product_customize_barcode[$(this).val()]]["p_barcode_factory_name"], 
+                    "valueprice":pickup_product_system_barcode[pickup_product_customize_barcode[$(this).val()]]["p_barcode_valueprice"], 
+                    "factory_mode":pickup_product_system_barcode[pickup_product_customize_barcode[$(this).val()]]["p_barcode_factory_mode"], 
+                    "factory_cycle":pickup_product_system_barcode[pickup_product_customize_barcode[$(this).val()]]["p_barcode_factory_cycle"], 
+                    "num":1
+                }
+            }
+
+            $("#pickup_list_barcode").prepend(get_pickup_barcode_str(info));
+            var order_sum=0;
+            var order_total_money=0;
+            $(".pickup_order_num").each(function(){
+               order_sum += parseInt($(this).val());
+               order_total_money+=$(this).val()*parseFloat($(this).parent().parent().prev().children().val());
+            })
+    
+            $('#pickup_total_num').html(order_sum);
+            $('#pickup_total_money').html(parseFloat(order_total_money.toFixed(2)));
+            $('#pickup_notice_count').html(order_sum);
+            $(this).val("");
+            num_sound.play_sound(parseInt(order_sum));
+        }
+    });
+    
+    $('#btn_pickup_putintoorderlist').click(function(){
+        if($(".pickup_order_num").length==0)
+        {
+            alert("暂无商品");
+            return false;
+        }
+        
+                
+        $.ajax({
+            url:"model-order-post", 
+            async: false,
+            type: "POST",
+            dataType:"json",
+            data:$('#pickup_order_form').serialize(),
+            success: function(html){
+                if (html.state!="ok"){
+                    layer.msg("提交订单失败！", {time: 2000, icon:2});
+                    return false;
+                }
+                
+                pickup_order_seller_bianhao="";
+                pickup_order_seller_name="";
+                pickup_order_seller_cycle="";
+                
+                $('#step_main').hide();    
+                $('#step_saving').show();
+                
+                mount_to_frame("view_sales_pickup",1,"frame_sales_pickup");
+            }
+        });        
+    });
+});
+
+function setPickupListPriceModify(obj)
+{
+    $(".pickup_order_p_bianhao").each(function(){
+        if ( $(this).val()==obj.next().next().val() )
+        {
+            $(this).prev().prev().val(obj.val());
+        }
+    })
+    
+    var order_total_money=0;
+    $(".pickup_order_num").each(function(){
+       order_total_money+=$(this).val()*parseFloat($(this).parent().parent().prev().children().val());
+    })
+
+    $('#pickup_total_money').html(parseFloat(order_total_money.toFixed(2)));
+    
+    for (key in pickup_product_system_barcode)
+    {
+        if ( pickup_product_system_barcode[key]["p_barcode_p_bianhao"]==obj.next().next().val() )
+        {
+            pickup_product_system_barcode[key]["p_seller_price"]=obj.val();
+        }
+    }
+    
+    $.ajax({
+        url:"set-sellerpricemodify", 
+        async: false,
+        type: "POST",
+        data:{var_seller_bianhao:pickup_order_seller_bianhao,var_seller_name:pickup_order_seller_name,var_product_huohao:obj.next().next().next().next().next().val(),var_modify_value:obj.val()},
+        success: function(html){
+        }
+    });
+}
+
+function setPickupListAmountAdd(obj)
+{
+    obj.val(parseInt(obj.val())+1);
+    
+    var order_sum=0;
+    var order_total_money=0;
+    $(".pickup_order_num").each(function(){
+       order_sum += parseInt($(this).val());
+       order_total_money+=$(this).val()*parseFloat($(this).parent().parent().prev().children().val());
+    })
+
+    $('#pickup_total_num').html(order_sum);
+    $('#pickup_total_money').html(parseFloat(order_total_money.toFixed(2)));
+    $('#pickup_notice_count').html(order_sum);
+    $(this).val("");
+    num_sound.play_sound(parseInt(order_sum));
+}
+
+function setPickupListAmountReduce(obj)
+{
+    if ((parseInt(obj.val())-1)<1)
+    {
+        alert("拿货数量不能小于1！");
+        obj.val("1");
+    }
+    else
+    {
+        obj.val(parseInt(obj.val())-1);    
+    }
+    
+    var order_sum=0;
+    var order_total_money=0;
+    $(".pickup_order_num").each(function(){
+       order_sum += parseInt($(this).val());
+       order_total_money+=$(this).val()*parseFloat($(this).parent().parent().prev().children().val());
+    })
+
+    $('#pickup_total_num').html(order_sum);
+    $('#pickup_total_money').html(parseFloat(order_total_money.toFixed(2)));
+    $('#pickup_notice_count').html(order_sum);
+    $(this).val("");
+    num_sound.play_sound(parseInt(order_sum));
+}
+
+function setPickupListAmountModify(obj)
+{
+    if (parseInt(obj.val())<1)
+    {
+        alert("拿货数量不能小于1！");
+        obj.val("1");
+    }
+    
+    var order_sum=0;
+    var order_total_money=0;
+    $(".pickup_order_num").each(function(){
+       order_sum += parseInt($(this).val());
+       order_total_money+=$(this).val()*parseFloat($(this).parent().parent().prev().children().val());
+    })
+
+    $('#pickup_total_num').html(order_sum);
+    $('#pickup_total_money').html(parseFloat(order_total_money.toFixed(2)));
+    $('#pickup_notice_count').html(order_sum);
+    $(this).val("");
+    num_sound.play_sound(parseInt(order_sum));
+}
+
+function DeletePickupSelectProduct(obj)
+{
+    obj.parent().remove();
+
+    var order_sum=0;
+    var order_total_money=0;
+    $(".pickup_order_num").each(function(){
+       order_sum += parseInt($(this).val());
+       order_total_money+=$(this).val()*parseFloat($(this).parent().parent().prev().children().val());
+    })
+
+    $('#pickup_total_num').html(order_sum);
+    $('#pickup_total_money').html(parseFloat(order_total_money.toFixed(2)));
+    $('#pickup_notice_count').html(order_sum);
+    $(this).val("");
+    num_sound.play_sound(parseInt(order_sum));
+}
+
+var has_click=0;
+function GetPickupHuohaoByFirstchar(obj, select_pickup_firstchar)
+{
+    $('.select_pickup_char_radioToggle').removeClass('current');
+    if(obj!=null){
+        obj.addClass('current');
+        has_click=0;
+    }
+
+    var var_huohao_html="";                              
+    var_huohao_html+="<div style='float:left; width:25%; padding:5px 0; color:#999999; text-align:right; overflow:hidden; display:block'>货号：</div>";
+    var_huohao_html+="<div class='choosebox'>";
+    var_huohao_html+="    <ul>";
+    for (key in pickup_gethuohaobyfirstchar[select_pickup_firstchar])
+    {
+        var_huohao_html+="        <li>";
+        var_huohao_html+="            <span class='select_pickup_huohao_radioToggle' onclick='/**/GetPickupFactoryByHuohao($(this), \"" + pickup_gethuohaobyfirstchar[select_pickup_firstchar][key] + "\")'>" + pickup_gethuohaobyfirstchar[select_pickup_firstchar][key] + "</span>";
+        var_huohao_html+="        </li>";
+    }
+    
+    var_huohao_html+="    </ul>";
+    var_huohao_html+="</div>";
+
+    $("#select_pickup_huohao").html(var_huohao_html);
+    $("#select_pickup_huohao").show();
+    
+    $("#select_pickup_factory").html("");
+    $("#select_pickup_factory").hide();
+
+    $("#select_pickup_color").html("");
+    $("#select_pickup_color").hide();
+    
+    $("#select_pickup_size").html("");
+    $("#select_pickup_size").hide();
+    
+    $("#select_pickup_order").hide();    
+}
+
+function GetPickupFactoryByHuohao(obj, select_pickup_huohao)
+{
+    $('.select_pickup_huohao_radioToggle').removeClass('current');
+    obj.addClass('current');
+    
+    var count_getfactorybyhuohao=0;
+    var firstvalue_getfactorybyhuohao="";
+    
+    for (key in pickup_getproductdetailbyhuohao[select_pickup_huohao])
+    {
+        if (count_getfactorybyhuohao==0)
+        {
+            firstvalue_getfactorybyhuohao=key;
+        }
+        
+        count_getfactorybyhuohao++;
+    }
+    
+    if (count_getfactorybyhuohao==1)
+    {
+        $("#select_pickup_factory").html("");
+        $("#select_pickup_factory").hide();
+        
+        $("#select_pickup_color").html("");
+        $("#select_pickup_color").hide();
+        
+        $("#select_pickup_size").html("");
+        $("#select_pickup_size").hide();
+        
+        $("#select_pickup_order").hide();
+        
+        GetPickupColorByHuohaoFactory(obj, select_pickup_huohao, firstvalue_getfactorybyhuohao);
+    }
+    else
+    {    
+        var var_factory_html="";                          
+        var_factory_html+="<div class='ifactory' style='float:left; width:25%; padding:5px 0; color:#999999; text-align:right; overflow:hidden; display:none;'>工厂：</div>";
+        var_factory_html+="<div class='choosebox'>";
+        var_factory_html+="    <ul>";
+        for (key in pickup_getproductdetailbyhuohao[select_pickup_huohao])
+        {
+            var_factory_html+="        <li>";
+            var_factory_html+="            <span class='select_pickup_factory_radioToggle' onclick='/**/GetPickupColorByHuohaoFactory($(this), \"" + select_pickup_huohao + "\", \"" + key + "\")'>" + key + "</span>";
+            var_factory_html+="        </li>";
+        }
+        var_factory_html+="    </ul>";
+        var_factory_html+="</div>";
+            
+        $("#select_pickup_factory").html(var_factory_html);
+        $("#select_pickup_factory").show();
+        if($(".select_pickup_factory_radioToggle").css("display")=="block"){//同步厂家显示
+            $(".ifactory").show();
+        }
+        
+        $("#select_pickup_color").html("");
+        $("#select_pickup_color").hide();
+        
+        $("#select_pickup_size").html("");
+        $("#select_pickup_size").hide();
+        
+        $("#select_pickup_order").hide();
+    }
+}
+
+function GetPickupColorByHuohaoFactory(obj, select_pickup_huohao, select_pickup_factory)
+{
+    $('.select_pickup_factory_radioToggle').removeClass('current');
+    obj.addClass('current');
+
+    var var_factorycolor_html="";                              
+    var_factorycolor_html+="<div style='float:left; width:25%; padding:5px 0; color:#999999; text-align:right; overflow:hidden; display:block'>颜色：</div>";
+    var_factorycolor_html+="<div class='choosebox'>";
+    var_factorycolor_html+="    <ul>";
+    for (key in pickup_getproductdetailbyhuohao[select_pickup_huohao][select_pickup_factory])
+    {
+        var_factorycolor_html+="        <li>";
+        var_factorycolor_html+="            <span class='select_pickup_color_radioToggle' onclick='/**/GetPickupSizeByHuohaoFactoryColor($(this), \"" + select_pickup_huohao + "\", \"" + select_pickup_factory + "\", \"" + key + "\")'>" + key + "</span>";
+        var_factorycolor_html+="        </li>";
+    }
+    var_factorycolor_html+="    </ul>";
+    var_factorycolor_html+="</div>";
+                
+    $("#select_pickup_color").html(var_factorycolor_html);
+    $("#select_pickup_color").show();
+    
+    $("#select_pickup_size").html("");
+    $("#select_pickup_size").hide();
+    
+    $("#select_pickup_order").hide();
+}
+
+function GetPickupSizeByHuohaoFactoryColor(obj, select_pickup_huohao, select_pickup_factory, select_pickup_color)
+{
+    $('.select_pickup_color_radioToggle').removeClass('current');
+    obj.addClass('current');
+
+    var var_colorsize_html="";                              
+    var_colorsize_html+="<div style='float:left; width:25%; padding:5px 0; color:#999999; text-align:right; overflow:hidden; display:block'>尺码：</div>";
+    var_colorsize_html+="<div class='addchoosebox'>";
+    var_colorsize_html+="    <ul>";
+    for (key in pickup_getproductdetailbyhuohao[select_pickup_huohao][select_pickup_factory][select_pickup_color])
+    {
+        var_colorsize_html+="        <li>";
+        var_colorsize_html+="            <span class='select_pickup_size_radioToggle canaddcurrent' onclick='/**/GetPickupBarcodeByHuohaoFactoryColorSize($(this), \"" + select_pickup_huohao + "\", \"" + select_pickup_factory + "\", \"" + select_pickup_color + "\", \"" + key + "\")'>" + key + "</span>";
+        var_colorsize_html+="        </li>";
+    }
+    var_colorsize_html+="    </ul>";
+    var_colorsize_html+="</div>";
+            
+    $("#select_pickup_size").html(var_colorsize_html);
+    $("#select_pickup_size").show();
+    
+    $("#select_pickup_order").hide();    
+}
+
+function GetPickupBarcodeByHuohaoFactoryColorSize(obj, select_pickup_huohao, select_pickup_factory, select_pickup_color, select_pickup_size)
+{
+    $('.select_pickup_size_radioToggle').removeClass('current');
+    $('.select_pickup_size_radioToggle').addClass('canaddcurrent');
+    obj.removeClass('canaddcurrent');
+    obj.addClass('currentclick');
+    
+    setTimeout(function(){
+        obj.removeClass('currentclick');
+        obj.addClass('current');
+    },100);
+
+    if ($("#pickup_list_barcode").html()!="" && $("#pickup_list_barcode").children(":eq(0)").children(":eq(3)").children(":eq(1)").val()==pickup_getproductdetailbyhuohao[select_pickup_huohao][select_pickup_factory][select_pickup_color][select_pickup_size])
+    {
+        $("#pickup_list_barcode").children(":eq(0)").children(":eq(4)").children(":eq(0)").children(":eq(1)").val(parseInt($("#pickup_list_barcode").children(":eq(0)").children(":eq(4)").children(":eq(0)").children(":eq(1)").val())+1)
+    }
+    else
+    {
+        var key=pickup_getproductdetailbyhuohao[select_pickup_huohao][select_pickup_factory][select_pickup_color][select_pickup_size];
+        var info={
+            "huohao":pickup_product_system_barcode[key]["p_barcode_huohao"],
+            "color":pickup_product_system_barcode[key]["p_barcode_color"],
+            "size":pickup_product_system_barcode[key]["p_barcode_size"],
+            "price": pickup_product_system_barcode[key]["p_seller_price"], 
+            "barcode":key, 
+            "p_bianhao":pickup_product_system_barcode[key]["p_barcode_p_bianhao"], 
+            "p_type_bianhao":pickup_product_system_barcode[key]["p_barcode_p_type_bianhao"], 
+            "factory_bianhao":pickup_product_system_barcode[key]["p_barcode_factory_bianhao"], 
+            "factory_name":pickup_product_system_barcode[key]["p_barcode_factory_name"], 
+            "valueprice":pickup_product_system_barcode[key]["p_barcode_valueprice"], 
+            "factory_mode":pickup_product_system_barcode[key]["p_barcode_factory_mode"], 
+            "factory_cycle":pickup_product_system_barcode[key]["p_barcode_factory_cycle"], 
+            "num":1
+        }
+        $("#pickup_list_barcode").prepend(get_pickup_barcode_str(info));
+
+    }
+    
+    var order_sum=0;
+    var order_total_money=0;
+    $(".pickup_order_num").each(function(){
+       order_sum += parseInt($(this).val());
+       order_total_money+=$(this).val()*parseFloat($(this).parent().parent().prev().children().val());
+    })
+
+    $('#pickup_total_num').html(order_sum);
+    $('#pickup_total_money').html(parseFloat(order_total_money.toFixed(2)));
+    $('#pickup_notice_count').html(order_sum);
+    num_sound.play_sound(parseInt(order_sum));
+}
+
+ var letters="";
+  for(var keys in pickup_gethuohaobyfirstchar){
+    letters+=keys;
+  }
+ $(".ikeyboard").init_ikeyboard(letters);//初始化键盘
+
+ function click_keyboard(pid)
+ {
+     if (has_click==1){
+         $(".ikeyboard").clear_ikeyboard();
+         has_click=0;
+     }
+     console.log(pid);
+     /**/GetPickupFactoryByHuohao(null, pid);
+ }
+
+</script>

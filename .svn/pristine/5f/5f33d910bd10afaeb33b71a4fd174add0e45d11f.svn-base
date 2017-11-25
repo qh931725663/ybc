@@ -1,0 +1,7 @@
+<?php
+    $p = cselect("*","ydf_bank",array("bank_boss_id=?",$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"]));
+    while ($row=$p[0]->fetch()){
+        echo $row;
+    }
+
+?>

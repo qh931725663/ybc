@@ -1,0 +1,494 @@
+<?php
+include_once("check_login.php");
+include_once("check_dangkou_user.php");
+?>
+<script type="text/javascript">    
+
+
+function list_products()
+{
+    $('#products_searchwords').css("color","#cccccc")
+
+    $("#pid_view_products_list #pages_products").set_page_num("view_products_list","pages_products",1);
+
+    refresh_inner("view_products_list?"+$("#form_products").serialize() );
+
+}
+
+function search_products()
+{
+    $("#btn_products_search").parent().prev().find(".listtypevalue").removeClass('listtypeselect');
+    $("#pid_view_products_list #pages_products").set_page_num("view_products_list","pages_products",1);
+
+    refresh_inner("view_products_list?"+$("#form_products").serialize() );
+
+}
+
+function click_me_products(obj,state)
+{
+    obj.parent().find(".listtypevalue").removeClass('listtypeselect');
+    obj.addClass("listtypeselect");
+
+    list_products();
+}
+</script>
+<form id="form_products">
+<div class="search_box">
+    <div class="search_box_inner_a">
+        <div class="dp of lf">
+            <span class="lf"><input style="width:142px;" class="iinput name_iime ino_ime_input iproduct_name" id="products_searchwords" name="products_searchwords" type="text" placeholder="请输入商品货号"/></span>
+            <span id="btn_seller_search" onclick="/**/search_products()" class="btn_normal_blue">搜索</span>
+            <span class="clear_search">清空<br>条件</span>
+        </div>
+        <div class="rt">
+            <span class="btn_normal_blue" onclick="/**/mount_to_frame('view_products_add',1,'frame_products_list');">添加商品</span>
+        </div>
+    </div>
+    <div class="report_table_header" style="background:#f2f2f2">
+        <div style="color:#999999; width:15%">图片</div>
+        <div style="color:#999999; width:20%; text-align:left;">货号 / 颜色 / 尺码 / 成分</div>
+        <div style="color:#999999; width:34%;text-align:left;">工厂 / <span class="sp_a">货号</span> / <span class="sp_b">供货价</span> / 合作模式 / 账期</div>
+        <div style="color:#999999; width:8%">批发价</div>
+        <div style="color:#999999; width:8%">大客价</div>
+        <div style="color:#999999; width:15%">操作</div>
+    </div>
+
+<!-- refresh_begin -->
+<?php        
+@$products_searchwords=$_REQUEST["products_searchwords"]=="请输入商品货号"?null:$_REQUEST["products_searchwords"];           
+$where=@array("p_boss_m_bianhao=? and p_huohao=?",$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"],$products_searchwords);
+$where=clean_where($where);
+
+@$page=$_REQUEST["page_idx"]?$_REQUEST["page_idx"]:1;
+$pagesize=10;
+$offset=($page-1)*$pagesize; 
+$p=cselect("*","ydf_products",$where,"","p_bianhao desc",$offset,$pagesize);
+$rowcount=$p[1];
+$page_count=ceil($rowcount/$pagesize);  
+while ($rowpagedata=$p[0]->fetch())
+{
+    $all_color_str="";
+    $i=1;
+    $p_type_color=cselect("p_type_color","ydf_products_type",array("p_type_p_bianhao=?",$rowpagedata["p_bianhao"] ),"p_type_color","p_type_bianhao asc" );
+    while ($rowproductcolor=$p_type_color[0]->fetch())
+    {
+    $all_color_str.=($i==1?"":",").$rowproductcolor["p_type_color"];
+    $i++;
+    }
+    
+    $all_size_str="";
+    $i=1;
+    $p_type_size=cselect("p_type_size","ydf_products_type",array("p_type_p_bianhao=?",$rowpagedata["p_bianhao"] ),"p_type_size","p_type_bianhao asc" );
+    while ($rowproductsize=$p_type_size[0]->fetch())
+    {
+    $all_size_str.=($i==1?"":",").$rowproductsize["p_type_size"];
+    $i++;
+    }
+?>
+    <div class="report_table_body" style="border-bottom:1px dashed #cccccc">
+        <div style="float:left; width:15%; padding:5px 0">
+        <?php
+            if(!empty($rowpagedata["p_pic"])){
+                $url='https://ybc-image.oss-cn-hangzhou.aliyuncs.com/'.$rowpagedata["p_pic"].'?x-oss-process=style/list';
+            }else{
+                $url="/pc/images/nopic.jpg";
+            }
+        ?>
+            <div style="width:100px; height:100px; margin:0 auto; border:1px solid #f2f2f2; background:url(<?php echo $url?>) center center no-repeat; background-size:contain; overflow:hidden; display:block"></div>
+        </div>
+        <div style="float:left; width:20%">
+            <span style="float:left; width:100%; padding:5px 0; font-weight:bold; text-align:left"><?php echo $rowpagedata["p_huohao"]?></span>
+            <span style="float:left; width:100%; padding:5px 0; color:#999999; text-align:left"><?php echo $all_color_str ?></span>
+            <span style="float:left; width:100%; padding:5px 0; color:#999999; text-align:left"><?php echo $all_size_str ?></span>
+            <span style="float:left; width:100%; padding:5px 0; color:#999999; text-align:left"><?php echo $rowpagedata["p_composition"]?></span>
+        </div>
+        <div style="float:left; width:34%; height:25px">
+            <?php
+            $p_product_factory=cselect("*","ydf_products_barcode",array("p_barcode_p_bianhao=?",$rowpagedata["p_bianhao"] ),"p_barcode_factory_bianhao","p_barcode_bianhao asc" );
+            while ($rowproductfactory=$p_product_factory[0]->fetch())
+            {
+                $rsfactory=mysql_query("SELECT factory_name,factory_cycle FROM ydf_factory WHERE factory_bianhao='".$rowproductfactory["p_barcode_factory_bianhao"]."'" , $dbconn);
+                $rowfactory=mysql_fetch_array($rsfactory);
+            ?>
+            <div style="float:left; width:100%; padding:5px 0">
+                <span class="lf"><?php echo $rowfactory["factory_name"] ?><?php echo !empty($rowproductfactory["p_barcode_factory_huohao"])?" / <span style='color:#0099ff'>".$rowproductfactory["p_barcode_factory_huohao"]."</span>":"" ?> / <span style="color:#e43c3f"><?php echo $rowproductfactory["p_barcode_valueprice"] ?></span> / <?php echo $rowproductfactory["p_barcode_factory_mode"]=="1"?"代销 / ".$rowfactory["factory_cycle"]."天":"经销" ?></span>
+                <span class="rt">
+                    <span style="color:#0099FF; cursor:pointer" onclick="/**/ShowModifyProductFactoryLayer(<?php echo $rowpagedata["p_bianhao"]?>,<?php echo $rowproductfactory["p_barcode_factory_bianhao"]?>)">修改</span> | <span style="color:#0099FF; cursor:pointer" onclick="/**/DeleteProductFactory(<?php echo $rowpagedata["p_bianhao"]?>,<?php echo $rowproductfactory["p_barcode_factory_bianhao"]?>)">删除</span>
+                </span>
+            </div>
+            <?php
+            }
+            ?>
+        </div>
+        <div style="float:left; width:8%; padding:10px 0; color:#e43c3f"><?php echo $rowpagedata["p_saleprice"]?></div>
+        <div style="float:left; width:8%; padding:10px 0; color:#e43c3f"><?php echo $rowpagedata["p_vipprice"]?></div>
+        <div style="float:left; width:15%">
+            <div style="float:left; width:100%; text-align:center; padding:5px 0">
+                <span style="color:#0099FF; cursor:pointer"  onclick="/**/ShowPaymentLayer()">付款上架</span> | <span style="color:#0099FF; cursor:pointer" onclick="/**/ShowProductAddFactoryLayer(<?php echo $rowpagedata["p_bianhao"]?>)">添加工厂</span>
+            </div>
+            <div style="float:left; width:100%; text-align:center; padding:5px 0">
+                <span style="color:#0099FF; cursor:pointer" onclick="/**/ShowGoodsSellerLayer(<?php echo $rowpagedata["p_bianhao"]?>)">卖家定价</span> | <span style="color:#0099FF; cursor:pointer" onclick="/**/mount_to_frame('view_products_modify?var_p_bianhao=<?php echo $rowpagedata["p_bianhao"]?>',1,'frame_products_list')">修改商品</span>
+            </div>
+            <div style="float:left; width:100%; text-align:center; padding:5px 0">
+                <span style="color:#0099FF; cursor:pointer">下架商品</span> | <span style="color:#0099FF; cursor:pointer" onclick="/**/DeleteProduct(<?php echo $rowpagedata["p_bianhao"]?>)">删除商品</span>
+            </div>
+        </div>
+    </div>
+<?php
+}
+?>
+    
+    <div class="record"> 共 <span class="record_num"><?php echo $rowcount?></span> 个商品</div>
+
+<script>/*n*//*n*/
+    $("#pid_view_products_list #pages_products").set_page_count("view_products_list","pages_products",<?php echo $page_count;?>);
+</script>
+</div>
+<!-- refresh_end -->                    
+    <div class="ipages" id="pages_products" page="view_products_list" form="form_products" count="<?php echo $page_count; ?>"/>
+
+</form> <!-- 页码也作为表单项统一处理  -->
+    
+<div id="layer_add_productfactory">
+
+</div>
+
+<div id="layer_modify_productfactory">
+
+</div>
+
+<div id="layer_goodsseller">
+
+</div>
+
+<div id="layer_products_up_pay" style="float:left; width:500px; padding:30px; border:2px solid #cccccc; z-index:1; display:none">
+<form action="https://shenghuo.alipay.com/send/payment/fill.htm" id="pay_zhuanzhang" name="pay_zhuanzhang" method="post" target="_blank">
+	<div style="float:left; width:100%; overflow:hidden; display:block">
+		<span style="float:left; width:100px; padding:5px 0; text-align:right">充值类型：</span>
+		<span style="float:left;margin-left:10px; padding:5px 0"><input id="pay_type" name="pay_type" type="radio" value="1"/> 在线支付<span style="color:#999999">（自动上账，多付1.2%的支付宝服务费，支持信用卡）</span></span>
+	</div>
+	<div style="float:left; width:100%; overflow:hidden; display:block">
+		<span style="float:left;margin-left:110px; padding:5px 0"><input id="pay_type" name="pay_type" type="radio" value="2"/> 转账<span style="color:#999999">（转账后通知客服快速上账，免支付宝服务费）</span></span>
+	</div>
+	<div style="float:left; width:100%; margin-top:10px; overflow:hidden; display:block">
+		<span style="float:left; width:100px; padding-top:8px; text-align:right">充值金额：</span>
+		<span style="float:left;margin-left:10px"><input id="addmoney_count" name="addmoney_count" size="10" maxlength="10" type="text" style="padding:5px" onkeypress="if(!this.value.match(/^[\+\-]?\d*?\.?\d*?$/))this.value=this.t_value;else this.t_value=this.value;if(this.value.match(/^(?:[\+\-]?\d+(?:\.\d+)?)?$/))this.o_value=this.value" onkeyup="if(!this.value.match(/^[\+\-]?\d*?\.?\d*?$/))this.value=this.t_value;else this.t_value=this.value;if(this.value.match(/^(?:[\+\-]?\d+(?:\.\d+)?)?$/))this.o_value=this.value" onblur="if(!this.value.match(/^(?:[\+\-]?\d+(?:\.\d+)?|\.\d*?)?$/))this.value=this.o_value;else{if(this.value.match(/^\.\d+$/))this.value=0+this.value;if(this.value.match(/^\.$/))this.value=0;this.o_value=this.value}"/></span>
+	</div>
+	<div style="float:left; width:100%; margin-top:10px; overflow:hidden; display:block">
+		<span style="float:left;margin-left:110px;padding:7px 20px; background:#e43c3f; color:#FFFFFF; cursor:pointer" onclick="PostAddMoney()">确认支付</span>
+	</div>
+<input name="optEmail" type="hidden" value="18591914646" target="_blank"/>
+<input name="memo" type="hidden" value="" />
+<input id="payAmount" name="payAmount" type="hidden" value="" />
+<input id="title" name="title" type="hidden" value="" />
+</form>
+</div>
+
+<script type="text/javascript">    
+function ShowProductAddFactoryLayer(p_bianhao){
+    $.ajax({
+        url:"view-get-add-productfactory", 
+        async: false,
+        type: "POST",
+        data:{var_p_bianhao:p_bianhao},
+        success: function(html){
+            $("#layer_add_productfactory").html(html);
+        }
+    });
+    
+    index_layer_add_productfactory=layer.open({
+        type: 1,
+        area: ['420px', '300px'],
+        title: false,
+        content:$('#layer_add_productfactory')
+    });
+}
+
+function PostProductAddFactory(p_bianhao){ 
+    if(!$("#productaddfactory_bianhao").val())
+    {
+        alert("亲，还没有选择要添加的工厂哦！");
+        return false;
+    }
+    
+    if(!$("#productaddfactory_valueprice").val())
+    {
+        alert("亲，供货价不能为空哦！");
+        return false;
+    }
+        
+    $.ajax({
+        url:"model-product-api", 
+        async: false,
+        type: "POST",
+        data:$('#productaddfactoryform').serialize(),
+        dataType:"json",
+        success: function(html){
+            layer.close(index_layer_add_productfactory);
+            
+            if (html["state"]=="ok")
+            {
+                layer.msg("添加成功！", {time: 2000, icon:1});
+                setTimeout(function(){
+                    mount_to_frame('view_products_list',1,'frame_products_list');
+                },2000);
+            }
+            else
+            {
+                layer.msg(html["desc"], {time: 2000, icon:2});
+            }
+        }
+    });    
+}
+
+function ShowModifyProductFactoryLayer(p_bianhao,factory_bianhao){
+    $.ajax({
+        url:"view-modify-productfactory", 
+        async: false,
+        type: "POST",
+        data:{var_p_bianhao:p_bianhao,var_factory_bianhao:factory_bianhao},
+        success: function(html){
+            $("#layer_modify_productfactory").html(html);
+        }
+    });
+    
+    index_layer_modify_productfactory=layer.open({
+        type: 1,
+        area: ['620px', '500px'],
+        title: false,
+        content:$('#layer_modify_productfactory')
+    });
+}
+
+function PostModifyPorductFactory(p_bianhao, factory_bianhao){
+    $.ajax({
+        url:"model-post-modify-productfactory", 
+        async: false,
+        type: "POST",
+        data:$('#modify_productfactory_form').serialize(),
+        dataType:"json",
+        success: function(html){
+            layer.close(index_layer_modify_productfactory);
+            
+            if (html["state"]=="ok")
+            {
+                layer.msg("修改成功！", {time: 2000, icon:1});
+                setTimeout(function(){
+                    mount_to_frame('view_products_list',1,'frame_products_list');
+                },2000);
+            }
+            else
+            {
+                layer.msg(html["desc"], {time: 2000, icon:2});
+            }
+        }
+    });    
+}
+
+function ShowGoodsSellerLayer(p_bianhao)
+{
+    $.ajax({
+        url:"view-get-goodsseller", 
+        async: false,
+        type: "POST",
+        data:{var_p_bianhao:p_bianhao},
+        success: function(html){
+            $("#layer_goodsseller").html(html);
+        }
+    });
+    
+    index_layergoodsseller=layer.open({
+        type: 1,
+        area: ['620px', '400px'],
+        title: false,
+        content:$('#layer_goodsseller')
+    });
+}
+
+function AddGoodsSeller(p_bianhao){
+    if ($("#s_name_" + p_bianhao).val()=="")
+    {
+        alert("请填写卖家昵称");
+        return false;
+    }
+    if ($("#s_price_" + p_bianhao).val()=="")
+    {
+        alert("请填写卖家指定价格");
+        return false;
+    }
+    
+    $.ajax({
+        url:"model-post-addgoodsseller", 
+        async: false,
+        type: "POST",
+        data:{var_p_bianhao:p_bianhao,var_s_name:$("#s_name_" + p_bianhao).val(),var_s_price:$("#s_price_" + p_bianhao).val()},
+        dataType:"json",
+        success: function(html){
+            if (html["state"]=="ok")
+            {
+                alert("添加成功！"); 
+            }
+            else
+            {
+                alert(html["desc"]); 
+            }
+        }
+    });    
+    
+    $.ajax({
+        url:"view-get-goodsseller", 
+        async: false,
+        type: "POST",
+        data:{var_p_bianhao:p_bianhao},
+        success: function(html){
+            $("#layer_goodsseller").html(html);
+        }
+    });
+}
+
+function DeleteGoodsSeller(p_bianhao,seller_price_bianhao){
+    if(confirm("确定要删除当前的卖家价格吗？"))
+    {
+    
+        $.ajax({
+            url:"model-delete-sellergoods", 
+            async: false,
+            type: "POST",
+            data:{var_seller_price_bianhao:seller_price_bianhao},
+            dataType:"json",
+            success: function(html){
+                if (html["state"]=="ok")
+                {
+                    alert("删除成功！"); 
+                }
+                else
+                {
+                    alert(html["desc"]); 
+                }
+            }
+        });
+        
+        $.ajax({
+            url:"view-get-goodsseller", 
+            async: false,
+            type: "POST",
+            data:{var_p_bianhao:p_bianhao},
+            success: function(html){
+                $("#layer_goodsseller").html(html);
+            }
+        });
+    }    
+}
+
+function DeleteProductFactory(p_bianhao,factory_bianhao){
+    if(confirm("确定要删除选中的信息吗？一旦删除将不能恢复！"))
+    {
+        $.ajax({
+            url:"model-delete-productfactory", 
+            async: false,
+            type: "POST",
+            data:{var_p_bianhao:p_bianhao,var_factory_bianhao:factory_bianhao},
+            dataType:"json",
+            success: function(html){
+                if (html["state"]=="ok")
+                {
+                    layer.msg("商品关联工厂删除成功！", {time: 2000, icon:1});
+                    setTimeout(function(){
+                        mount_to_frame('view_products_list',1,'frame_products_list');
+                    },2000);
+                }
+                else
+                {
+                    layer.msg(html["desc"], {time: 2000, icon:2});
+                }
+            }
+        });    
+    }
+
+}
+
+function DeleteProduct(p_bianhao){
+    if(confirm("确定要删除选中的信息吗？一旦删除将不能恢复！"))
+    {
+        $.ajax({
+            url:"model-delete-product", 
+            async: false,
+            type: "POST",
+            data:{var_p_bianhao:p_bianhao},
+            dataType:"json",
+            success: function(html){
+                if (html["state"]=="ok")
+                {
+                    layer.msg("商品删除成功！", {time: 2000, icon:1});
+                    setTimeout(function(){
+                        mount_to_frame('view_products_list',1,'frame_products_list');
+                    },2000);
+                }
+                else
+                {
+                    layer.msg(html["desc"], {time: 2000, icon:2});
+                }
+            }
+        });    
+    }
+
+}
+
+function ShowProductsUpPaymentLayer(){
+	index_addmoney=$.layer({
+		type: 1,
+		shade: [0],
+		area: ['auto', 'auto'],
+		title: false,
+		border: [0],
+		page: {dom : '#layer_addmoney'}
+	});
+}
+
+function PostProductsUpPaymentLayer(){
+	if($('input:radio[name="pay_type"]:checked').val()==null)
+	{
+		alert("亲，请选择充值类型哦！");
+		return false;
+	}
+	
+	if ($("#addmoney_count").val()=="")
+	{
+		alert("亲，请填写充值金额哦！");
+		return false;
+	}
+	
+	if (parseFloat($("#addmoney_count").val())<=0)
+	{
+		alert("亲，充值金额必须大于0哦！");
+		return false;
+	}
+	
+	$.ajax({
+		url:"/pc/wholesale/myaccount/postaddmoney.php",
+		async: false,
+		type: "POST",
+		data:{var_frompage:"accountrecord", var_paynow_bianhao:"", var_paytype:$('input:radio[name="pay_type"]:checked').val(), var_addmoney_count:$("#addmoney_count").val()},
+		success: function(html){
+			if (parseInt(html)!=1001)
+			{
+				if ($('input:radio[name="pay_type"]:checked').val()=="1")
+				{
+					window.location.href="/webpay/alipayaddmoney/alipayapi.php?business_bianhao=" + html + "&addmoney_count=" + (parseFloat($("#addmoney_count").val())*1.012).toFixed(2);
+				}
+				else 
+				{
+					$("#payAmount").val($("#addmoney_count").val());
+					$("#title").val(html);
+					$("#pay_zhuanzhang").submit();
+					layer.close(index_addmoney);
+				}
+			}
+			else
+			{
+				window.location.href="/myaccount/accountrecord/3/1";
+			}
+		}
+	});
+}
+</script>

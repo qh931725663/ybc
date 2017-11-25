@@ -1,0 +1,208 @@
+<form id="form_jxdz">
+    <div class="search_box">
+        <div class="search_box_inner">
+            <div class="gcjx_b">
+                <div class="lf">
+                    <span>工厂：</span>
+                    <select  name="factory_id">
+                        <option value="">全部工厂</option><?php get_factory_option(); ?>
+                    </select>
+                </div>
+                <span  id="btn_copy_search" class="btn_normal_green" onclick="search('view_finance_reg_payable_summary','form_jxdz')" >搜索</span>
+            </div>
+        </div>
+    </div>
+    <div class="title_stalls" style="position:relative; float:left; width:100%; margin-top:0px; background:#f2f2f2; border-bottom:1px solid #cccccc; display:block">
+        <div style="width:15%;">工厂</div>
+        <div style="width:15%;">上月结余应付</div>
+        <div style="width:15%;">+本期进货</div>
+        <div style="width:15%;">-本期退货</div>
+        <div style="width:15%;">-本期已付</div>
+        <div style="width:15%;">=本月结余应付</div>
+        <div style="width:10%;">记账</div>
+    </div>
+<!-- refresh_begin -->
+<?php 
+include_once "{$root_path}/model/model_bi.php";
+$ymd="day";
+@$page=$_REQUEST["page_idx"]?$_REQUEST["page_idx"]:1;$pagesize=20;$offset=($page-1)*$pagesize; 
+list($historys,$addup)=get_history_dealer_gcyf($ymd,@$_REQUEST["factory_id"]);
+$rowcount=count($addup);$page_count=ceil($rowcount/$pagesize);
+foreach ($addup as $row)
+{
+    $row=$historys[$row["now"]];
+    $p=rselect("factory_name","ydf_factory",array("factory_bianhao=?",$row["bill_factory_id"]));
+    if($ro=$p->fetch()){
+        $nam=$ro["factory_name"];
+    }
+    $last_row=$historys[$row["last"]];
+?>
+    
+    <div class="list_stalls" style="position:relative;width:100%; padding:10px 0; border-bottom:1px dashed #cccccc; overflow:hidden; display:block">
+        <div style="width:15%;"><span style="color:#e43c3f"><?php echo $nam?></span></div>
+        <div style="width:15%;"><span style="color:#e43c3f"><?php echo $last_row["sum"]["pool"]?></span></div>
+        <div style="width:15%;"><span style="color:#e43c3f"><?php echo $row["gcyf"]?></span></div>
+        <div style="width:15%;"><span style="color:#e43c3f"><?php echo $row["gcys"]?></span></div>
+        <div style="width:15%;"><span style="color:#e43c3f"><?php echo $row["gcsf"]?></span></div>
+        <div style="width:15%;"><span style="color:#e43c3f"><?php echo $row["sum"]["pool"]?></span></div>
+        <div style="width:10%; color:#999999">
+            
+            <span style="color:#0099FF; cursor:pointer" onclick="ShowFactoryPayFund(<?php echo $row["bill_factory_id"] ?>,<?php echo $row["sum"]["pool"]?>)">付款</span>
+
+            <span style="color:#0099FF; cursor:pointer" onclick="ShowFactoryReceiveFund(<?php echo $row["bill_factory_id"] ?>,<?php echo $row["sum"]["pool"]?>)">收款</span>
+
+        </div>
+
+        <?php
+        $p_factory_bill=cselect("*","ydf_finance_bill",array("bill_factory_id=? and bill_type='gcsf'",$row["bill_factory_id"]),"","bill_id desc");
+        if($row_factory_bill=$p_factory_bill[0]->fetch())
+        {
+        ?>
+
+        <div style="float:left;width:100%; margin:0 auto; padding:10px 0; overflow:hidden; display:block;">
+            <div style="float:right; padding:5px 0">
+                <span style="float:left"><span style="color:#999999">最近一次付款日期：</span><?php echo date("Y-m-d H:i:s",$row_factory_bill["bill_add_time"]) ?></span>
+                <span style="float:left; margin-left:10px"><span style="color:#999999">付款人：</span><?php echo $row_factory_bill["bill_add_user_id"] ?></span>
+                <span style="float:left; margin-left:10px"><span style="color:#999999">付款金额：</span><?php echo $row_factory_bill["bill_fund"] ?></span>
+            </div>
+        </div>
+        <?php
+        }
+        ?>
+    </div>                    
+<?php 
+}
+?>
+    <div class="record"> 共 <span class="record_num"><?php echo $rowcount?></span> 条记录</div>
+    <script>
+        $("#pid_view_finance_reg_payable_summary #pages").set_page_count("view_finance_reg_payable_summary","pages",<?php echo $page_count;?>);
+    </script>
+<!-- refresh_end -->
+    <div class="ipages" id="pages" page="view_finance_reg_payable_summary" form="form_jxdz" count="<?php echo $page_count; ?>"/>
+
+
+<div id="layer_factory_pay_fund" style="float:left; width:400px; padding:25px; overflow:visible; display:none">
+
+</div> 
+
+<div id="layer_factory_receive_fund" style="float:left; width:400px; padding:25px; overflow:visible; display:none">
+
+</div>
+</form>
+<script type="text/javascript">                    
+function ShowFactoryPayFund(factory_id,pay_fund){
+    $.ajax({
+        url:"view-get-factory-pay-fund", 
+        async: false,
+        type: "POST",
+        data:{var_factory_id:factory_id,var_pay_fund:pay_fund},
+        success: function(html){
+            $("#layer_factory_pay_fund").html(html);
+        }
+    });
+    
+    index_layer_factory_pay_fund=layer.open({
+        type: 1,
+        area: ['450px', '350px'],
+        title: false,
+        content:$('#layer_factory_pay_fund')
+    });
+}
+
+function PostFactoryPayFund(){
+    if(!$("#bill_bank").val())
+    {
+        $("#tip_notice_factory_pay_fund").html("<span style='font-size:12px; color:red'>亲，请选择付款资金账户哦！</span>");
+        return false;
+    }
+    
+    if(!$("#bill_fund").val())
+    {
+        $("#tip_notice_factory_pay_fund").html("<span style='font-size:12px; color:red'>亲，请填写实付金额哦！</span>");
+        return false;
+    }
+        
+    $.ajax({
+        url:"model-bill-insert", 
+        async: false,
+        type: "POST",
+        dataType:"json",
+        data:$("#vform_factory_pay_fund").serialize(),
+        error:function(){
+            layer.close(index_layer_factory_pay_fund);
+            layer.msg('系统异常，请稍后再试:(', {time: 2000, icon:2});
+        },
+        success: function(html){
+            layer.close(index_layer_factory_pay_fund);
+            if (html.state!="ok"){
+                layer.msg('提交失败！', {time: 2000, icon:2});
+                return;
+            }
+            layer.msg('提交成功！', {time: 2000, icon:1});
+            setTimeout(function(){
+                mount_to_frame('view_finance_reg_payable_summary',1,'frame_finance_reg_payable_summary');
+            },0);
+        }
+    });    
+}
+
+function ShowFactoryReceiveFund(factory_id,receive_fund){
+    $.ajax({
+        url:"view-get-factory-receive-fund", 
+        async: false,
+        type: "POST",
+        data:{var_factory_id:factory_id,var_receive_fund:receive_fund},
+        success: function(html){
+            $("#layer_factory_receive_fund").html(html);
+        }
+    });
+    
+    index_layer_factory_receive_fund=layer.open({
+        type: 1,
+        area: ['450px', '350px'],
+        title: false,
+        content:$('#layer_factory_receive_fund')
+    });
+}
+
+function PostFactoryReceiveFund(){
+    if(!$("#bill_bank").val())
+    {
+        $("#tip_notice_factory_receive_fund").html("<span style='font-size:12px; color:red'>亲，请选择付款资金账户哦！</span>");
+        return false;
+    }
+    
+    if(!$("#bill_fund").val())
+    {
+        $("#tip_notice_factory_receive_fund").html("<span style='font-size:12px; color:red'>亲，请填写实付金额哦！</span>");
+        return false;
+    }
+        
+    $.ajax({
+        url:"model-bill-insert", 
+        async: false,
+        type: "POST",
+        dataType:"json",
+        data:$("#vform_factory_receive_fund").serialize(),
+        error:function(){
+            layer.close(index_layer_factory_receive_fund);
+            layer.msg('系统异常，请稍后再试:(', {time: 2000, icon:2});
+        },
+        success: function(html){
+            layer.close(index_layer_factory_receive_fund);
+            if (html.state!="ok"){
+                layer.msg('提交失败！', {time: 2000, icon:2});
+                return;
+            }
+            layer.msg('提交成功！', {time: 2000, icon:1});
+            setTimeout(function(){
+                mount_to_frame('view_finance_reg_payable_summary',1,'frame_finance_reg_payable_summary');
+            },0);
+        }
+    });    
+}
+
+$("#pid_view_finance_reg_payable_summary .layui-layer-close").click(function(){
+    layer.close(index_layer_factory_receive_fund);
+});
+</script>

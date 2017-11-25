@@ -1,0 +1,147 @@
+<?php
+include_once("check_login.php");
+
+$arr_barcode=$_REQUEST;
+$barcode_type=$arr_barcode["barcode_type"];
+
+$print_barcode=array();
+foreach ($arr_barcode as $k => $value)
+{
+    if(is_array($value))
+    {
+        $idx=0;
+        foreach ($value as $barcode)
+        {
+            $p_product=cselect("*","ydf_products",array("p_bianhao=?",$barcode["order_p_bianhao"]) );
+            $rowproduct=$p_product[0]->fetch();
+
+            $print_barcode[$idx]=array(                                
+                "bc"=>$barcode["order_barcode"],
+                "bc_count"=>$barcode["order_num"],
+                "dealer"=>$rowproduct["p_store"],
+                "product"=>$barcode["order_huohao"],
+                "size"=>$barcode["order_color"]." ".$barcode["order_size"],
+                "ingredient"=>$rowproduct["p_composition"]
+            );
+            $idx++;
+        }
+    }
+}
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>打印条码-优百仓档口管理系统！</title>
+<link rel=stylesheet type=text/css href="/pc/css/print.css">
+<script type="text/javascript" src="/pc/js/jquery-min.js"></script> 
+<script type="text/javascript" src="/pc/js/jquery-barcode.js"></script> 
+<style type="text/css">
+.barcodeImg{margin:0px}
+</style>
+<style media="print">
+.noprint
+{
+    display: none;
+}
+.PageNext
+{
+    page-break-after: always;
+}
+.page{
+size: A3 landscape;  
+}
+</style>
+</head>
+
+<body>
+<div style="width:100%; height:35px; border-bottom:2px solid #a40000; background:#e43c3f; display:block">
+    <div style="float:left; width:49%; padding:10px 0; text-align:center; overflow:hidden; display:block"><span style="font-size:14px; font-weight:bold; color:#ffffff; cursor:pointer" onclick="StartPrintLabel('PrintContent')">开始打印</span></div>
+    <div style="float:left; width:49%; padding:10px 0; text-align:center; overflow:hidden; display:block"><span style="font-size:14px; font-weight:bold; color:#ffffff; cursor:pointer" onclick="javascript:window.close()">关闭窗口</span></div>
+</div>
+<div style="width:100%; overflow:hidden; display:block">
+    <div style="margin:0 auto; display:block" class="noprint">    
+        <div id="bcBlock" style="width:125px; margin:0 auto; display:none">
+            <?php
+            if ($barcode_type=="1")
+            {
+            ?>
+            <div style='width:100%; padding:20px 0 5px 0; font:14px; font-weight:bold; text-align:center'>合格证</div>
+            <div  style='width:100%; padding:1px 0'>出品：<span id='dealer'>B368</span></div>
+            <?php
+            }
+            else
+            {
+            ?>
+            <div  style='width:100%; padding:30px 0 5px 0'>出品：<span id='dealer'>B368</span></div>
+            <?php
+            }
+            ?>
+            <div  style='width:100%; padding:1px 0'>货号：<span id='product'>K01</span></div>
+            <div  style='width:100%; padding:1px 0'>规格：<span id='size'>黑色 29</span></div>
+            <div  style='width:100%; padding:1px 0'>成分：<span id='ingredient'>95%棉</span></div>
+            <div id="bcTarget" class="barcodeImg" style="width:100%; margin:5px 0; text-align:center; display:block" ></div>
+            <div id="barcodeNum" style='width:100%; padding:1px 0; text-align:center'>00000000</div>
+        </div>            
+    </div>
+    <div  id="PrintContent" />
+</div>
+<script type="text/javascript">
+$(function(){
+    printBatch();
+});
+
+function printBatch()
+{
+    var batch = <?php print_r(json_encode($print_barcode)) ?>;
+    code128(batch);
+}
+function code128(batch){
+    $("#PrintContent").empty();
+    for (var i=0;i<batch.length;++i)
+    {
+        var barcode = batch[i]["bc"];
+        var count = batch[i]["bc_count"];
+        $("#bcTarget").empty().barcode(barcode, "code128",{barWidth:1.5, fontSize:15,barHeight:40,output:'bmp',showHRI:true});
+        $("#dealer").html(batch[i]["dealer"]);
+        $("#product").html(batch[i]["product"]);
+        $("#size").html(batch[i]["size"]);
+        !!batch[i]["ingredient"]?$("#ingredient").html(batch[i]["ingredient"]):$("#ingredient").html("");
+        $("#barcodeNum").html(barcode);
+        for (var j=0;j<count;++j){
+            var temp = $("#bcBlock").clone();
+            temp.css("display","block");
+            temp.appendTo($("#PrintContent"));
+            if (j+1!=count){
+                $("#PrintContent").append("<div class='PageNext'></div><hr align='center' width='100%' size='1' noshade class='noprint'>");
+            }
+        }
+        if (i+1!=batch.length){
+            if (count>5)
+            {
+                $("#PrintContent").append("<div class='PageNext'></div><hr align='center' width='100%' size='2' noshade ><div class='PageNext'></div>");
+            }
+            else
+            {
+                $("#PrintContent").append("<div class='PageNext'></div><hr align='center' width='100%' size='1' noshade class='noprint'>");
+            }
+        }
+    }
+    $(".barcodeImg").css("","")
+}
+
+function datamatrix(){
+    $("#bcTarget").empty().barcode($("#src").val(), "datamatrix",{barWidth:1.5, barHeight:40,showHRI:false});
+}
+
+function StartPrintLabel(myDiv){ 
+    var newstr = document.getElementById(myDiv).innerHTML;
+    var oldstr = document.body.innerHTML; 
+    document.body.innerHTML = newstr; 
+    window.print(); 
+    document.body.innerHTML = oldstr; 
+    return false; 
+}
+</script>
+</body>
+</html>

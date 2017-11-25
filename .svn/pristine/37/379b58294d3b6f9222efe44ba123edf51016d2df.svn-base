@@ -1,0 +1,36 @@
+<?php
+$product_arr=[];
+$p=cselect("p_huohao","ydf_products",array("p_boss_m_bianhao=?",$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"]));
+while ($row=$p[0]->fetch())
+{
+    $huohaos=$row["p_huohao"];
+    $huohaos=explode(",",$huohaos);
+    $prefixs=array();
+    foreach($huohaos as $huohao)
+    {
+        $prefix="";
+        $chars=str_split($huohao);
+        foreach($chars as $char)
+        {
+            $prefix.=$char;
+            if (preg_match("/[\x7f-\xff]/", $prefix)) {  //判断字符串中是否有中文
+                $prefix=str_split($prefix);
+                $prefix=array($prefix[0],$prefix[1],$prefix[2]);
+                $prefix=implode("",$prefix);
+                $prefixs[$prefix]=1;
+            } else {
+                $prefixs[$prefix]=1;
+            }
+        }
+    }
+    foreach($prefixs as $prefix=>$v){
+        $product_arr[$prefix][]=$row["p_huohao"];
+
+    }
+}
+foreach($product_arr as $k=>&$v)
+{
+    sort($v);
+}
+echo json_encode($product_arr);
+?>

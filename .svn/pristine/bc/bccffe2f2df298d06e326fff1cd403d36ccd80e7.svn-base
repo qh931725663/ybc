@@ -1,0 +1,13 @@
+<?php
+$seller_arr=[];
+$p=cselect("seller_name,seller_pinyin","ydf_seller",array("seller_boss_m_bianhao=?",$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"]));
+while ($row=$p[0]->fetch())
+{
+    $sell=$row["seller_pinyin"];
+    $srr=explode(",",$sell);
+    foreach($srr as $key){
+    $seller_arr[$key][]=$row["seller_name"];
+    }
+}
+echo json_encode($seller_arr);
+?>

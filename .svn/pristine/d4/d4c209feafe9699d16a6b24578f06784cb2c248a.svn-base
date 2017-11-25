@@ -1,0 +1,22 @@
+<?php
+
+include_once("check_factory_user.php");
+?>
+<div class="frame_main_div" >
+    <div class="frame_tab_panel">
+        <div class="frame_tab_line">
+            <span class="frame_tab_item_select" onclick="click_tab_products($(this));mount_to_frame('frame_factory_products_list',0,'frame_factory_products')">商品列表</span>
+            <span class="frame_tab_item"        onclick="click_tab_products($(this));mount_to_frame('view_factory_products_barcodeprint',0,'frame_factory_products')">条码打印</span>
+        </div>
+    </div>    
+    <div id="frame_factory_products" />
+</div>
+<script>
+mount_to_frame('frame_factory_products_list',0,'frame_factory_products');
+
+function click_tab_products(obj)
+{
+    obj.parent().find(".frame_tab_item_select").removeClass('frame_tab_item_select').addClass("frame_tab_item");
+    obj.addClass("frame_tab_item_select");
+}
+</script>

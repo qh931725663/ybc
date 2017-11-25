@@ -1,0 +1,9 @@
+<?php
+$products_arr=[];
+$p=cselect("dangkou_hot_products","ydf_dangkou",array("dangkou_bianhao=?",$_SESSION["dangkou_bianhao"]));
+while ($row=$p[0]->fetch())
+{
+    $products_arr=$row["dangkou_hot_products"];
+}
+echo json_encode($products_arr);
+?>

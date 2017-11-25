@@ -1,0 +1,21 @@
+<?php 
+include_once "{$root_path}/model/model_bi.php";
+@$page=$_REQUEST["page_idx"]?$_REQUEST["page_idx"]:1;$pagesize=20;$offset=($page-1)*$pagesize;
+$seller_array= get_stream_mjdz(@$_REQUEST["var_seller_id"]);
+$rowcount=count($seller_array);
+debug($seller_array);
+$page_count=ceil($rowcount/$pagesize);
+for ($i=$offset;$i<$offset+$pagesize && $i<$rowcount;$i++)
+{
+    $ro=$seller_array[$i];
+    debug($ro);
+?>
+    <div class="report_table_row">
+        <div style="width:9%; height:15px;text-align:center;margin-left:33%;"><?php echo date("Y-m-d",$ro["update_time"]) ?></div>
+        <div style="width:9%;text-align:center;margin-left:6%"><?php echo $ro["bill_type"] ?></div>
+        <div style="width:12%;text-align:center;margin-left:4%"><?php echo $ro["bill_fund"] ?></div>
+        <div style="width:12%;text-align:center;margin-left:3%"><?php echo $ro["pool"] ?></div>
+    </div>
+ <?php
+ }
+ ?>

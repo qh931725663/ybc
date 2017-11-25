@@ -1,0 +1,138 @@
+<?php 
+include_once "{$root_path}/model/model_bi.php";
+?>
+<script type="text/javascript">
+
+function search_stock_bi()
+{
+
+    $("#pid_view_stock_bi_stock_time #pages_stock_bi").set_page_num("view_stock_bi_stock_time","pages_stock_bi",1);
+
+    refresh_inner("view_stock_bi_stock_time?"+$("#form_stock_bi").serialize() );
+}
+
+</script>
+                        <form id="form_stock_bi">        
+                        <input  type="hidden" name="bi_time" id="verify_state_stock_bi" value=""/>
+                        <input  type="hidden" name="get_stock_guige_huohao" id="get_stock_guige_huohao" value=""/>
+                        <input  type="hidden" name="get_stock_guige_color" id="get_stock_guige_color" value=""/>
+                        <input  type="hidden" name="get_stock_guige_time" id="get_stock_guige_time" value=""/>
+                        <div class="search_box">
+                            <div class="search_box_inner">
+                                <div class="kcfx_b">\
+                                    <span class="lf">
+                                        <select name="kucun_select_dangkou" style="height:30px;width:120px;margin-right:10px;">
+                                            <option>请选择档口</option>
+                                            <?php get_dangkou_option();?>
+                                        </select>
+                                    </span>
+                                    <span class="lf">
+                                        <select name="kucun_select_factory" style="height:30px;width:120px;margin-right:10px;">
+                                            <option>请选择工厂</option>
+                                            <?php get_factory_option();?>
+                                        </select>
+                                    </span>
+                                    <span class="lf"><input class="iinput name_iime ino_ime_input iproduct_name"  style="padding-right:20px; width:142px" id="search_stock_bi_huohao" name="search_stock_bi_huohao" type="text" placeholder="请输入商品货号" autocomplete="off " required/></span>
+                                    <span onclick="/**/search_stock_bi()" class="btn_normal_green search_green" >搜索</span>
+                                </div>
+                                <div class="rt" style="width:160px;">
+                                    <div style="display:inline-block;border-right:3px solid #797979;padding-right:8px;">
+                                        <span style="display:block;font-size:16px;font-weight:bold;">库存总计</span>
+                                        <span style="display:block;color:#e83c3f;margin-top:5px;font-size:20px;font-weight:bold;">1000</span>
+                                    </div>
+                                    <div style="display:inline-block;padding-left:4px;">
+                                        <span style="display:block;font-size:16px;font-weight:bold;">货款总计</span>
+                                        <span style="display:block;color:#e83c3f;margin-top:5px;font-size:20px;font-weight:bold;">500000</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+<!-- refresh_begin -->                       
+                        <div class="report_table_header">
+                            <div style="width:8%; font-size:14px; color:#999999;">货号</div>
+                            <div style="width:8%; font-size:14px; color:#999999;margin-left:20%;">总库存</div>
+                            <div style="width:8%; font-size:14px; color:#999999;margin-left:20%;">七日总销</div>
+                            <div style="width:7%; font-size:14px; color:#999999;margin-left:20%;">操作</div>
+                        </div>
+<?php
+include_once("{$root_path}/model/model_bi.php");
+$boss_id = $_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"];
+
+$ymd=empty($_REQUEST["bi_time"])?"day":$_REQUEST["bi_time"];
+@$product_id=$_REQUEST["search_stock_bi_huohao"]=="请输入商品货号"?null:$_REQUEST["search_stock_bi_huohao"];
+@$factory_id=$_REQUEST["kucun_select_factory"];
+if (!empty($_SESSION["ERP_ACCOUNT_USER_DANGKOU_BIANHAO"]))
+    $order_master_id=$_SESSION["ERP_ACCOUNT_USER_DANGKOU_BIANHAO"];
+else
+    $order_master_id=@$_REQUEST["dangkou_id"];
+
+@$page=$_REQUEST["page_idx"]?$_REQUEST["page_idx"]:1;$pagesize=20;$offset=($page-1)*$pagesize;
+list($historys,$addup)=get_history_stock_num($ymd="day",$factory_id,$product_id);
+debug($historys);
+$rowcount=count($addup);$page_count=ceil($rowcount/$pagesize);
+$ret=[];
+foreach ($addup as $key=>$value)
+{
+    $ret[]=$value;
+
+}
+debug($ret);
+for ($i=$offset;$i<$offset+$pagesize && $i<$rowcount;$i++)
+{
+    $idx=$rowcount-1-$i;
+    $row=$historys[$ret[$idx]["now"]];
+    $p=rselect("*","ydf_order_detail",array("detail_boss_m_bianhao=? and detail_master_bianhao=? and detail_master_bianhao!=0 and detail_p_huohao=? and detail_factory_bianhao=?",$boss_id,$order_master_id,$product_id,$factory_id));
+?>
+                        <div class="report_table_body">
+                            <div style="font-size:14px; width:8%;">-</div>
+                            <div style="font-size:14px; width:8%;margin-left:20%">
+                                <span style="float:left; width:100%; text-align:center"><?php echo $row["sum"]["pool"]?></span>
+                            </div>
+                            <div style="font-size:14px; width:8%;margin-left:20%">-</div>
+
+                            <div style="width:7%;margin-left:20%"><span onclick="/**/ShowStockProductGuige('<?php echo $row["detail_p_huohao"] ?>','<?php echo date("Y-m-d",$row["detail_order_{$ymd}"]) ?>')" style="font-size:14px; color:#0099FF; cursor:pointer">详细</span></div>
+
+                            <div id="layer_stock_product_guige_<?php echo $row["detail_p_huohao"] ?>_<?php echo date("Y-m-d",$row["detail_order_{$ymd}"]) ?>" style="display:none;width:100%"></div>
+<?php
+}
+?>
+                    <div class="record"> 共 <span class="record_num"><?php echo $rowcount?></span> 条记录</div>
+
+<script>/*n*/
+    $("#pid_view_stock_bi_stock_time #pages_stock_bi").set_page_count("view_stock_bi_stock_time","pages_stock_bi",<?php echo $page_count;?>);
+</script>
+
+<!-- refresh_end -->
+
+    <div class="ipages" id="pages_stock_bi" page="view_stock_bi_stock_time" form="form_stock_bi" count="<?php echo $page_count; ?>"/>
+                    </form> <!-- 页码也作为表单项统一处理  -->
+<script type="text/javascript">    
+
+
+function ShowStockProductGuige(p_huohao,time)
+{
+    if ($("#layer_stock_product_guige_"+p_huohao+"_"+time).is(":visible")==false)
+    {
+        $('#get_stock_guige_huohao').attr("value",p_huohao);
+        $('#get_stock_guige_time').attr("value",time);
+
+
+        $.ajax({
+            url:"view-get-stock-guige", 
+            async: false,
+            type: "POST",
+            data:$("#form_stock_bi").serialize(),
+            success: function(html){
+                $("#layer_stock_product_guige_"+p_huohao+"_"+time).show();
+                $("#layer_stock_product_guige_"+p_huohao+"_"+time).html(html);
+
+            }
+        });
+    }
+    else
+    {
+        $("#layer_stock_product_guige_"+p_huohao+"_"+time).hide();
+    }
+}
+</script>
+

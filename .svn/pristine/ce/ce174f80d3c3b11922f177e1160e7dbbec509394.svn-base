@@ -1,0 +1,51 @@
+<div class="search_box">
+    <div class="search_box_inner">
+        <div class="zjfx_a">
+            <input type="hidden" id="order_type" name="order_type"/>
+            <span class="listtypevalue listtypeselect">全部</span>
+        </div>
+        <div class="zjfx_b">
+            <span class="sp_a">
+                <span>日期 <input type="text" id="search_store_dangkoubuhuo_from_date" name="search_store_dangkoubuhuo_from_date"  size="12" maxlength="50" readonly="readonly"> 至 <input type="text" id="search_sotre_dangkoubuhuo_to_date" name="search_sotre_dangkoubuhuo_to_date"  size="12" maxlength="50" readonly="readonly">
+                </span>
+            </span>
+            <span id="btn_chukuorder_search" class="btn_normal_red">搜索</span>
+        </div>
+    </div>
+    <div class="report_table_header" style="background:#f2f2f2">
+        <div style="color:#999999; width:16%">日期</div>
+        <div style="color:#999999; width:12%">期初净利可提现</div>
+        <div style="color:#999999; width:12%">本期净利</div>
+        <div style="color:#999999; width:12%">本期净利已提现</div>
+        <div style="color:#999999; width:12%">本期净利可提现</div>
+        <div style="color:#999999; width:12%">散客应收欠款</div>
+        <div style="color:#999999; width:12%">账期卖家欠款</div>
+        <div style="color:#999999; width:12%">本期日常支出</div>
+    </div>
+
+    
+    <div class="report_table_body" style="border-bottom:1px dashed #cccccc">
+        <div style="height:15px; width:16%"><span style="color:#0099FF">-</span></div>
+        <div style="height:15px; width:12%"><span style="color:#e43c3f">-</span></div>
+        <div style="height:15px; width:12%"><span style="color:#e43c3f">-</span></div>
+        <div style="height:15px; width:12%"><span style="color:#e43c3f">-</span></div>
+        <div style="height:15px; width:12%"><span style="color:#e43c3f">-</span></div>
+        <div style="height:15px; width:12%"><span style="color:#e43c3f">-</span></div>
+        <div style="height:15px; width:12%"><span style="color:#e43c3f">-</span></div>
+        <div style="height:15px; width:12%"><span style="color:#e43c3f">-</span></div>
+    </div>                    
+    <div class="record"> 共 <span class="record_num">0</span> 条记录</div>
+
+</div>
+
+
+
+<script>
+
+
+$(document).ready(function() {
+        $( "#search_store_dangkoubuhuo_from_date" ).datepicker();
+        $('#search_sotre_dangkoubuhuo_to_date').datepicker();
+  });
+
+</script>

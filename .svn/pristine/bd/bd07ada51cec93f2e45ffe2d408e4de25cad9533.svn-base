@@ -1,0 +1,52 @@
+<?php
+include_once "{$root_path}/model/model_bi.php";
+$boss_id = $_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"];
+$ymd=empty($_REQUEST["bi_time"])?"day":$_REQUEST["bi_time"];
+if (!empty($_SESSION["ERP_ACCOUNT_USER_DANGKOU_BIANHAO"]))
+    $order_master_id=$_SESSION["ERP_ACCOUNT_USER_DANGKOU_BIANHAO"];
+else
+    $order_master_id="";
+$kucun_color=$_REQUEST["kucun_color"];
+$product_id=$_REQUEST['get_stock_guige_huohao'];
+$factory_id= $_REQUEST['factory_id'];
+$group=array("detail_p_huohao","detail_p_color","detail_p_size");
+list($historys,$detail_addup)=get_history_stock_num($ymd="day",$group,$factory_id,$product_id,$order_master_id,null,null,null);
+debug($detail_addup);
+//七日总销和均销
+$group=array("detail_p_huohao","detail_p_color","detail_p_size");
+$where=array("detail_p_huohao=?  and detail_p_color=?",$product_id,$kucun_color);
+$event_inventory=predict(7,7,7,$group,$where);
+debug($event_inventory);
+
+$rowcount=count($detail_addup);
+$add_ar=[];
+$ret=[];
+foreach ($detail_addup as $key=>$value)
+{
+    $add_ar[]=$key;
+    $ret[]=$value;
+}
+debug($ret);
+debug($add_ar);
+for ($i=0;$i<$rowcount;$i++)
+{
+    $pool=$ret[$i]["pool"];
+    list($huohao,$color,$size) = split('#', $add_ar[$i]);
+    debug($size);
+    if(array_key_exists($huohao.'#'.$color.'#'.$size, $event_inventory)==false){
+        $avg_num=0;
+        $total_num=0;
+    }else{
+        $avg_num=round($event_inventory[$huohao.'#'.$color.'#'.$size]["avg_num"],2);
+        $total_num=round($event_inventory[$huohao.'#'.$color.'#'.$size]["total_num"],2);
+    }
+?>
+    <div style="width:100%; margin:0 auto; padding:10px 0; border-bottom:1px dashed #cccccc; overflow:hidden; display:block;">
+        <div style="float:left; width:10%; height:15px; font-size:14px; text-align:center;margin-left:33%;"><?php echo $size ?></div>
+        <div style="float:left; width:7%; font-size:14px; text-align:center;margin-left:5%;"><?php echo $pool?></div>
+        <div style="float:left; width:5%; height:15px;text-align:center;margin-left:8%"><?php echo $avg_num ?></div>
+        <div style="float:left; width:5%; height:14px;text-align:center;margin-left:10%"><?php echo $total_num ?></div>
+    </div>
+<?php
+}
+?>

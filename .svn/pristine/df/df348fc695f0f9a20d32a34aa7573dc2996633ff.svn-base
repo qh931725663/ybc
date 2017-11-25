@@ -1,0 +1,95 @@
+<?php
+include_once $_SERVER['DOCUMENT_ROOT']."/include/dbconn.php";
+include_once $_SERVER['DOCUMENT_ROOT']."/libs/sms_php/TopSdk.php";
+
+function send_reg_code($appkey,$secret,$mobile)
+{
+    $code =rand(100000, 999999);
+    $_SESSION["ERP_SMS_REG_CODE"] = $code;
+    $c = new TopClient;
+    $c ->appkey = $appkey ;
+    $c ->secretKey = $secret ;
+    $req = new AlibabaAliqinFcSmsNumSendRequest;
+    $req ->setExtend( "" );
+    $req ->setSmsType( "normal" );
+    $req ->setSmsFreeSignName( "注册验证" );
+    $req ->setSmsParam( "{code:'$code',product:'【优百仓档口管家】'}" );
+    $req ->setRecNum( $mobile );
+    $req ->setSmsTemplateCode( "SMS_10855221" );
+    $resp = $c ->execute( $req );
+    return $resp;
+}
+
+function send_fpwd_code($appkey,$secret,$mobile)
+{
+    $code =rand(100000, 999999);
+    $_SESSION["ERP_SMS_FPWD_CODE"] = $code;
+    $c = new TopClient;
+    $c ->appkey = $appkey ;
+    $c ->secretKey = $secret ;
+    $req = new AlibabaAliqinFcSmsNumSendRequest;
+    $req ->setExtend( "" );
+    $req ->setSmsType( "normal" );
+    $req ->setSmsFreeSignName( "变更验证" );
+    $req ->setSmsParam( "{code:'$code',product:'【优百仓档口管家】'}" );
+    $req ->setRecNum( $mobile );
+    $req ->setSmsTemplateCode( "SMS_10855219" );
+    $resp = $c ->execute( $req );
+    return $resp;
+}
+
+function send_mobilebd_code($appkey,$secret,$mobile)
+{
+    $code =rand(100000, 999999);
+    $_SESSION["ERP_SMS_MOBILEBD_CODE"] = $code;
+    $c = new TopClient;
+    $c ->appkey = $appkey ;
+    $c ->secretKey = $secret ;
+    $req = new AlibabaAliqinFcSmsNumSendRequest;
+    $req ->setExtend( "" );
+    $req ->setSmsType( "normal" );
+    $req ->setSmsFreeSignName( "变更验证" );
+    $req ->setSmsParam( "{code:'$code',product:'【优百仓档口管家】'}" );
+    $req ->setRecNum( $mobile );
+    $req ->setSmsTemplateCode( "SMS_10855218" );
+    $resp = $c ->execute( $req );
+    return $resp;
+}
+
+$nowtime=strtotime(date("Y-m-d H:i:s"));
+$appkey = "23391120";
+$secret = "c6fd1cc032632e4ee877bfb87ddc5f4e";
+if ($_REQUEST["var_type"] == "reg" )
+{
+    $mobile = $_REQUEST["var_mobile"]; 
+    $resp=send_reg_code($appkey,$secret,$mobile);
+    //echo "errcode::".$resp->result->err_code."||"; 
+    if ($resp->result->err_code == "0")
+        echo '{"state":"new","sms_state":"0","resp":'.json_encode($resp).'}';
+    else
+        echo '{"state":"new","sms_state":"1","resp":'.json_encode($resp).'}';
+}
+
+if ($_REQUEST["var_type"] == "fpwd")
+{
+    $mobile = $_REQUEST["var_mobile"]; 
+    $resp=send_fpwd_code($appkey,$secret,$mobile);
+    //echo "errcode::".$resp->result->err_code."||"; 
+    if ($resp->result->err_code == "0")
+        echo '{"sms_state":"0","resp":'.json_encode($resp).'}';
+    else
+        echo '{"sms_state":"1","resp":'.json_encode($resp).'}';
+}
+
+if ($_REQUEST["var_type"] == "mobilebd")
+{
+    $mobile = $_REQUEST["var_mobile"]; 
+    $resp=send_mobilebd_code($appkey,$secret,$mobile);
+    //echo "errcode::".$resp->result->err_code."||"; 
+    if ($resp->result->err_code == "0")
+        echo '{"sms_state":"0","resp":'.json_encode($resp).'}';
+    else
+        echo '{"sms_state":"1","resp":'.json_encode($resp).'}';
+}
+
+?>

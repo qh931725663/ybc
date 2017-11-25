@@ -1,0 +1,17 @@
+<?php
+$seller_arr=[];
+$p=cselect("seller_name,seller_pinyin","ydf_seller","");
+while ($row=$p[0]->fetch())
+{
+    $seller_arr[$row["seller_pinyin"]];
+    if(sizeof($seller_arr)>1){
+        print_r(explode(" ",$seller_arr));
+        foreach($seller_arr as $key){
+            $seller_arr[$key]=$row["seller_name"];
+        }
+    }else{
+        $seller_arr[$row["seller_pinyin"]]=$row["seller_name"];
+    }
+}
+echo json_encode($seller_arr);
+?>

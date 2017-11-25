@@ -1,0 +1,23 @@
+<?php
+
+include_once("check_dangkou_user.php");
+?>
+<div class="frame_main_div" >
+    <div class="frame_tab_panel">
+        <div class="frame_tab_line">
+            <span class="frame_tab_item_select" onclick="click_tab_factory_bi($(this));mount_to_frame('frame_finance_bi_pool_summary',0,'frame_factory_bi')">工厂代销对账</span>
+            <span class="frame_tab_item"        onclick="click_tab_factory_bi($(this));mount_to_frame('frame_finance_bi_out_summary',0,'frame_factory_bi')">工厂经销对账</span>
+        </div>
+    </div>    
+    <div id="frame_factory_bi" />
+</div>
+<script>
+mount_to_frame('frame_finance_bi_pool_summary',0,'frame_factory_bi');
+
+function click_tab_factory_bi(obj)
+{
+    obj.parent().find(".frame_tab_item_select").removeClass('frame_tab_item_select').addClass("frame_tab_item");
+    obj.addClass("frame_tab_item_select");
+}
+</script>
+                

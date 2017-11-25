@@ -1,0 +1,47 @@
+<div class="fullSlide">
+    <div class="bd">
+        <ul>
+            <?php
+            if ($_REQUEST["var_opt_id"]=="xszb")
+            {
+            ?>
+            <li _src="url(/pc/images/optplay/sdsy/001.jpg)"></li>
+            <li _src="url(/pc/images/optplay/sdsy/001.jpg)"></li>
+            <?php
+            }
+            else
+            {
+            ?>
+            <li _src="url(/pc/images/optplay/sdsy/001.jpg)"></li>
+            <li _src="url(/pc/images/optplay/sdsy/001.jpg)"></li>
+            <?php
+            }
+            ?>
+        </ul>
+    </div>
+    <div class="hd"><ul></ul></div>
+    <span class="prev"></span>
+    <span class="next"></span>
+</div>
+<script type="text/javascript">
+$(".fullSlide").hover(function(){
+    $(this).find(".prev,.next").stop(true, true).fadeTo("show", 0.5)
+},
+function(){
+    $(this).find(".prev,.next").fadeOut()
+});
+$(".fullSlide").slide({
+    titCell: ".hd ul",
+    mainCell: ".bd ul",
+    effect: "fold",
+    autoPlay: true,
+    autoPage: true,
+    trigger: "click",
+    startFun: function(i) {
+        var curLi = jQuery(".fullSlide .bd li").eq(i);
+        if ( !! curLi.attr("_src")) {
+            curLi.css("background-image", curLi.attr("_src")).removeAttr("_src")
+        }
+    }
+});
+</script>

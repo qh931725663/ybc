@@ -1,0 +1,107 @@
+<?php
+include_once("check_login.php");
+?>
+                <div style="float:left; width:100%; overflow:hidden; display:block">
+<form id="password_set" method="post">                    
+                    <div style="float:left; width:80%; margin:30px 0 0 20%; overflow:hidden; display:block">
+                        <div style="position:relative; float:left; overflow:hidden; display:block">
+                            <div style="position:relative; width:277px; height:20px; margin:0 10px 5px 0; padding:5px; background:#fafafa; border:1px solid #cccccc; display:block">
+                                <span style="float:left; width:30px; height:20px; background:url(/pc/reg/images/pic_mob.jpg) center center no-repeat; display:block"></span>
+                                <span style="float:left; width:150px; display:block">
+                                    <input id="r_mob" name="r_mob" type="text" value="手机号码" maxlength="11" style="width:250px; padding-top:3px; height:13px; color:#cccccc; background:#fafafa; border:0;" />
+                                </span>
+                            </div>                
+                        </div>
+                        <div id="tip_mob" style="float:left; padding:8px 0; overflow:hidden; display:block"><span style="color:#999999">11位数字手机号码</span></div>        
+                    </div>
+                    <div style="float:left; width:80%; margin:30px 0 0 20%; overflow:hidden; display:block">
+                        <div style="float:left;width:140px; height:20px; margin:0 10px 5px 0; padding:5px; background:#fafafa; border:1px solid #cccccc; overflow:hidden; display:block">
+                            <span style="float:left; width:30px; height:20px; background:url(/pc/reg/images/pic_password.jpg) center center no-repeat; display:block"></span>
+                            <span style="float:left; width:80px; display:block"><input id="r_sms" name="r_sms" type="text" value="短信验证码" maxlength="6" style="width:100px; padding-top:3px; height:13px; color:#cccccc; background:#fafafa; border:0;"></span>
+                        </div>    
+                        <input type="button" id="btn_sms" value="获取验证码"/> 
+                        <div id="tip_sms" style="float:left; margin-left:12px; padding:8px 0; overflow:hidden; display:block"><span style="color:#999999">6位数字短信验证码</span></div>   
+                    </div>                   
+                    <div style="float:left; width:80%; margin:30px 0 0 20%; overflow:hidden; display:block">
+                        <span id="btn_submit" class="btn_normal">确认修改</span>
+                    </div>
+</form>    
+                </div>
+                
+<script type="text/javascript">    
+$(function(){         
+     $("#m_password").blur(function(){              
+         if(!$("#m_password").val())
+        {
+            $("#tip_password").html("<img src=/pc/images/error.png> <span style='color:red'>请输入新密码！</span>");
+        }
+        else
+        {
+            $("#tip_password").html("");
+        }
+     });
+     
+     $("#m_confirmpassword").blur(function(){              
+         if(!$("#m_confirmpassword").val())
+        {
+            $("#tip_confirmpassword").html("<img src=/pc/images/error.png> <span style='color:red'>请输入确认新密码！</span>");
+        }
+        else
+        {
+            $("#tip_confirmpassword").html("");
+        }
+     });
+     
+         
+    $('#btn_submit').click(function(){
+         if(!$("#m_password").val())
+        {
+            $("#tip_password").html("<img src=/pc/images/error.png> <span style='color:red'>请输入新密码！</span>");
+            return false;
+        }
+        
+         if(!$("#m_confirmpassword").val())
+        {
+            $("#tip_confirmpassword").html("<img src=/pc/images/error.png> <span style='color:red'>请输入确认新密码！</span>");
+            return false;
+        }
+        
+         if($("#m_confirmpassword").val()!=$("#m_password").val())
+        {
+            $("#tip_confirmpassword").html("<img src=/pc/images/error.png> <span style='color:red'>您输入的确认新密码与新密码不一致！</span>");
+            return false;
+        }
+                
+        $.ajax({
+            url:"post-password-modify", 
+            async: false,
+            type: "POST",
+            data:$('#password_set').serialize(),
+            dataType:"json",
+            success: function(html){
+                if (html["state"]=="ok")
+                {
+                    layer.msg("密码修改成功！即将跳转到登录页登录。", {time: 2000, icon:1});
+                    setTimeout(function(){
+                        window.location.href="/";
+                    },2000);
+                }
+                else
+                {
+                    layer.msg(html["desc"], {time: 2000, icon:2});
+                }
+            }
+        });        
+    });
+    $('#pid_view_password_set').on('keydown',function(e){
+
+                if(e.keyCode == 13){
+                    //模拟点击登陆按钮，触发上面的 Click 事件
+                    $('#pid_view_password_set input,select').blur();
+                    $("#btn_submit").click(
+                    );
+                }
+            });
+});
+
+</script>

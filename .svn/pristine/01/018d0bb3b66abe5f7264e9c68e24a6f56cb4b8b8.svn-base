@@ -1,0 +1,399 @@
+
+//var _load=$.fn.load;  
+//$.fn.extend({  
+//    load:function(url,param,calbck){  
+//    //此处用apply方法调用原来的load方法，因为load方法属于对象，所以不可直接对象._load（...）      
+//    return _load.apply(this,[url,param,calbck]);  
+//    }  
+//});  
+
+(function($){  
+    var _ajax=$.ajax;  
+    //重写jquery的ajax方法  
+    $.ajax=function(opt){  
+        //备份opt中error和success方法  
+        var fn = {  
+            error:function(XMLHttpRequest, textStatus, errorThrown){},  
+            success:function(data, textStatus){}  
+        }  
+        if(opt.error){  
+            fn.error=opt.error;  
+        }  
+        if(opt.success){  
+            fn.success=opt.success;  
+        }  
+        //扩展增强处理  
+        var _opt = $.extend(opt,{  
+            error:function(XMLHttpRequest, textStatus, errorThrown){  
+                json=XMLHttpRequest.responseText.replaceAll("\n","").replaceAll("\r","").replace(/\<div debug\>.+?\<\/div\>/g, "");
+                try{
+                    fn.success(JSON.parse(json), textStatus);  
+                    return;
+                }
+                catch(err)
+                {
+                }
+                layer.msg('系统异常，请稍后再试:(', {time: 2000, icon:2});
+                fn.error(XMLHttpRequest, textStatus, errorThrown);  
+            },  
+            success:function(data, textStatus){  
+                fn.success(data, textStatus);  
+            }  
+        });  
+        _ajax(_opt);  
+    };  
+})(jQuery);
+
+function ChangeDangkouStore(dangkou_type,dangkou_bianhao,dangkou_name,dangkou_status){	
+	$.ajax({
+		url:"session-dangkoustore", 
+		async: false,
+		type: "POST",
+		data:{var_dangkou_type:dangkou_type,var_dangkou_bianhao:dangkou_bianhao,var_dangkou_name:dangkou_name,var_dangkou_status:dangkou_status},
+		success: function(html){
+			if (dangkou_name=="")
+			{
+				$("#select_store_name").html("全部");
+			}
+			else
+			{
+				$("#select_store_name").html(dangkou_name);
+			}
+			window.location.href="myaccount";
+		}
+	});	
+}
+
+function FactorySelectBoss(boss_id){	
+	$.ajax({
+		url:"session-factory-select-boss", 
+		async: false,
+		type: "POST",
+		data:{var_boss_id:boss_id},
+		success: function(html){
+			$("#select_store_name").html(html);
+			window.location.href="myaccount";
+		}
+	});	
+}
+
+String.prototype.replaceAll = function(s1,s2) { 
+    return this.replace(new RegExp(s1,"gm"),s2); 
+}
+
+function PrintOrder(order_bianhao){
+var iWidth=800; 
+var iHeight=600;
+var iTop = (window.screen.availHeight-30-iHeight)/2
+var iLeft = (window.screen.availWidth-10-iWidth)/2; 
+window.open ("print-order/"+order_bianhao, "newwindow", "height="+iHeight+", width="+iWidth+", top="+iTop+", left="+iLeft+", toolbar=no, menubar=no, scrollbars=yes, resizable=no, location=no, status=no") 
+}
+
+function DeleteOrder(order_bianhao, return_url, return_from)
+{ 
+	if(confirm("确定要删除选中的信息吗？一旦删除将不能恢复！"))
+	{
+		if (order_bianhao=="0"){
+			return;
+		}
+		$.ajax({
+			url:"model-order-delete", 
+			async: false,
+			type: "POST",
+			dataType:"json",
+			data:{order_bianhao:order_bianhao},
+			error:function(){
+				layer.msg('系统异常，请稍后再试:(', {time: 2000, icon:2});
+			},
+			success: function(html){
+				if (html.state=="ok"){
+					layer.msg('删除成功！', {time: 2000, icon:1});
+					setTimeout(function(){
+						refresh_inner(return_url+$("#"+return_url).serialize() );
+					},0);
+				}
+				else if (html.state=="fail"){
+					layer.msg('删除失败！', {time: 2000, icon:2});
+					return;
+				}
+				else
+				{
+					layer.msg(html.desc, {time: 2000, icon:2});
+					return;
+				}
+			}
+		});   
+	} 
+}
+
+
+var page_count={};
+function init_pages(page,form_id,id,count)
+{
+    if (id[0]!="#")
+        id="#pid_"+page+" #"+id;
+    if (form_id[0]!="#")
+        form_id="#pid_"+page+" #"+form_id;
+    
+    //初始化模板
+    $(id).append($("#pages_tpl").html());
+    page_count[id]=count;
+    set_page_num(page,id,1);
+
+    $(id+" .pagelink").click(function(){
+        set_page_list(id,$(this));
+        refresh_inner(page+"?"+$(form_id).serialize() );
+    });
+    $(id+" .pageselect").click(function(){
+        set_page_list(id,$(this));
+        refresh_inner(page+"?"+$(form_id).serialize() );
+    });
+}
+function set_page_count(page,id,count)
+{
+    if (id[0]!="#")
+        id="#pid_"+page+" #"+id;
+
+    page_count[id]=count;
+    mobj=$(id).find("#m");
+    if (mobj.length>0)
+        set_page_list(id,mobj);//模拟点击第N页
+}
+function set_page_num(page,id,num)
+{
+    if (id[0]!="#")
+        id="#pid_"+page+" #"+id;
+
+    mobj=$(id).find("#m");
+    if (num!=0)
+        mobj.html(num);
+    set_page_list(id,mobj);//模拟点击第N页
+}
+function set_page_list(id,obj)
+{
+    var pcount=page_count[id];
+    if (obj.attr("id")=="last"||obj.attr("id")=="next")
+    {
+        mobj=$(id).find("#m");
+        if (obj.attr("id")=="last" && Number(mobj.html())-1>=1){
+            var bingo=Number(mobj.html())-1;
+            mobj.html(bingo);
+            set_page_list(id,mobj);
+        }
+        if (obj.attr("id")=="next" && Number(mobj.html())+1<=pcount){
+            var bingo=Number(mobj.html())+1;
+            mobj.html(bingo);
+            set_page_list(id,mobj);
+        }
+        return;
+    }
+
+    $(id).find("#ll").html("1");
+    $(id).find("#rr").html(pcount);
+
+    var bingo=Number(obj.html());
+    $(id).find("#page_idx").attr("value",bingo);
+
+    $(id).find("#m").html(bingo);//中间页码
+    $(id).find("#l1").html(bingo-1);//左1页码
+    $(id).find("#l2").html(bingo-2);//左2页码
+    $(id).find("#r1").html(bingo+1);//右1页码
+    $(id).find("#r2").html(bingo+2);//右2页码
+
+    $(id).find(".pagelink").each(function(){
+        var num=Number($(this).html())
+        if (num<=0||num>pcount){
+            $(this).css("display","none");
+        }else{
+            $(this).css("display","inline");
+        }
+    });
+}
+
+function init_small_nav(obj)
+{
+    //小导航的初始化
+    obj.find(".ismall_nav").each(function(index,element)
+    {
+        var names = $(element).attr("names");
+        if (typeof(names)=="undefined")
+            return;
+        names=names.split(";");
+        for (var i=0;i<names.length;i++)
+        {
+            $(element).append("<input name='"+names[i]+"' type='hidden' value=''/>");
+        }
+    });
+    //小导航绑定click
+    obj.find(".listtypevalue,.listtypeselect").click(function(){
+        //改变被点击的按钮颜色
+        obj=$(this);
+        obj.parent().find(".listtypevalue").removeClass('listtypeselect');
+        obj.addClass("listtypeselect");
+        
+        //设置input值
+        var values = obj.attr("values");
+        if (typeof(values)=="undefined")
+            return;
+        values=values.split(";");
+        for (var i=0;i<values.length;i++)
+        {
+            kv=values[i].split(":"); 
+            obj.parent().find("input[name='"+kv[0]+"']").attr("value",kv[1]);
+        }
+
+        //执行refresh_inner
+        var page = obj.parents(".ismall_nav").attr("page");
+        if (typeof(page)=="undefined")
+            return;
+        var ipages_id = obj.parents("form").find(".ipages").attr("id");
+        set_page_num(page,ipages_id,1);
+        refresh_inner(page+"?"+obj.parents("form").serialize() );
+
+    });
+}
+
+function mount_complete(obj)
+{
+    //标签页绑定click
+    obj.find(".frame_tab_item_select,.frame_tab_item").click(function(){
+        obj=$(this);
+        obj.parent().find(".frame_tab_item_select").removeClass('frame_tab_item_select').addClass("frame_tab_item");
+        obj.addClass("frame_tab_item_select");
+    });
+    //初始化翻页容器
+    obj.find(".ipages").each(function(index,element){
+        var page = $(element).attr("page");
+        var form = $(element).attr("form");
+        var id = $(element).attr("id");
+        var count = $(element).attr("count");
+        init_pages(page,form,id,count);
+    });
+    //初始化小导航
+    init_small_nav(obj);
+}
+
+
+
+function refresh_complete(obj)
+{
+
+}
+
+var NumSound = function(){
+    var num_idx=0;
+    var waves = new Array();
+    var num_arr;
+    preload();
+    function preload()
+    {
+        for(var i=0;i<10;i++){
+            waves[i] = new Audio;
+            waves[i].preload="load";
+            waves[i].src = "/pc/wav/0"+i+".wav";
+            waves[i].playbackRate=2;
+            waves[i].addEventListener('ended',
+            function () {
+                num_idx++;
+                if (num_idx<num_arr.length){
+                    waves[num_arr[num_idx] ].play();
+                }
+            }, false);
+        }
+    }
+    function stop_all_sound()
+    {
+        for(var i=0;i<10;i++){
+            waves[i].pause;
+            waves[i].currentTime=0.0;
+        }
+    }
+    this.play_sound=function(num)
+    {
+        stop_all_sound();
+        num_idx=0;
+        num_arr = num.toString().split("");
+        waves[num_arr[0]].play();
+    }
+}
+/*加载弹框layer页面*/
+function layer_ui(){
+    index_layer_chuku_add_seller=layer.open({
+        type: 1,
+        area: ['380px', '250px'],
+        title: false,
+        content:$('#layer_chuku_edit_product')
+    });
+    $("#saoma_chuku_barcode").blur();
+}
+/*拿货数量和商品金额*/
+function change_qprice(){
+    var order_sum=0;
+    var order_total_money=0;
+    $(".chuku_order_num").each(function(){
+        order_sum+=parseInt($("#chuku_edit_seller_num").val());
+        order_total_money=order_sum*parseFloat($("#chuku_edit_seller_price").val());
+    });
+    $('#chuku_total_num').html(order_sum);
+    $('#chuku_total_money').html(parseFloat(order_total_money.toFixed(2)));
+    $('#chuku_notice_count').html(order_sum);
+}
+/*修改拿货数量和单价*/
+function change_quantityprice(){
+    layer_ui();
+    var eve=event.target;
+    var chukuorderlist_seller_name=$("#chukuorderlist_seller_name").html();
+    if(chukuorderlist_seller_name=="匿名卖家"){//判断是否为匿名卖家
+        $("#chuku_edit_seller_price").attr("disabled","false");
+        var num=$(eve).val();
+        var price=$(eve).parent().parent().prev().children().val();
+        $("#chuku_edit_seller_num").val(num);
+        $("#chuku_edit_seller_price").val(price);
+
+        $("#edit_chuku").click(function(){
+            var a=$(this).attr("name");
+            $(eve).val($("#chuku_edit_seller_num").val());
+            $(eve).parent().parent().prev().children().val($("#chuku_edit_seller_price").val());
+            layer.close(index_layer_chuku_add_seller);
+            $("#saoma_chuku_barcode").focus();
+
+            var order_sum=0;
+            var order_total_money=0;
+            $(".chuku_order_num").each(function(){
+                order_sum+=parseInt($("#chuku_edit_seller_num").val());
+                order_total_money=order_sum*parseFloat($("#chuku_edit_seller_price").val());
+            });
+            $('#chuku_total_num').html(order_sum);
+            $('#chuku_total_money').html(parseFloat(order_total_money.toFixed(2)));
+            $('#chuku_notice_count').html(order_sum);
+        });
+    }else{
+        var num=$(eve).val();
+        var price=$(eve).parent().parent().prev().children().val();
+        $("#chuku_edit_seller_num").val(num);
+        $("#chuku_edit_seller_price").val(price);
+
+        $("#edit_chuku").click(function(){
+            $(eve).val($("#chuku_edit_seller_num").val());
+            $(eve).parent().parent().prev().children().val($("#chuku_edit_seller_price").val());
+            layer.close(index_layer_chuku_add_seller);
+            $("#saoma_chuku_barcode").focus();
+
+        });
+    }
+}
+function change_quantity(){
+    layer_ui();
+    var eve1=event.target;
+    var price=$(eve1).val();
+    var num=$(eve1).parent().next().children().children().next().val();
+    $("#chuku_edit_seller_num").val(num);
+    $("#chuku_edit_seller_price").val(price);
+    $("#edit_chuku").click(function(){
+        $(eve1).val($("#chuku_edit_seller_price").val());
+        $(eve1).parent().next().children().children().next().val($("#chuku_edit_seller_num").val());
+        layer.close(index_layer_chuku_add_seller);
+        $("#saoma_chuku_barcode").focus();
+
+    });
+}

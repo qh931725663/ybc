@@ -1,0 +1,680 @@
+<!-- 771 -->
+<?php
+function get_user_list()
+{
+    $boss_id = $_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"];    
+    $p=select("*","ydf_user",array("user_boss_m_bianhao=?",$boss_id));
+    if ($p->errorCode()!="00000")
+        print_r($p->errorInfo());
+    while ($user=$p->fetch())
+    {
+        $p_member=select("*","ydf_member",array("m_bianhao=?",$user["user_self_m_bianhao"]));
+        if($member=$p_member->fetch()){ 
+            echo '<option value="'.$user["user_self_m_bianhao"].'">'.$member["m_name"].'</option>';
+        }
+    }
+}
+function get_factory_list()
+{
+    $boss_id = $_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"];    
+    $p=select("*","ydf_factory",array("factory_boss_m_bianhao=?",$boss_id));
+    if ($p->errorCode()!="00000")
+        print_r($p->errorInfo());
+    while ($f_row=$p->fetch())
+    {
+        echo '<option value="'.$f_row["factory_bianhao"].'">'.$f_row["factory_name"].'</option>';
+    }
+}
+
+function get_type_view($e_type){
+    $payable_type=array("1001"=>"餐饮",  
+        "1002"=>"交通",  
+        "1003"=>"住宿",  
+        "1004"=>"办公用品",  
+        "1005"=>"营销广告",
+        "1006"=>"员工工资",  
+        "1007"=>"其他"); 
+    return $payable_type[$e_type];
+}
+?>
+<script type="text/javascript">    
+
+function delete_gcsq_771(bill_id)
+{ 
+    if (bill_id=="0"){
+        return;
+    }
+    $.ajax({
+        url:"model-bill-delete", 
+        async: false,
+        type: "POST",
+        dataType:"json",
+        data:{func:"delete_gcsq",bill_id:bill_id},
+        error:function(){
+            layer.msg("系统异常，请稍后再试:(", {time: 2000, icon:2});
+        },
+        success: function(html){
+            if (html.desc.indexOf("have_son_bill")==0){
+                layer.msg("删除失败，账单已经确认支付,除非撤销支付才能删除", {time: 2000, icon:2});
+                return;
+            }
+            if (html.desc=="must_add_user"){
+                layer.msg("删除失败，账单不属于本人！", {time: 2000, icon:2});
+                return;
+            }
+            if (html.state!="ok"){
+                layer.msg("删除失败！", {time: 2000, icon:2});
+                return;
+            }
+            layer.msg('删除成功！', {time: 2000, icon:1});
+            setTimeout(function(){
+                refresh_inner("view_finance_reg_cash?"+$("#form_771").serialize() );
+            },0);
+        }
+    });    
+}
+
+function delete_gcyf_771(bill_id)
+{ 
+    if (bill_id=="0"){
+        return;
+    }
+    $.ajax({
+        url:"model-bill-delete", 
+        async: false,
+        type: "POST",
+        dataType:"json",
+        data:{func:"delete_gcyf_dx",bill_id:bill_id},
+        error:function(){
+            layer.msg("系统异常，请稍后再试:(", {time: 2000, icon:2});
+        },
+        success: function(html){
+            if (html.desc.indexOf("have_son_bill")==0){
+                layer.msg("删除失败，账单已经确认支付,除非撤销支付才能删除", {time: 2000, icon:2});
+                return;
+            }
+            if (html.desc=="must_add_user"){
+                layer.msg("删除失败，账单不属于本人！", {time: 2000, icon:2});
+                return;
+            }
+            if (html.state!="ok"){
+                layer.msg("删除失败！", {time: 2000, icon:2});
+                return;
+            }
+            layer.msg('删除成功！', {time: 2000, icon:1});
+            setTimeout(function(){
+                refresh_inner("view_finance_reg_cash?"+$("#form_771").serialize() );
+            },0);
+        }
+    });    
+}
+function list_sdsy()
+{
+    //重置value
+    $('#chuku_from_day').attr("value","");
+    $('#chuku_to_day').attr("value","");
+    /* $('#chuku_searchwords').attr("placeholder","请输入卖家昵称"); */
+    /* $('#chuku_searchwords').css("color","#cccccc") */
+
+    $("#pid_view_finance_reg_cash #pages_771").set_page_num("view_finance_reg_cash","pages_771",1);
+
+    refresh_inner("view_finance_reg_cash?"+$("#form_771").serialize() );
+}
+
+function search_sdsy()
+{
+    $("#btn_chukuorder_search").parent().prev().find(".listtypevalue").removeClass('listtypeselect');
+
+    $("#pid_view_finance_reg_cash #pages_771").set_page_num("view_finance_reg_cash","pages_771",1);
+
+    refresh_inner("view_finance_reg_cash?"+$("#form_771").serialize() );
+}
+
+function search_771()
+{
+    alert(safe_select("#pid_view_finance_reg_cash #form_771").serialize());
+    mobj=$("#pages_771").find("#m");
+    mobj.html(1);
+    set_page_list_771(mobj);
+    refresh_inner("view_finance_reg_cash?"+$("#form_771").serialize() );
+}
+function click_me_771(obj,state)
+{
+    $('#button_state_771').attr('value',state);
+    $(".list_button_771").removeClass("listclassselect");
+    $(".list_button_771").addClass("listclassvalue");
+
+    obj.removeClass("listclassvalue");
+    obj.addClass("listclassselect");
+    search_771();
+}
+</script>
+                    <form id="form_771">
+                    <div style="float:left; width:100%; margin-top:20px; overflow:hidden; display:block;">
+                        <div style="float:left; overflow:hidden; display:block">
+                            <span style="float:left; overflow:hidden; display:block">
+                                <span style="padding:5px 0">日期 <input type="text" class="datepicker"  name="search_store_dangkoubuhuo_from_date"  size="12" maxlength="50" readonly="readonly" style="padding:5px"> 至 <input type="text" class="datepicker" name="search_sotre_dangkoubuhuo_to_date"  size="12" maxlength="50" readonly="readonly" style="padding:5px">
+                                </span>
+                            </span>
+                            <span class="lf">
+                                <select  name="factory_id" style="padding: 5px; margin-left: 15px;">
+                                        <option value="">选择工厂</option>
+                                        <?php get_factory_list(); ?>
+                                </select>
+                            </span>
+                            <span id="btn_chukuorder_search" class="btn_normal_blue" onclick="search('view_finance_reg_cash','form_771')">搜索</span>
+                            <span class="clear_search" onclick="mount_to_frame('view_finance_reg_cash',1,'frame_finance_reg_cash')">清空<br>条件</span>
+                        </div>
+                    </div>
+<!-- refresh_begin -->
+                    <div class="title_stalls" style="position:relative; float:left; width:100%; margin-top:20px; background:#f2f2f2; border-bottom:1px solid #cccccc; display:block">
+                        <div style="width:15%;">日期</div>
+                        <div style="width:10%;">工厂</div>
+                        <div style="width:10%;">手机号</div>
+                        <div style="width:10%;">提现金额</div>
+                        <div style="width:30%;">提现资金账户</div>
+                        <div style="width:10%;">状态</div>
+                        <div style="width:15%;">操作</div>
+                    </div>
+                    <div id="pagelist" style="float:left; width:100%; overflow:hidden; display:block">
+<?php
+$boss_id = $_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"];    
+$user_id = $boss_id;
+
+@$from_day=$_REQUEST["from_day"]?get_ymd($_REQUEST["from_day"])["d"]:null;
+@$to_day=$_REQUEST["to_day"]?get_ymd($_REQUEST["to_day"])["d"]+24*3600:null;
+$where=@array("bill_boss_id=? and bill_factory_id=? and bill_type<>'sqyf' and bill_is_close=?
+        and bill_add_time>=? and bill_add_time<=? and bill_is_close=? and bill_mode=1 and (bill_type='gcsq' or (bill_type='sqyf' and bill_source_id='0'))" ,
+        $boss_id,$_REQUEST["factory_id"],$_REQUEST["bill_is_close"],
+        $from_day,$to_day 
+        );
+
+$where=clean_where($where);
+//echo $where[0];
+
+$p=select("count(*)","ydf_finance_bill",$where);
+$rows = $p->fetch();
+$rowcount = $rows[0];
+@$page=$_REQUEST["page_idx"]?$_REQUEST["page_idx"]:1;
+$pagesize=10;$page_count=ceil($rowcount/$pagesize);  
+$offset=($page-1)*$pagesize; 
+
+$p=select("*","ydf_finance_bill",$where,"bill_add_time desc",$offset,$pagesize);
+if ($p->errorCode()!="00000")
+    print_r($p->errorInfo());
+while($row_bill=$p->fetch(PDO::FETCH_ASSOC))
+{
+    $p_member=select("*","ydf_member",array("m_bianhao=?",$row_bill["bill_add_user_id"]) );
+    $user_name="";
+    if ($row_member=$p_member->fetch()){
+        $user_name=$row_member["m_realname"]; 
+    }
+    include_once "{$root_path}/model/model_factory.php";
+    $factory_name="";$factory_mobile="";$factory_total_payable="";
+    if (!empty($row_bill["bill_factory_id"])){
+        $ires=get_factory_info($boss_id,$row_bill["bill_factory_id"],"2");
+        if (count($ires)!=4){
+            echo $ires[0];
+            continue;
+        }
+        $factory_name=$ires[1];
+        $factory_mobile=$ires[2];
+        $factory_total_payable=$ires[3];
+    }
+
+    include_once "{$root_path}/model/model_bill.php";
+    
+    if ($row_bill["bill_type"]=="gcsq")
+    {
+        $sons=get_son_bill($row_bill["bill_id"],"sqyf");
+        $sons=get_son_bill($sons[0],"sqsf");
+    }
+    elseif ($row_bill["bill_type"]=="sqyf")
+    {
+        $sons=get_son_bill($row_bill["bill_id"],"sqsf");
+    }
+    
+    $row_zdhz=array();
+    if (count($sons)==1){ 
+        $p_zdhz=select("*","ydf_finance_bill",array("bill_id=?",$sons[0]) );
+        $row_zdhz=$p_zdhz->fetch();
+        
+        $p_bill_bank_pay=cselect("*","ydf_bank",array("bank_id=?",$row_zdhz["bill_bank_id"]));
+        $row_bill_bank_pay=$p_bill_bank_pay[0]->fetch();
+    }
+    
+    $p_bill_bank=cselect("*","ydf_bank",array("bank_id=?",$row_bill["bill_bank_id"]));
+    $row_bill_bank=$p_bill_bank[0]->fetch();
+?>
+                        <div class="list_stalls" style="position:relative;width:100%; padding:10px 0; border-bottom:1px dashed #cccccc; overflow:hidden; display:block">
+                            <div style="width:15%; height:25px;"><?php echo echo2(date("Y-m-d H:i:s",$row_bill["bill_add_time"])) ?></div>
+                            <div style="width:10%; height:25px;"><?php echo echo2($factory_name) ?></div>
+                            <div style="width:10%; height:25px;"><?php echo echo2($factory_mobile) ?></div>
+                            <div style="width:10%; height:25px;" id="payable_fund_771"><?php echo echo2($row_bill["bill_fund"])?></div>
+                            <div style="width:30%; height:25px;"><?php echo $row_bill_bank["bank_type"]=="3"?$row_bill_bank["bank_user_account"]:$row_bill_bank["bank_name"].$row_bill_bank["bank_user_account"].$row_bill_bank["bank_user_name"]?></div>
+                            <div style="width:10%; height:25px;">
+                            <?php
+                            if ($row_bill["bill_verify_state"]=="0")
+                            {
+                                echo "<span style='color:#e43c3f'>待付款</span>";
+                            }
+                            elseif ($row_bill["bill_verify_state"]=="1")
+                            {
+                                echo "<span style='color:#009900'>已付款</span>";
+                            }
+                            elseif ($row_bill["bill_verify_state"]=="2")
+                            {
+                                echo "<span style='color:#999999'>已驳回</span>";
+                            }
+                            ?>
+                            </div>
+                            <div style="float:left;width:15%;padding:10px 0; text-align:center;">
+                                <?php
+                                if ($row_bill["bill_verify_state"]=="0")
+                                {
+                                ?>
+                                <span style="color:#0099FF; cursor:pointer" onclick="ShowFactoryGetcashConfirm(<?php echo $row_bill["bill_id"]?>)">付款</span>
+                                <?php
+                                }
+                                else
+                                {
+                                ?>
+                                <span style="color:#999999">付款</span>
+                                <?php
+                                }
+                                ?>
+                                |
+                                <?php
+                                if ($row_bill["bill_verify_state"]=="0")
+                                {
+                                ?>
+                                <span style="color:#0099FF; cursor:pointer" onclick="RefuseGetcashBill(<?php echo $row_bill["bill_id"]?>)">驳回</span>
+                                <?php
+                                }
+                                else
+                                {
+                                ?>
+                                <span style="color:#999999">驳回</span>
+                                <?php
+                                }
+                                ?>
+                            </div>
+                            <?php
+                            if ($row_bill["bill_verify_state"]=="1")
+                            {
+                            ?>
+                            <div style="float:left;width:100%; margin:0 auto; padding:10px 0; overflow:hidden; display:block;">
+                                <div style="float:right; padding:5px 0">
+                                    <span style="float:left"><span style="color:#999999">付款日期：</span><?php echo @echo2(date("Y-m-d",$row_zdhz["bill_add_time"])) ?></span>
+                                    <span style="float:left; margin-left:10px"><span style="color:#999999">付款金额：</span><?php echo @echo2($row_zdhz["bill_fund"])?></span>
+                                    <span style="float:left; margin-left:10px"><span style="color:#999999">付款资金账户：</span><?php echo $row_bill_bank_pay["bank_type"]=="4"?"系统账户":($row_bill_bank_pay["bank_type"]=="3"?$row_bill_bank_pay["bank_user_account"]:($row_bill_bank_pay["bank_type"]=="2"?$row_bill_bank_pay["bank_name"]." ".$row_bill_bank_pay["bank_user_account"]." ".$row_bill_bank_pay["bank_user_name"]:""))?></span>        
+                                    <span style="float:left; margin-left:10px"><span style="color:#999999">付款人：</span><?php echo @echo2($row_zdhz["bill_add_user_id"]) ?></span>                            
+                                    <span style="float:left; margin-left:10px; color:#0099FF; cursor:pointer" onclick="CancelGetcashBill(<?php echo $row_bill["bill_id"]?>,'<?php echo $row_bill["bill_type"]?>')">撤销</span>
+                                </div>
+                            </div>
+                            <?php
+                            }
+                            ?>
+                        </div>
+<?php
+}
+?>
+                    
+                    
+                    </div>
+                    <div class="record"> 共 <span class="record_num"><?php echo $rowcount?></span> 条提现记录</div>
+
+<script>/*n*//*n*/
+$("#pid_view_finance_reg_cash #pages_771").set_page_count("view_finance_reg_cash","pages_771",<?php echo $page_count;?>);
+</script>
+
+<!-- refresh_end -->
+                    <div class="ipages" id="pages_771" page="view_finance_reg_cash" form="form_771" count="<?php echo $page_count; ?>"/>
+                    </form> <!-- 页码也作为表单项统一处理  -->
+                    
+                    
+                    <div id="layer_factory_getcash" style="float:left; width:500px; padding:30px; overflow:visible; display:none">
+                        <form id="form_factory_getcash_confirm">
+                            <div class="factory_getcash_confirm_content">
+                                <div class="factory_getcash_confirm_row">
+                                    <p><span>请选择工厂：</span></p>
+                                    <select name="select_getcash_factory" id="select_getcash_factory">
+                                        <option>请选择工厂</option>
+                                        <?php
+                                        $p=cselect("*","ydf_factory",array("factory_boss_m_bianhao=?",$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"]),"","factory_bianhao");
+                                        while ($rowdata=$p[0]->fetch())
+                                        {
+                                        ?>
+                                        <option value="<?php echo $rowdata["factory_bianhao"]?>"><?php echo $rowdata["factory_name"]?></option>
+                                        <?php
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+                                <div class="factory_getcash_confirm_row">
+                                    <p><span>可提现资金：</span></p>
+                                    <p style="color:red; text-align:left" id="cash_available" name="table[1][cash_available]">
+                                    </p>
+                                </div>
+                                <div class="factory_getcash_confirm_row">
+                                    <p><span style="color:red">*</span><span>付款资金账户：</span></p>
+                                    <select id="payment_funds_account" name="payment_funds_account">
+                                        <option value="">请选择资金账户</option>
+                                        <?php
+                                        if ($_SESSION["ERP_ACCOUNT_LOGIN_TYPE"]=="1" or ($_SESSION["ERP_ACCOUNT_LOGIN_TYPE"]=="4" and ($_SESSION["ERP_ACCOUNT_USER_TYPE"]=="1" or $_SESSION["ERP_ACCOUNT_USER_TYPE"]=="3")))
+                                        {
+                                            $p=cselect("*","ydf_bank",array("bank_type<>'4' and bank_type<>'1' and bank_type<>'5' and bank_isstaff='0' and bank_boss_id=?",$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"]),"","bank_id desc");
+                                            while ($rowbank=$p[0]->fetch())
+                                            {
+                                            ?>
+                                                <option value="<?php echo $rowbank["bank_id"]?>"><?php echo $rowbank["bank_type"]=="3"?"支付宝：".$rowbank["bank_user_account"]:$rowbank["bank_name"]." ".$rowbank["bank_user_account"]." ".$rowbank["bank_user_name"]?></option>
+                                        <?php
+                                            }
+                                        }
+                                        elseif (!empty($_SESSION["ERP_ACCOUNT_USER_DANGKOU_TYPE"]) and $_SESSION["ERP_ACCOUNT_USER_DANGKOU_TYPE"]=="1")
+                                        {
+                                            $p_dangkou_bank=cselect("*","ydf_dangkou_bank",array("dangkou_bank_type='3' and dangkou_bank_dangkou_bianhao=?",$_SESSION["ERP_ACCOUNT_USER_DANGKOU_BIANHAO"]) );
+                                            if ($rowdangkoubank=$p_dangkou_bank[0]->fetch())
+                                            {
+                                                $p_bank=cselect("*","ydf_bank",array("bank_id=?",$rowdangkoubank["dangkou_bank_bank_bianhao"]) );
+                                                $rowbank=$p_bank[0]->fetch();
+                                            ?>
+                                                <option value="<?php echo $rowbank["bank_id"]?>"><?php echo "支付宝 ".$rowbank["bank_user_account"] ?></option>
+                                        <?php
+                                            }
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+                                <div class="factory_getcash_confirm_row">
+                                    <p><span style="color:red">*</span><span>收款资金账户：</span></p>
+                                    <select id="collection_fund_account" name="table[1][collection_fund_account]">
+                                        <option value="">请选择资金账户</option>
+
+                                    </select>
+                                </div>
+                                <div class="factory_getcash_confirm_row">
+                                    <p><span style="color:red">*</span><span>付款金额：</span></p>
+                                    <input type="text" class="iinput" id="payment_amount" name="table[1][payment_amount]">
+                                </div>
+                            </div>
+                            <div style="width:100%; margin-top:10px" class="lf of dp">
+                                <span id="add_getcash_tip_notice" style="margin-left:80px" class="lf"></span>
+                            </div>
+                            <div style="float:left; width:100%; margin-top:18px; overflow:hidden; display:block">
+                                <span id="factory_getcash_confirm_btn" onclick="/**/PaymentAccount()" style="float:left; margin-left:185px; padding:7px 20px; background:#e43c3f; color:#FFFFFF; cursor:pointer">确认付款</span>
+                            </div>
+                        </form>
+                    </div>
+
+<script type="text/javascript">                    
+function ShowFactoryGetcashConfirm(bill_id){
+    $.ajax({
+        url:"get-factory-getcash-confirm", 
+        async: false,
+        type: "POST",
+        data:{var_bill_id:bill_id},
+        success: function(html){
+            $("#layer_factory_getcash").html(html);
+        }
+    });
+    
+    index_layer_factory_getcash_confirm=layer.open({
+        type: 1,
+        area: ['570px', '350px'],
+        title: false,
+        content:$('#layer_factory_getcash')
+    });
+}
+
+function PostFactoryGetcashConfirm(){
+    if(!$("#bill_bank").val())
+    {
+        alert("亲，请选择付款资金账户！");
+        return false;
+    }
+        
+    $.ajax({
+        url:"model-bill-update", 
+        async: false,
+        type: "POST",
+        dataType:"json",
+        data:$("#vform_factory_getcash_confirm").serialize(),
+        error:function(){
+            layer.close(index_layer_factory_getcash_confirm);
+            layer.msg('系统异常，请稍后再试:(', {time: 2000, icon:2});
+        },
+        success: function(html){
+            layer.close(index_layer_factory_getcash_confirm);
+            if (html.state!="ok"){
+                layer.msg('提交失败！', {time: 2000, icon:2});
+                return;
+            }
+            layer.msg('提交成功！', {time: 2000, icon:1});
+            setTimeout(function(){
+                mount_to_frame('view_finance_reg_cash',1,'frame_finance_reg_cash');
+            },0);
+        }
+    });    
+}
+
+function RefuseGetcashBill(bill_id){ 
+    if(confirm("确定要驳回选中的信息吗？"))
+    {
+        $.ajax({
+            url:"model-bill-delete", 
+            async: false,
+            type: "POST",
+            dataType:"json",
+            data:{func:"refuse_pay_gcsq",bill_id:bill_id},
+            error:function(){
+                layer.msg('系统异常，请稍后再试:(', {time: 2000, icon:2});
+            },
+            success: function(html){
+                if (html.state=="ok"){
+                    ZENG.msgbox.show("驳回成功！", 4, 2000);
+                    setTimeout(function(){
+                        mount_to_frame('view_finance_reg_cash',1,'frame_finance_reg_cash');
+                    },0);
+                }
+                else if (html.state=="fail"){
+                    layer.msg("驳回失败！", {time: 2000, icon:2});
+                    return;
+                }
+                else
+                {
+                    layer.msg(html.desc, {time: 2000, icon:2});
+                    return;
+                }
+            }
+        });    
+    }
+}
+
+function CancelGetcashBill(bill_id,bill_type){ 
+    if(confirm("确定要撤销选中的信息吗？"))
+    {
+        if (bill_type=="gcsq")
+        {
+            $.ajax({
+                url:"model-bill-delete", 
+                async: false,
+                type: "POST",
+                dataType:"json",
+                data:{func:"cancel_pay_gcsq",bill_id:bill_id},
+                error:function(){
+                    layer.msg('系统异常，请稍后再试:(', {time: 2000, icon:2});
+                },
+                success: function(html){
+                    if (html.state=="ok"){
+                        layer.msg("撤销成功！", {time: 2000, icon:1});
+                        setTimeout(function(){
+                            mount_to_frame('view_finance_reg_cash',1,'frame_finance_reg_cash');
+                        },0);
+                    }
+                    else if (html.state=="fail"){
+                        layer.msg("撤销失败！", {time: 2000, icon:2});
+                        return;
+                    }
+                    else
+                    {
+                        layer.msg(html.desc, {time: 2000, icon:2});
+                        return;
+                    }
+                }
+            });    
+        }
+        else if (bill_type=="sqyf")
+        {
+            $.ajax({
+                url:"model-bill-delete", 
+                async: false,
+                type: "POST",
+                dataType:"json",
+                data:{func:"delete_gcsq",bill_id:bill_id},
+                error:function(){
+                    layer.msg('系统异常，请稍后再试:(', {time: 2000, icon:2});
+                },
+                success: function(html){
+                    if (html.state=="ok"){
+                        layer.msg("撤销成功！", {time: 2000, icon:1});
+                        setTimeout(function(){
+                            mount_to_frame('view_finance_reg_cash',1,'frame_finance_reg_cash');
+                        },0);
+                    }
+                    else if (html.state=="fail"){
+                        layer.msg("撤销失败！", {time: 2000, icon:2});
+                        return;
+                    }
+                    else
+                    {
+                        layer.msg(html.desc, {time: 2000, icon:2});
+                        return;
+                    }
+                }
+            });
+        }
+    }
+}
+$("#consignment_payment").click(function(){//我要记账
+   index_layer_factory_getcash_confirm=layer.open({
+        type: 1,
+        area: ['600px', '350px'],
+        title: false,
+        content:$('#layer_factory_getcash_confirm')
+   });
+});
+$("#factory_getcash_confirm_btn").mouseover(function(){
+    $(this).css("background","#cc0000");
+}).mouseout(function(){
+    $(this).css("background","#e43c3f");
+});
+$("#select_getcash_factory").change(function(){
+    if(!$("#select_getcash_factory").val()){
+        $("#add_getcash_tip_notice").html("<span style='font-size:14px; color:red'>亲，工厂不能为空哦！</span>");
+        return false;
+    }
+    var factory_bank;
+    $.ajax({
+        url:"get-factory-bank",
+        async: false,
+        type: "GET",
+        data:$("#form_factory_getcash_confirm").serialize(),
+        dataType:"json",
+        error:function(){
+            layer.close(index_layer_factory_getcash_confirm);
+            layer.msg('请添加收款资金账户', {time: 2000, icon:2});
+
+        },
+        success: function(html){
+            factory_bank = html;
+        }
+    });
+    $("#cash_available").empty();
+    $("#cash_available").prepend(function(){
+        for(var ele in factory_bank[0]){
+            return "<span style='color:red'>"+factory_bank[0][0]+"</span>";
+        }
+    });
+    $("#collection_fund_account").empty();
+    if(factory_bank.length<2){
+        layer.close(index_layer_factory_getcash_confirm);
+        layer.msg('请添加收款资金账户', {time: 2000, icon:2});
+    }
+    for(var ele in factory_bank){
+        if(ele=="bank_boss_id"){
+            for(var i=0;i<factory_bank[ele].length;i++){
+                $("#collection_fund_account").prepend(function(){
+                    return "<option value="+factory_bank[ele][i]+" class='zijin"+i+"'></option>";
+                });
+            }
+        }
+        if(ele=="bank_name"){
+            for(var i=0;i<factory_bank[ele].length;i++){
+                $(".zijin"+i+"").append(function(){
+                    return "<span>"+factory_bank[ele][i]+"</span> ";
+                });
+            }
+        }
+        if(ele=="bank_user_account"){
+            for(var i=0;i<factory_bank[ele].length;i++){
+                $(".zijin"+i+"").append(function(){
+                    return "<span>"+factory_bank[ele][i]+"</span> ";
+                });
+            }
+        }
+        if(ele=="bank_user_name"){
+            for(var i=0;i<factory_bank[ele].length;i++){
+                $(".zijin"+i+"").append(function(){
+                    return "<span>"+factory_bank[ele][i]+"</span> ";
+                });
+            }
+        }
+    }
+
+});
+function PaymentAccount(){
+    if(!$("#payment_funds_account").val())
+    {
+        $("#add_getcash_tip_notice").html("<span style='font-size:14px; color:red'>亲，付款资金账户不能为空哦！</span>");
+        return false;
+    }
+    if(!$("#collection_fund_account").val())
+    {
+        $("#add_getcash_tip_notice").html("<span style='font-size:14px; color:red'>亲，收款资金账户不能为空哦！</span>");
+        return false;
+    }
+    if(!$("#payment_amount").val())
+    {
+        $("#add_getcash_tip_notice").html("<span style='font-size:14px; color:red'>亲，请输入付款金额哦！</span>");
+        return false;
+    }
+
+    $.ajax({
+        url:"model-bill-insert",
+        async: false,
+        type: "POST",
+        dataType:"json",
+        data:$("#form_factory_getcash_confirm").serialize(),
+        error:function(){
+            layer.close(index_layer_factory_getcash_confirm);
+            layer.msg('系统异常，请稍后再试:(', {time: 2000, icon:2});
+        },
+        success: function(html){
+            layer.close(index_layer_factory_getcash_confirm);
+            if (html.state!="ok"){
+                layer.msg('提交失败！', {time: 2000, icon:2});
+                return;
+            }
+            layer.msg('提交成功！', {time: 2000, icon:1});
+            setTimeout(function(){
+                mount_to_frame('view_finance_reg_cash',1,'frame_finance_reg_cash');
+            },0);
+        }
+    });
+}
+
+$("#layer_factory_getcash_confirm .layui-layer-close").click(function(){
+    layer.close(index_layer_factory_getcash_confirm);
+});
+</script>

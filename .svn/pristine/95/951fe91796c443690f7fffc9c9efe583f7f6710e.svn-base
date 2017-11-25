@@ -1,0 +1,39 @@
+<?php
+include_once("check_login.php");
+include_once("check_dangkou_user.php");
+
+$rsdangkou=mysql_query("select * from ydf_dangkou where dangkou_bianhao='".$_REQUEST["var_dangkou_bianhao"]."'", $dbconn);
+$rowdangkou=mysql_fetch_array($rsdangkou);
+?>
+<form method="post" id="shoppaymentform">
+<div style="position:relative; float:left; width:100%; margin-top:10px; padding:10px 0; display:block">
+    <span style="float:left; width:25%; padding:5px 0; color:#999999; text-align:right"> 档口名称：</span>
+    <span style="float:left; width:75%; padding:5px 0"><?php echo $rowdangkou["dangkou_name"]?></span>
+</div>
+<div style="position:relative; float:left; width:100%; margin-top:10px; padding:10px 0; display:block">
+    <span style="float:left; width:25%; padding:5px 0; color:#999999; text-align:right"><span style="color:red">*</span> 申请使用年限：</span>
+    <span style="float:left; width:75%;">
+         <select id="shoppayment_dangkou_years" name="shoppayment_dangkou_years" style="padding:5px">    
+            <option value="">选择</option>
+            <option value="1">12000元/1年</option>
+            <option value="2">24000元/2年</option>
+        </select>
+    </span>
+</div>
+<div style="float:left; width:75%; margin:30px 0 0 25%; overflow:hidden; display:block">
+    <span id="shoppayment_tip_notice" style="float:left"></span>
+</div>
+<div style="float:left; width:75%; margin:20px 0 0 25%; overflow:hidden; display:block">
+    <span id="shoppayment_affirm_btn" class="btn_normal" onclick="PostShopPayment()"> 确认续费 </span>
+</div>
+<input type="hidden" name="shoppayment_dangkou_bianhao" value="<?php echo $rowdangkou["dangkou_bianhao"]?>">
+</form>
+<script type="text/javascript">
+    $("#layer_store_payment").on('keydown',function(e){
+        if(e.keyCode == 13){
+        //模拟点击登陆按钮，触发上面的 Click 事件
+        $('#layer_store_payment input,select').blur();
+        $("#shoppayment_affirm_btn").click();
+        }
+    });
+</script>

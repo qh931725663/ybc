@@ -1,0 +1,140 @@
+<?php
+include_once("check_login.php");
+session_start();
+$_SESSION["PDEBUG"]=array_key_exists("debug",$_REQUEST)?1:0;
+session_write_close();
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>优百仓进销存</title>
+<link rel=stylesheet type=text/css href="/pc/css/style.css">
+<link rel=stylesheet type=text/css href="/pc/Date/jquery-ui.css">
+
+<script type="text/javascript" src="/pc/js/jquery-min.js"></script>
+<script type="text/javascript" src="/pc/Date/jquery-ui.js"></script>
+<script type="text/javascript" src="/pc/Date/dateinput-ch-ZN.js"></script>
+<script type="text/javascript" src="/pc/js/common.js"></script>
+<script type="text/javascript" src="/pc/js/main.js"></script>
+<script type="text/javascript" src="/pc/js/component.js"></script>
+<script type="text/javascript" src="/pc/layer/layer.js"></script>
+<script type="text/javascript" src="/pc/js/countUp.min.js"></script>
+<script type="text/javascript" src="/pc/js/highcharts.js"></script>
+
+
+
+
+<script type="text/html" id="pages_tpl">
+    <div class="showpage">
+        <input id="pages_idx_i" name="page_idx" style="display:none" value="1"/>
+        <span style="display:block">
+            <span class="page_ele pagelink" id="last">上一页</span>
+            <span class="page_ele pagelink" id="ll" />
+            <span class="page_ele pageblank"  id="lb">...</span>
+            <span class="page_ele pagelink" id="l2" />
+            <span class="page_ele pagelink" id="l1" />
+            <span class="page_ele pageselect" id="m" >1</span>
+            <span class="page_ele pagelink" id="r1" />
+            <span class="page_ele pagelink" id="r2" />
+            <span class="page_ele pageblank"  id="rb">...</span>
+            <span class="page_ele pagelink" id="rr" />
+            <span class="page_ele pagelink" id="next">下一页</span>
+        </span>
+    </div>
+</script>
+<script type="text/html" id="ikeyword_tpl">
+    <span style="float:left;width:12%; padding:5px 0; color:#999999; text-align:right; overflow:hidden;">货号：</span>
+    <input id="qilaihai" class="ikeyword_num iinput name_iime ino_ime_input iproduct_name" style="text-align:left;color:#000; width:141px">
+    <span class="click_keyboard" style="float:left;position:relative;left:45%;background:url(/pc/images/ikeyboard.png) no-repeat center center;width:32px;height:16px;margin-top:13px;display:none;"></span>
+    <div class="ikeywords" style="position:relative;display:none;">
+        <ul>
+            <li class="ikey_letters" style="display:block;"></li>
+        </ul>
+        <ul>
+            <li><span>1</span></li>
+            <li><span>2</span></li>
+            <li><span>3</span></li>
+            <li><span>4</span></li>
+            <li style="margin-right:50px;"><span>5</span></li>
+            <li><span>6</span></li>
+            <li><span>7</span></li>
+            <li><span>8</span></li>
+            <li><span>9</span></li>
+            <li><span>0</span></li>
+        </ul>
+        <button class="btn">del</button>
+    </div>
+</script>
+</head>
+
+<body id="main_body">
+<?php include_once "pc/top.php";?>
+<div style="position:relative; width:100%; min-width:1004px; background:#37424f; overflow:hidden; display:block">
+    <div style="width:100%; background:#37424f; overflow:hidden; display:block">
+        <div style="float:left; width:10%; overflow:hidden; display:block">
+            <?php include_once "menu.php"; ?>
+        </div>
+        <div id="parent" style="position:relative; float:left; width:90%; background:#f2f2f2; overflow-y:auto;-webkit-overflow-scrolling:touch;height:100%; display:block">
+        </div>
+    </div>    
+</div>
+<div id="layer_chuku_edit_product"  style="float:left; width:250px; padding:25px; overflow:visible; display:none;">
+         <div class="add_seller_box">
+             <p class="add_seller_box_p1" style="display:none;">
+                     <span class="seller_box_p1_1"><span>*</span>单价：</span>
+                 <span class="seller_box_p1_2">
+                 <input id="chuku_edit_seller_price" type="number" maxlength="50" class='edit_order_num' style="height:28px" required/>
+                 </span>
+             </p>
+             <p class="add_seller_box_p2">
+                 <span class="seller_box_p1_2"><span>*</span> 拿货数量：</span>
+                 <span class="seller_box_p1_2">
+                 <input id="chuku_edit_seller_num"type="number" maxlength="50" style="height:28px;" min="1" required/>
+                 </span>
+             </p>
+         </div>
+         <div class="chuku_add_seller_tip_notice_box">
+             <span id="chuku_add_seller_tip_notice"></span>
+         </div>
+         <div class="sdsy_add">
+             <span id="edit_chuku" onclick="update_price()">确认修改</span>
+         </div>
+</div>
+<div id="iadditem_tpl">
+    <form>
+        <div class="add_seller_box" style="width:375px;">
+            <p class="add_seller_box_p1" style="width:375px;">
+                <span class="seller_box_p1_1" >添加货号：</span>
+                <span class="seller_box_p1_2">
+                    <input id="update_article_num" name="dangkou_hot_products" style="height:28px" placeholder="请输入货号"/>
+                </span>
+                <span class="btn_products">添加</span>
+            </p>
+            <p class="add_seller_box_p2" style="width:78px;text-align:right;">
+                <span class="seller_box_p1_1" style="color:#999;" >已添加：</span>
+            </p>
+            <ul class="products_table">
+            </ul>
+        </div>
+    </form>
+</div>
+<script type="text/javascript">
+$("#parent").height($(window).height());
+$(window).resize(function(){
+    $("#parent").height($(window).height());
+});
+
+$(document).keydown(function(e){
+if(e.which == 83 && e.ctrlKey==true) {
+    $("#link_sale_cashier").trigger("click"); 
+    setTimeout('$("#link_sale_cashier_tab").trigger("click")',0);
+}
+});
+
+</script>
+
+
+
+</body>
+</html>

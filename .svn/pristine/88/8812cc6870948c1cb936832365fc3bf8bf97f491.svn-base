@@ -1,0 +1,52 @@
+<?php
+include_once("check_login.php");
+include_once("check_dangkou_user.php");
+?>
+<div class="frame_main_div" style="min-height:400px;">
+    <div class="frame_tab_panel">
+        <div class="frame_tab_line">
+            <?php
+            if (empty($_SESSION["ERP_ACCOUNT_USER_DANGKOU_TYPE"]))
+            {
+            ?>
+            <span class="frame_tab_item_select" onclick="mount_to_frame('frame_stock_storepurchase',0,'frame_stock')">档口补货</span>
+            <span class="frame_tab_item"        onclick="mount_to_frame('frame_stock_warehousepurchase',0,'frame_stock')">仓库补货</span>
+            <?php
+            }
+            elseif (!empty($_SESSION["ERP_ACCOUNT_USER_DANGKOU_TYPE"]) and $_SESSION["ERP_ACCOUNT_USER_DANGKOU_TYPE"]=="1")
+            {
+            ?>
+            <span class="frame_tab_item_select" onclick="mount_to_frame('frame_stock_storepurchase',0,'frame_stock')">档口补货</span>
+            <?php
+            }
+            elseif (!empty($_SESSION["ERP_ACCOUNT_USER_DANGKOU_TYPE"]) and $_SESSION["ERP_ACCOUNT_USER_DANGKOU_TYPE"]=="2")
+            {
+            ?>
+            <span class="frame_tab_item_select" onclick="mount_to_frame('frame_stock_warehousepurchase',0,'frame_stock')">仓库补货</span>
+            <?php
+            }
+            ?>
+            <span class="frame_tab_item"        onclick="mount_to_frame('frame_stock_transfer',0,'frame_stock')">库存调拨</span>
+            <span class="frame_tab_item"        onclick="mount_to_frame('frame_stock_clear',0,'frame_stock')">清仓返厂</span>
+            <span class="frame_tab_item"        onclick="mount_to_frame('frame_stock_adjust',0,'frame_stock')">库存盘点</span>
+        </div>
+    </div>    
+    <div id="frame_stock" />
+</div>
+<script>
+<?php
+if (empty($_SESSION["ERP_ACCOUNT_USER_DANGKOU_TYPE"]) or (!empty($_SESSION["ERP_ACCOUNT_USER_DANGKOU_TYPE"]) and $_SESSION["ERP_ACCOUNT_USER_DANGKOU_TYPE"]<>"2"))
+{
+?>
+mount_to_frame('frame_stock_storepurchase',0,'frame_stock');
+<?php
+}
+else
+{
+?>
+mount_to_frame('frame_stock_warehousepurchase',0,'frame_stock');
+<?php
+}
+?>
+
+</script>

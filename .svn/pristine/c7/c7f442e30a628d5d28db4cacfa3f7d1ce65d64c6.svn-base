@@ -1,0 +1,126 @@
+<form id="form_zjtj">
+<div class="search_box">
+    <div id="real_time_profit">
+        <div style="width:25%; float:left; text-align:center; border-right:1px dashed #fff;">
+            <p style="font-size:16px; padding-top:25px;">当前资金总额</p>
+            <p style="font-size:16px; padding-top:10px;">
+            <?php
+                include_once "{$root_path}/model/model_bi.php";
+                $p=rselect("*","ydf_bank",array("boss_id=? and bank_type='4'",$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"],""));
+                if($row=$p[0]->fetch()){
+
+                }
+                list($historys,$addup) = get_history_bank_fund($ymd="day",$row["bank_id"]);
+                echo sum_addup($addup);
+            ?>
+            </p>
+        </div>
+        <div style="width:24%; float:left; text-align:center;">
+            <p style="font-size:16px; padding-top:25px;">当前应收货款</p>
+            <p style="font-size:16px; padding-top:10px;">
+                <?php
+                include_once "{$root_path}/model/model_bi.php";
+                list($historys,$addup)= get_history_sellers($ymd="day",null);
+                echo sum_addup($addup);
+                ?>
+            </p>
+        </div>
+        <div style="width:24%; float:left; text-align:center;">
+            <p style="font-size:16px; padding-top:25px;">代销应付货款</p>
+            <p style="font-size:16px; padding-top:10px;">
+            <?php
+                include_once "{$root_path}/model/model_bi.php";
+                $historys=array();
+                $index=array();
+                $addup=array();
+                get_history_agent_pools($ymd="day",null,$historys,$index,$addup);
+                echo sum_addup($addup);
+            ?>
+            </p>
+        </div>
+        <div style="width:24%; float:left; text-align:center;">
+            <p style="font-size:16px; padding-top:25px;">经销应付货款</p>
+            <p style="font-size:16px; padding-top:10px;">
+                <?php
+                   include_once "{$root_path}/model/model_bi.php";
+                   list($historys,$addup)= get_history_dealer_gcyf($ymd="day",null);
+                   echo sum_addup($addup);
+                ?>
+            </p>
+        </div>
+    </div>
+    <div class="search_box_inner">
+        <div class="zjfx_a ismall_nav" names="bi_time" page="view_finance_bi_fund">
+
+            <span class="listtypevalue listtypeselect" values="bi_time:day">日报</span>
+            <span class="listtypevalue" values="bi_time:week">周报</span>
+            <span class="listtypevalue" values="bi_time:month">月报</span>
+            <span class="listtypevalue" values="bi_time:year">年报</span>
+        </div>
+        <div class="zjfx_b" style="display:none;">
+            <span class="sp_a">
+                <span>日期 <input type="text" class="datepicker" name="from_day"  size="12" maxlength="50" readonly="readonly"> 至 <input type="text" class="datepicker" name="to_day"  size="12" maxlength="50" readonly="readonly">
+                </span>
+            </span>
+            <span id="btn_chukuorder_search" class="btn_normal_blue" onclick="search('view_finance_bi_fund','form_zjtj')">搜索</span>
+            <span class="clear_search">清空<br>条件</span>
+        </div>
+    </div>
+    <div class="report_table_header" style="background:#f2f2f2">
+        <div style="color:#999999; width:20%">日期</div>
+        <div style="color:#999999; width:16%">上期未提净利</div>
+        <div style="color:#999999; width:16%">+ 本期毛利</div>
+        <div style="color:#999999; width:16%">- 本期开支</div>
+        <div style="color:#999999; width:16%">- 本期已提净利</div>
+        <div style="color:#999999; width:16%">= 本期可提净利</div>
+    </div>
+
+<!-- refresh_begin -->
+<?php
+include_once("{$root_path}/model/model_bi.php");
+include_once("{$root_path}/model/model_bill.php");
+
+$ymd=empty($_REQUEST["bi_time"])?"day":$_REQUEST["bi_time"];
+
+@$from_day=$_REQUEST["from_day"]?get_ymd($_REQUEST["from_day"])["d"]:null;
+@$to_day=$_REQUEST["to_day"]?get_ymd($_REQUEST["to_day"])["d"]+24*3600-1:null;
+@$page=$_REQUEST["page_idx"]?$_REQUEST["page_idx"]:1;$pagesize=20;$offset=($page-1)*$pagesize;
+
+list($historys,$addup) = get_history_net_profit($ymd,$seller_id=null);
+debug($historys);
+$rowcount=count($historys);$page_count=ceil($rowcount/$pagesize);
+for ($i=$offset;$i<$offset+$pagesize && $i<$rowcount;$i++)
+{
+    $idx=$rowcount-1-$i;//historys是从老到新的顺序,所以从尾巴开始取是最新的
+    //$row=$historys[$sorts[$idx][0] ];
+    $row=$historys[$idx];
+    $maoli=$row["xslr"]-$row["thtl"];
+    $kaizhi=$row["bxsf"]+$row["qtzc"];
+    if($idx-1>=0){
+        $row_l=$historys[$idx-1];
+    }else{
+        $row_l=$historys[$idx];
+    }
+
+?>
+    <div class="report_table_body" style="border-bottom:1px dashed #cccccc">
+        <div style="height:15px; width:20%"><?php echo show_report_date($ymd,$row["bill_{$ymd}"])?></div>
+        <div style="height:15px; width:16%"><?php echo $row_l["sum"]["pool"]?></div>
+        <div style="height:15px; width:16%"><?php echo $maoli?></div>
+        <div style="height:15px; width:16%"><?php echo $kaizhi?></div>
+        <div style="height:15px; width:16%"><?php echo $row["qtzc"]?></div>
+        <div style="height:15px; width:16%"><?php echo $row["sum"]["pool"]?></div>
+    </div>
+<?php
+}
+?>
+    <div class="record"> 共 <span class="record_num"><?php echo $rowcount?></span> 条记录</div>
+
+<script>/*n*/
+    $("#pid_view_finance_bi_fund #pages_zjtj").set_page_count("view_finance_bi_fund","pages_zjtj",<?php echo $page_count;?>);
+</script>
+
+</div>
+<!-- refresh_end -->
+    <div class="ipages" id="pages_zjtj" page="view_finance_bi_fund" form="form_zjtj" count="<?php echo $page_count; ?>"></div>
+</form>

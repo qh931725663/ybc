@@ -1,0 +1,289 @@
+<?php
+include_once("check_login.php");
+include_once("check_dangkou_user.php");
+?>
+                <link rel="stylesheet" type="text/css" href="/libs/oss/style.css"/>
+                <div style="float:left; width:100%; overflow:hidden; display:block">
+                    <div style="float:left; width:100%; margin-top:20px; overflow:hidden; display:block;">
+                        <div style="float:right">
+                            <span class="btn_normal_red" onclick="/**/mount_to_frame('view_products_list',0,'frame_products_list')">返回</span>
+                        </div>
+                    </div>
+                    
+<form method="post" id="products_add_form">
+                    <div style="float:left; width:100%; margin-top:30px; overflow:hidden; display:block">
+                        <div style="position:relative; float:left; width:100%; padding:10px 0; display:block">
+                            <div style="float:left; width:20%; padding:5px 0; text-align:right"><span style="color:red">*</span> 货号：</div>
+                            <div style="float:left; width:80%"><input class="iinput" id="product_huohao" name="product_huohao" type="text" size="10" maxlength="10" style="padding:5px"></div>
+                        </div>
+                        <div style="position:relative; float:left; width:100%; padding:10px 0; display:block">
+                            <div style="float:left; width:20%; padding:5px 0; text-align:right"><span style="color:red">*</span> 出品档口：</div>
+                            <div style="float:left; width:80%"><input class="iinput" id="product_store" name="product_store" type="text" size="10" maxlength="50" style="padding:5px"></div>
+                        </div>
+                        <div style="position:relative; float:left; width:100%; padding:10px 0; display:block">
+                            <div style="float:left; width:20%; padding:5px 0; text-align:right"><span style="color:red">*</span> 面料成分：</div>
+                            <div style="float:left; width:80%"><input class="iinput" id="product_composition" name="product_composition" type="text" size="30" maxlength="100" style="padding:5px"></div>
+                        </div>
+                        <div style="position:relative; float:left; width:100%; padding:10px 0; display:block">
+                            <div style="float:left; width:20%; padding:5px 0; text-align:right"><span style="color:red">*</span> 颜色：</div>
+                            <div style="float:left; width:80%">
+                                <div style="float:left; width:100%">
+                                    <div style="float:left"><input  class="color_select" name="color_select" type="checkbox" style="margin:5px"/></div>
+                                    <div style="float:left; margin-left:10px"><input class="color_vale_select" name="color_value_select" type="text" size="15" maxlength="20" style="padding:5px; border:0; border-bottom:1px solid #999999; color:#cccccc" value="选择后输入颜色" readonly></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="position:relative; float:left; width:100%; padding:10px 0; display:block">
+                            <div style="float:left; width:20%; padding:5px 0; text-align:right"><span style="color:red">*</span> 尺码：</div>
+                            <div style="float:left; width:80%"><input class="size_type" name="size_type" type="radio" style="margin:5px" value="1"/> 中国码 <input class="size_type" name="size_type" type="radio" style="margin:5px" value="2"/> 欧码</div>
+                        </div>
+                        <div id="china_value_select" style="position:relative; float:left; width:100%; padding:10px 0; display:none">
+                            <div style="float:left; width:20%; height:25px"></div>
+                            <div style="float:left; width:80%">
+                                <div style="float:left; width:100%">
+                                    <span style=" float:left; width:80px"><input class="size_china_value" name="size_china_value[]" type="checkbox" style="margin:5px" value="S"/> S</span>
+                                    <span style=" float:left; width:80px"><input class="size_china_value" name="size_china_value[]" type="checkbox" style="margin:5px" value="M"/> M</span>
+                                    <span style=" float:left; width:80px"><input class="size_china_value" name="size_china_value[]" type="checkbox" style="margin:5px" value="L"/> L</span>
+                                    <span style=" float:left; width:80px"><input class="size_china_value" name="size_china_value[]" type="checkbox" style="margin:5px" value="XL"/> XL</span>
+                                    <span style=" float:left; width:80px"><input class="size_china_value" name="size_china_value[]" type="checkbox" style="margin:5px" value="2XL"/> 2XL</span>
+                                    <span style=" float:left; width:80px"><input class="size_china_value" name="size_china_value[]" type="checkbox" style="margin:5px" value="3XL"/> 3XL</span>
+                                    <span style=" float:left; width:80px"><input class="size_china_value" name="size_china_value[]" type="checkbox" style="margin:5px" value="4XL"/> 4XL</span>
+                                    <span style=" float:left; width:80px"><input class="size_china_value" name="size_china_value[]" type="checkbox" style="margin:5px" value="5XL"/> 5XL</span>
+                                    <span style=" float:left; width:80px"><input class="size_china_value" name="size_china_value[]" type="checkbox" style="margin:5px" value="6XL"/> 6XL</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="europe_value_select" style="position:relative; float:left; width:100%; padding:10px 0; display:none">
+                            <div style="float:left; width:20%; height:25px"></div>
+                            <div style="float:left; width:80%">
+                                <div style="float:left; width:100%">
+                                    <span style=" float:left; width:80px"><input class="size_europe_value" name="size_europe_value[]" type="checkbox" style="margin:5px" value="27"/> 27</span>
+                                    <span style=" float:left; width:80px"><input class="size_europe_value" name="size_europe_value[]" type="checkbox" style="margin:5px" value="28"/> 28</span>
+                                    <span style=" float:left; width:80px"><input class="size_europe_value" name="size_europe_value[]" type="checkbox" style="margin:5px" value="29"/> 29</span>
+                                    <span style=" float:left; width:80px"><input class="size_europe_value" name="size_europe_value[]" type="checkbox" style="margin:5px" value="30"/> 30</span>
+                                    <span style=" float:left; width:80px"><input class="size_europe_value" name="size_europe_value[]" type="checkbox" style="margin:5px" value="31"/> 31</span>
+                                    <span style=" float:left; width:80px"><input class="size_europe_value" name="size_europe_value[]" type="checkbox" style="margin:5px" value="32"/> 32</span>
+                                    <span style=" float:left; width:80px"><input class="size_europe_value" name="size_europe_value[]" type="checkbox" style="margin:5px" value="33"/> 33</span>
+                                    <span style=" float:left; width:80px"><input class="size_europe_value" name="size_europe_value[]" type="checkbox" style="margin:5px" value="34"/> 34</span>
+                                    <span style=" float:left; width:80px"><input class="size_europe_value" name="size_europe_value[]" type="checkbox" style="margin:5px" value="35"/> 35</span>
+                                    <span style=" float:left; width:80px"><input class="size_europe_value" name="size_europe_value[]" type="checkbox" style="margin:5px" value="36"/> 36</span>
+                                    <span style=" float:left; width:80px"><input class="size_europe_value" name="size_europe_value[]" type="checkbox" style="margin:5px" value="37"/> 37</span>
+                                    <span style=" float:left; width:80px"><input class="size_europe_value" name="size_europe_value[]" type="checkbox" style="margin:5px" value="38"/> 38</span>
+                                    <span style=" float:left; width:80px"><input class="size_europe_value" name="size_europe_value[]" type="checkbox" style="margin:5px" value="39"/> 39</span>
+                                    <span style=" float:left; width:80px"><input class="size_europe_value" name="size_europe_value[]" type="checkbox" style="margin:5px" value="40"/> 40</span>
+                                    <span style=" float:left; width:80px"><input class="size_europe_value" name="size_europe_value[]" type="checkbox" style="margin:5px" value="41"/> 41</span>
+                                    <span style=" float:left; width:80px"><input class="size_europe_value" name="size_europe_value[]" type="checkbox" style="margin:5px" value="42"/> 42</span>
+                                    <span style=" float:left; width:80px"><input class="size_europe_value" name="size_europe_value[]" type="checkbox" style="margin:5px" value="43"/> 43</span>
+                                    <span style=" float:left; width:80px"><input class="size_europe_value" name="size_europe_value[]" type="checkbox" style="margin:5px" value="44"/> 44</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="position:relative; float:left; width:100%; padding:10px 0; display:block">
+                            <div style="float:left; width:20%; padding:5px 0; text-align:right"><span style="color:red">*</span> 批发价：</div>
+                            <div style="float:left; width:80%"><input class="iinput" id="product_saleprice" name="product_saleprice" type="text" size="10" maxlength="10" style="padding:5px"></div>
+                        </div>
+                        <div style="position:relative; float:left; width:100%; padding:10px 0; display:block">
+                            <div style="float:left; width:20%; padding:5px 0; text-align:right"><span style="color:red">*</span> 大客价：</div>
+                            <div style="float:left; width:80%"><input id="product_vipprice" name="product_vipprice" type="text" size="10" maxlength="10" style="padding:5px"></div>
+                        </div>
+                        <div style="margin-left:15%;">
+                            <div style="position:relative; float:left; width:100%; padding:10px 0; display:block">
+                                <form name=theform>
+                                    <input type="radio" name="myradio" style="display:none;" value="local_name"/> <span style="display:none;" >上传文件名字保持本地文件名字</span>
+                                    <input type="hidden" name="myradio" value="random_name" checked/>
+                                </form>
+                                <h4 style="margin-top:5px;" style="margin-top:5px;">您所选择的文件列表：</h4>
+                                <div id="ossfile">你的浏览器不支持flash,Silverlight或者HTML5！</div>
+                                <div style="font-size:16px;font-weight:bold;padding-bottom:5px;">商品图片：</div>
+                                <div style="margin:5px 0;">
+                                    <input type="hidden" id="product_pic" name="product_pic" />
+                                    <div id="viewproduct_pic" style="position:relative; width:100px; height:100px; border:1px solid #cccccc; background: url(/pc/images/nopic_50.jpg) #ffffff center center no-repeat; background-size:contain; position:relative; overflow:hidden; display:block; cursor:pointer;margin-bottom:5px;">
+                                    <!--<input id="product_pic" name="product_pic" type="hidden">-->
+                                    <!--<input id="uploadpic" name="uploadpic" accept="image/*" type="file" style="position:absolute; right:0; top:0; width:100px; height:100px; opacity:0; filter:alpha(opacity=0); cursor:pointer" onchange="UploadProductPic()">-->
+                                    </div>
+                                    <div id="container">
+                                        <a id="selectfiles" href="javascript:void(0);" class='btn'>选择文件</a>
+                                        <a id="postfiles" href="javascript:void(0);" class='btn'>开始上传</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="float:left; width:80%; margin:30px 0 0 20%; overflow:hidden; display:block">
+                            <span id="notice_message" style="float:left"></span>
+                        </div>    
+                        <div style="position:relative; float:left; width:75%; padding:10px 0; display:block">
+                            <div style="float:left; width:20%; height:25px"></div>
+                            <div style="float:left; width:80%">
+
+                                <span id="btn_addproduct_submit" class="btn_normal"> 确认添加 </span>
+
+                            </div>
+                        </div>
+                    </div>
+</form>
+                    
+                </div>
+                
+<script type="text/javascript">    
+$(function(){    
+    $(".color_select").change(function(){
+        if ($(this).is(":checked"))
+        {                            
+            var add_html="<div style='float:left; width:100%'>" +
+                         "    <div style='float:left'><input class='color_selected' name='color_selected' type='checkbox' style='margin:5px' onchange='EmptyColorSelected(this)' checked/></div>" +
+                         "    <div style='float:left; margin-left:10px'><input class='color_vale_selected' name='color_vale_selected[]' type='text' size='15' maxlength='20' style='padding:5px; border:0; border-bottom:1px solid #999999; color:#333333'></div>" +
+                         "</div>";
+                         
+            $(this).parent().parent().before(add_html);
+            $(this).attr("checked",false);
+        }
+    });
+    
+    $(".size_type").change(function(){
+        if ($('input:radio[name="size_type"]:checked').val()=="1")
+        {
+            $(".size_europe_value").each(function(){
+               $(this).attr("checked",false);
+            });
+            $("#china_value_select").show();
+            $("#europe_value_select").hide();
+        }
+        
+        if ($('input:radio[name="size_type"]:checked').val()=="2")
+        {
+            $(".size_china_value").each(function(){
+               $(this).attr("checked",false);
+            });
+            $("#china_value_select").hide();
+            $("#europe_value_select").show();
+        }
+    });
+    
+    $('#btn_addproduct_submit').click(function(){
+        if ($("#product_huohao").val()=="")
+        {
+            $("#notice_message").html("<img src=/pc/images/error.png> <span style='color:red'>请填写商品货号！</span>");
+            return false;
+        }
+        
+        if ($("#product_store").val()=="")
+        {
+            $("#notice_message").html("<img src=/pc/images/error.png> <span style='color:red'>请填写商品出品档口！</span>");
+            return false;
+        }
+        
+        if ($("#product_composition").val()=="")
+        {
+            $("#notice_message").html("<img src=/pc/images/error.png> <span style='color:red'>请填写商品面料成分！</span>");
+            return false;
+        }
+        
+        if ($(".color_vale_selected").length==0)
+        {
+            $("#notice_message").html("<img src=/pc/images/error.png> <span style='color:red'>请填写商品颜色！</span>");
+            return false;
+        }
+    
+        if($('input:radio[name="size_type"]:checked').val()==null)
+        {
+            $("#notice_message").html("<img src=/pc/images/error.png> <span style='color:red'>请选择尺码类型！</span>");
+            return false;
+        }
+
+        var size_china_value =[]; 
+        $('input[name="size_china_value[]"]:checked').each(function(){ 
+        size_china_value.push($(this).val()); 
+        });             
+        if($('input:radio[name="size_type"]:checked').val()=="1" && size_china_value.length==0)
+        {
+            $("#notice_message").html("<img src=/pc/images/error.png> <span style='color:red'>请选择尺码！</span>");
+            return false;
+        }
+
+        var size_europe_value =[]; 
+        $('input[name="size_europe_value[]"]:checked').each(function(){ 
+        size_europe_value.push($(this).val()); 
+        });                 
+        if($('input:radio[name="size_type"]:checked').val()=="2" && size_europe_value.length==0)
+        {
+            $("#notice_message").html("<img src=/pc/images/error.png> <span style='color:red'>请选择尺码！</span>");
+            return false;
+        }
+        
+        if ($("#product_saleprice").val()=="")
+        {
+            $("#notice_message").html("<img src=/pc/images/error.png> <span style='color:red'>请填写批发价！</span>");
+            return false;
+        }
+        
+        if ($("#product_vipprice").val()=="")
+        {
+            $("#notice_message").html("<img src=/pc/images/error.png> <span style='color:red'>请填写大客价！</span>");
+            return false;
+        }
+        
+        $.ajax({
+            url:"model-post-addproduct", 
+            async: false,
+            type: "POST",
+            data:$('#products_add_form').serialize(),
+            dataType:"json",
+            success: function(html){
+                if (html["state"]=="ok")
+                {
+                    layer.msg("商品添加成功！", {time: 2000, icon:1});
+                    setTimeout(function(){
+                        mount_to_frame('view_products_list',1,'frame_products_list');
+                    },2000);
+                }
+                else
+                {
+                    layer.msg(html["desc"], {time: 2000, icon:2});
+                }
+            }
+        });    
+    });
+    $('#products_add_form').on('keydown',function(e){
+
+        if(e.keyCode == 13){
+            //模拟点击登陆按钮，触发上面的 Click 事件
+            $('#products_add_form input,select').blur();
+            $("#btn_addproduct_submit").click(
+            );
+        }
+    });
+});
+
+function EmptyColorSelected(obj_val)
+{
+   $(obj_val).parent().parent().empty();
+}
+
+function UploadProductPic()
+{
+    var formData = new FormData($( "#products_add_form" )[0]);  
+    $.ajax({  
+        url: '/postuploadpic' ,  
+        type: 'POST',  
+        data: formData,  
+        async: false,  
+        cache: false,  
+        contentType: false,  
+        processData: false,  
+        success: function (returndata) {  
+            $("#viewproduct_pic").css("background-image","url(" + returndata + ")");
+            $("#product_pic").val(returndata);
+        },  
+        error: function (returndata) {  
+          alert("上传失败！请稍后再试。");  
+        }  
+    });
+}
+
+console.log($("#btn_addproduct_submit"));
+
+
+
+</script>
+<script type="text/javascript" src="/libs/oss/lib/plupload-2.1.2/js/plupload.full.min.js"></script>
+<script type="text/javascript" src="/libs/oss/upload.js"></script>

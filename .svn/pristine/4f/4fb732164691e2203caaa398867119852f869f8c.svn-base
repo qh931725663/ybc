@@ -1,0 +1,15 @@
+<?php 
+include_once "{$root_path}/model/model_bi.php";
+@$page=$_REQUEST["page_idx"]?$_REQUEST["page_idx"]:1;$pagesize=20;$offset=($page-1)*$pagesize;
+$seller_array= get_stream_mjdz(@$_REQUEST["var_seller_id"]);
+$rowcount=count($seller_array);
+debug($seller_array);
+?>
+    <div class="report_table_row">
+        <div style="width:30%; height:15px"></div>
+        <div style="width:15%;text-align:center">-</div>
+        <div style="width:15%;text-align:center">-</div>
+        <div style="width:15%;text-align:center">-</div>
+        <div style="width:15%;text-align:center">-</div>
+        <div style="width:10%; height:15px"></div>
+    </div>

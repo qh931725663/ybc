@@ -1,0 +1,124 @@
+<?php
+include_once("check_login.php");
+include_once("{$root_path}/model/model_seller.php");
+update_seller_cycle();
+
+if ($_SESSION["ERP_ACCOUNT_LOGIN_TYPE"]=="1" or (!empty($_SESSION["ERP_ACCOUNT_USER_TYPE"]) and $_SESSION["ERP_ACCOUNT_USER_TYPE"]=="1"))
+{
+    $p=cselect("*","ydf_dangkou",array("dangkou_type='1' and dangkou_boss_m_bianhao=?",$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"]));
+    if (!$rowdangkou=$p[0]->fetch())
+    {
+        include_once "pc/view_store_apply.php";
+    }
+    else
+    {
+        if (!empty($_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]) and $_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]=="11")
+        {
+?>
+                <div style="float:left; width:96%; min-height:800px; margin:15px 1% 0 1%; padding:10px 1%; background:#ffffff; overflow:hidden; display:block">
+                    <div style="width:60%; margin:0 auto; overflow:hidden; display:block">
+                        <div style="float:left; width:100%; margin-top:50px; overflow:hidden; display:block">
+                            <div style="float:left; width:20%; height:50px; background:url(/pc/images/icon_daishenhe.png) center center no-repeat; overflow:hidden; display:block"></div>
+                            <div style="float:left; width:80%; margin-top:10px; font-family:Microsoft YaHei; font-size:18px; font-weight:bold; color:#ff6000; overflow:hidden; display:block">申请已成功提交，正在审核中...</div>
+                        </div>
+                        <div style="float:left; width:80%; margin-left:20%; margin-top:20px; font-size:14px; overflow:hidden; display:block">服务费 ( <span style="font-size:14px;font-weight:bold; color:#FF0000">12000 元 / 年</span> ) 请转账至支付宝：18591914646</div>
+                        <div style="float:left; width:80%; margin-left:20%; margin-top:20px; font-size:14px; overflow:hidden; display:block">如需帮助请拨打服务热线：13347423798</div>
+                    </div>
+                </div>
+<?php        
+        }
+        elseif ((!empty($_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]) and $_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]=="12") or (!empty($_SESSION["ERP_ACCOUNT_USER_DANGKOU_COUNT"]) and $_SESSION["ERP_ACCOUNT_USER_DANGKOU_COUNT"]>"1") or (!empty($_SESSION["ERP_ACCOUNT_USER_TYPE"]) and $_SESSION["ERP_ACCOUNT_USER_TYPE"]=="1"))
+        {
+?>
+                <div class="index_main_div" >
+
+                </div>
+<script type="text/javascript">    
+$(function(){
+    $.ajax({
+        url:"model-addup-bi", 
+        async: false,
+        type: "POST",
+        data:{func:"boss_addup_index"},
+        dataType:"json",
+        success: function(html){
+            $("#today_sales_fund").html(parseInt(html["today_sales_fund"]));
+        }
+    });
+});
+</script>
+<?php
+        }
+        elseif (!empty($_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]) and $_SESSION["ERP_ACCOUNT_USER_DANGKOU_STATUS"]=="13")
+        {
+?>
+                <div style="float:left; width:96%; min-height:800px; margin:15px 1% 0 1%; padding:10px 1%; background:#ffffff; overflow:hidden; display:block">
+                    <div style="width:60%; margin:0 auto; overflow:hidden; display:block">
+                        <div style="float:left; width:100%; margin-top:50px; overflow:hidden; display:block">
+                            <div style="float:left; width:20%; height:50px; background:url(/pc/images/icon_daishenhe.png) center center no-repeat; overflow:hidden; display:block"></div>
+                            <div style="float:left; width:80%; margin-top:10px; font-family:Microsoft YaHei; font-size:18px; font-weight:bold; color:#ff6000; overflow:hidden; display:block">对不起，此档口管理系统使用时间已到期！</div>
+                        </div>
+                        <div style="float:left; width:80%; margin-left:20%; margin-top:20px; font-size:14px; overflow:hidden; display:block">服务费 ( <span style="font-size:14px;font-weight:bold; color:#FF0000">12000 元 / 年</span> ) 请转账至支付宝：18591914646</div>
+                        <div style="float:left; width:80%; margin-left:20%; margin-top:20px; font-size:14px; overflow:hidden; display:block">如需帮助请拨打服务热线：13347423798</div>
+                    </div>
+                </div>
+<?php
+        }
+    }
+}
+elseif ($_SESSION["ERP_ACCOUNT_LOGIN_TYPE"]=="4" and !empty($_SESSION["ERP_ACCOUNT_USER_TYPE"]) and $_SESSION["ERP_ACCOUNT_USER_TYPE"]<>"1")
+{
+?>
+                <div style="float:left; width:96%; min-height:800px; margin:15px 1% 0 1%; padding:10px 1%; background:#ffffff; overflow:hidden; display:block">
+                    <div style="float:left; width:100%; overflow:hidden; display:block">
+                        <p style="float:left; width:90%; padding:5px 5%; font-size:14px; color:#999999">：-）欢迎您登录优百仓工厂管理系统！</p>                        
+                    </div>
+                </div>
+<?php
+}
+elseif ($_SESSION["ERP_ACCOUNT_LOGIN_TYPE"]=="2")
+{
+    if (empty($_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"]))
+    {
+?>
+                <div style="float:left; width:96%; min-height:800px; margin:15px 1% 0 1%; padding:10px 1%; background:#ffffff; overflow:hidden; display:block">
+                    <div style="float:left; width:100%; margin:10px 0; padding:10px 0; font-size:14px; color:#e43c3f; border-bottom:1px dashed #cccccc; overflow:hidden; display:block">请先选择合作档口负责人：</div>
+                    <div style="float:left; width:100%; display:block">
+                        <?php
+                        $p=cselect("*","ydf_member",array("m_bianhao in (select factory_boss_m_bianhao from ydf_factory where del_state<>'1' and factory_manage='1' and factory_mobile='".$_SESSION["ERP_ACCOUNT_LOGIN_MOBILE"]."')"),"","m_bianhao");
+                        while ($rowboss=$p[0]->fetch())
+                        {
+                        ?>
+                        <div class="listclassvalueblock">
+                            <div class="listclassvalue" onclick="/**/FactorySelectBoss(<?php echo $rowboss["m_bianhao"]?>)"><?php echo $rowboss["m_realname"] ?></div>
+                        </div>
+                        <?php
+                        }
+                        ?>
+                        
+                    </div>
+                </div>
+<?php
+    }
+    else
+    {
+?>
+                <div style="float:left; width:96%; min-height:800px; margin:15px 1% 0 1%; padding:10px 1%; background:#ffffff; overflow:hidden; display:block">
+                    <div style="float:left; width:100%; overflow:hidden; display:block">
+                        <p style="float:left; width:90%; padding:5px 5%; font-size:14px; color:#999999">：-）欢迎您登录优百仓工厂管理系统！</p>                        
+                    </div>
+                </div>
+<?php
+    }
+}
+elseif ($_SESSION["ERP_ACCOUNT_LOGIN_TYPE"]=="3")
+{
+?>
+                <div style="float:left; width:96%; min-height:800px; margin:15px 1% 0 1%; padding:10px 1%; background:#ffffff; overflow:hidden; display:block">
+                    <div style="float:left; width:100%; overflow:hidden; display:block">
+                        <p style="float:left; width:90%; padding:5px 5%; font-size:14px; color:#999999">：-）欢迎您登录优百仓卖家管理系统！</p>                        
+                    </div>
+                </div>
+<?php
+}
+?>

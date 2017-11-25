@@ -1,0 +1,197 @@
+<?php 
+include_once "{$root_path}/model/model_bi.php";
+
+function get_factory_list()
+{
+    $boss_id = $_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"];    
+    $p=select("*","ydf_factory",array("factory_boss_m_bianhao=?",$boss_id));
+    if ($p->errorCode()!="00000")
+        print_r($p->errorInfo());
+    while ($f_row=$p->fetch())
+    {
+        echo '<option value="'.$f_row["factory_bianhao"].'">'.$f_row["factory_name"].'</option>';
+    }
+}
+?>
+<script type="text/javascript">    
+function search_deal_finance_addup()
+{
+    $("#pid_view_finance_bi_pool_summary #pages_deal_finance_addup").set_page_num("view_finance_bi_pool_summary","pages_deal_finance_addup",1);
+
+    refresh_inner("view_finance_bi_pool_summary?"+$("#form_deal_finance_addup").serialize() );
+
+}
+
+function clean_search_bi_pool_summary()
+{
+    mount_to_frame('view_finance_bi_pool_summary',1,'frame_finance_bi_pool_summary');
+}
+</script>
+                    <form id="form_deal_finance_addup">
+                    <div class="search_box">
+                        <div class="search_box_inner">
+                            <div class="txhz_a">
+
+                            </div>
+                            <div class="txhz_b">
+                                <span class="lf">
+                                    <select  name="factory_id">
+                                            <option value="">选择工厂</option>    
+                                            <?php get_factory_list(); ?>
+                                    </select>
+                                </span>
+                                <span onclick="/**/search_deal_finance_addup()" class="btn_normal_blue">搜索</span>
+                                <span class="clear_search">清空<br>条件</span>
+                            </div>
+                        </div>
+                    </div>     
+
+<!-- refresh_begin -->
+                    <div class="report_table_header" style="margin-top:0px; background:#f2f2f2">
+                        <div style="width:13%; color:#999999; text-align:center">工厂</div>
+                        <div style="width:13%; color:#999999; text-align:center">最近交易时间</div>
+                        <div style="width:13%; color:#999999; text-align:center">类型</div>
+                        <div style="width:10%; color:#999999; text-align:center">单号</div>
+                        <div style="width:10%; color:#999999; text-align:center">数量</div>
+                        <div style="width:10%; color:#999999; text-align:center">单价</div>
+                        <div style="width:10%; color:#999999; text-align:center">金额</div>
+                        <div style="width:11%; color:#999999; text-align:center">结余 =</div>
+                        <div style="width:10%; color:#999999; text-align:center">操作</div>
+                    </div>
+                    <div id="pagelist">
+                        <div class="report_table_body" style="border-bottom:1px dashed #cccccc">
+                        <?php
+                        include_once "{$root_path}/model/model_bi.php";
+                        @$page=$_REQUEST["page_idx"]?$_REQUEST["page_idx"]:1;$pagesize=20;$offset=($page-1)*$pagesize;
+                        list($historys,$addup)=get_history_dealer_gcyf($ymd="day",@$_REQUEST["factory_id"]);
+                        foreach ($addup as $row)
+                        {
+                            $row=$historys[$row["now"]];
+                            $p=rselect("*","ydf_factory",array("factory_bianhao=?",$row["bill_factory_id"]));
+                            $name="";
+                            if ($ro=$p->fetch())
+                                {
+                                    $name=$ro["factory_name"];
+
+                                }
+                        ?>
+                            <div style="width:13%; text-align:center"><?php echo $name?></div>
+                            <div style="width:13%; text-align:center"><?php echo date("Y-m-d",$row["now_time"])?></div>
+
+
+
+                            <div style="width:13%; text-align:center">-</div>
+                            <div style="width:10%; text-align:center">-</div>
+                            <div style="width:10%; text-align:center">-</div>
+                            <div style="width:10%; text-align:center">-</div>
+                            <div style="width:10%; text-align:center"></div>
+                            <div style="width:11%; padding:6px 0; text-align:center"><?php echo $row["sum"]["pool"]?>
+                            </div>
+                            <div style="width:10%; text-align:center">
+                                <span style="color:#0099FF; cursor:pointer" onclick="ClickdealFinanceDetail()">对账</span>
+                            </div>
+
+                        </div>
+                        <div id="layer_deal_finance_detail" style="float:left; width:100%; background:#f2f2f2; overflow:hidden; display:none">
+                        </div>
+                        <?php
+                        }
+                        ?>
+                    </div>
+                    <div class="record"> 共 <span class="record_num"><?php echo "100"?></span> 条记录</div>
+
+<script>/*n*/    
+    $("#pid_view_deal_finance_addup #pages_deal_finance_addup").set_page_count("view_deal_finance_addup","pages_deal_finance_addup",<?php echo "5";?>);
+</script>
+
+<!-- refresh_end -->
+    <div class="ipages" id="pages_deal_finance_addup" page="view_deal_finance_addup" form="form_deal_finance_addup" count="<?php echo "1"; ?>"/>
+                    </form> <!-- 页码也作为表单项统一处理  -->
+                
+                                        <div id="layer_modifyfund">
+                                        
+                                        </div>
+                
+<script type="text/javascript">
+function ClickdealFinanceDetail(seller_id){
+    if ($("#layer_deal_finance_detail").is(":visible")==false)
+    {
+        $.ajax({
+            url:"view-get-deal-finance-detail",
+            async: false,
+            type: "POST",
+            data:{var_factory_id:factory_id},
+            success: function(html){
+                $("#layer_deal_finance_detail").html(html);
+                $("#layer_deal_finance_detail").show(html);
+            }
+        });
+    }
+    else
+    {
+        $("#layer_deal_finance_detail").hide();
+    }
+}
+
+function ShowModifyFactoryFundLayer(factory_id, bill_time, fund_asset, fund_stock, fund_freeze, fund_active,opt){
+    $.ajax({
+        url:"view-get-modifyfactoryfund", 
+        async: false,
+        type: "POST",
+        data:{var_factory_id:factory_id,var_bill_time:bill_time,var_fund_asset:fund_asset,var_fund_stock:fund_stock,var_fund_freeze:fund_freeze,var_fund_active:fund_active,var_opt:opt},
+        success: function(html){
+            $("#layer_modifyfund").html(html);
+        }
+    });    
+    
+    index_layer_modifyfund=layer.open({
+        type: 1,
+        area: ['420px', '370px'],
+        title: false,
+        content:$('#layer_modifyfund')
+    });
+}
+
+function PostModifyFactoryFund(){
+    if($("#modifyfactoryfund_opt_type").val()=="modify_asset" && !$("#modifyfactoryfund_fund_asset").val())
+    {
+        $("#modifyfactoryfund_tip_notice").html("<span style='font-size:14px; color:red'>亲，本期结余资产不能为空哦！</span>");
+        return false;
+    }
+    
+    if($("#modifyfactoryfund_opt_type").val()!="modify_asset" && !$("#modifyfactoryfund_fund_freeze").val())
+    {
+        $("#modifyfactoryfund_tip_notice").html("<span style='font-size:14px; color:red'>亲，本期交易中资金不能为空哦！</span>");
+        return false;
+    }
+    
+    if($("#modifyfactoryfund_opt_type").val()!="modify_asset" && !$("#modifyfactoryfund_fund_active").val())
+    {
+        $("#modifyfactoryfund_tip_notice").html("<span style='font-size:14px; color:red'>亲，本期结余可提现资金不能为空哦！</span>");
+        return false;
+    }
+        
+    $.ajax({
+        url:"model-post-modifyfactoryfund", 
+        async: false,
+        type: "POST",
+        data:$('#modifyfactoryfundform').serialize(),
+        dataType:"json",
+        success: function(html){
+            if (html["state"]=="ok")
+            {
+                layer.close(index_layer_modifyfund);
+                layer.msg("工厂资金修改成功！", {time: 2000, icon:1});
+                setTimeout(function(){
+                    refresh_inner("view_finance_bi_pool_summary?"+$("#form_deal_finance_addup").serialize() );
+                },2000);
+            }
+            else
+            {
+                $("#modifyfactoryfund_tip_notice").html("<span style='font-size:14px; color:red'>"+html["desc"]+"</span>");
+            }
+        }
+    });    
+}
+
+</script>

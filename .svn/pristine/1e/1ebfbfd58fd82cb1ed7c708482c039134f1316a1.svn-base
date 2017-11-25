@@ -1,0 +1,79 @@
+<?php
+include_once("check_login.php");
+include_once("check_dangkou_user.php");
+$nowtime=strtotime(date("Y-m-d H:i:s"));
+
+$pdo->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
+try
+{
+    $pdo->beginTransaction();
+    $p_dangkoubank=rselect("*","ydf_dangkou_bank",array("dangkou_bank_dangkou_bianhao=? and dangkou_bank_type=1",$_REQUEST["store_modify_store_bianhao"]));
+    if(!$p_dangkoubank->fetch()){
+        $sets=array(
+            "bank_boss_id"=>$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"],
+            "bank_type"=>1,
+            "bank_add_time"=>$nowtime
+        );
+        insert("ydf_bank",$sets);
+        $lastbankid=$pdo->lastInsertId();
+        $sets=array(
+            "dangkou_bank_dangkou_bianhao"=>$_REQUEST["store_modify_store_bianhao"],
+            "dangkou_bank_bank_bianhao"=>$lastbankid,
+            "dangkou_bank_type"=>1
+        );
+        insert("ydf_dangkou_bank",$sets);
+    }
+    $p_dangkoubank=rselect("*","ydf_dangkou_bank",array("dangkou_bank_dangkou_bianhao=? and dangkou_bank_type=5",$_REQUEST["store_modify_store_bianhao"]));
+    if(!$p_dangkoubank->fetch()){
+        $sets=array(
+            "bank_boss_id"=>$_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"],
+            "bank_type"=>5,
+            "bank_add_time"=>$nowtime
+        );
+        insert("ydf_bank",$sets);
+        $lastbankid=$pdo->lastInsertId();
+        $sets=array(
+            "dangkou_bank_dangkou_bianhao"=>$_REQUEST["store_modify_store_bianhao"],
+            "dangkou_bank_bank_bianhao"=>$lastbankid,
+            "dangkou_bank_type"=>5
+        );
+        insert("ydf_dangkou_bank",$sets);
+    }
+
+
+    if ($_REQUEST["store_modify_store_have_warehouse"]=="1")
+    {
+        $p_dangkouwarehouse=cselect("*","ydf_dangkou_warehouse",array("dangkou_warehouse_dangkou_bianhao=?",$_REQUEST["store_modify_store_bianhao"]));
+        if ($rowdangkouwarehouse=$p_dangkouwarehouse[0]->fetch())
+        {
+            if ($rowdangkouwarehouse["dangkou_warehouse_warehouse_bianhao"]<>$_REQUEST["store_modify_warehouse_bianhao"])
+            {
+                update("ydf_dangkou_warehouse",array("dangkou_warehouse_warehouse_bianhao"=>$_REQUEST["store_modify_warehouse_bianhao"]),array("dangkou_warehouse_dangkou_bianhao=?",$_REQUEST["store_modify_store_bianhao"]) );
+            }
+        }
+        else
+        {
+            $sets=array(
+                "dangkou_warehouse_dangkou_bianhao"=>$_REQUEST["store_modify_store_bianhao"],
+                "dangkou_warehouse_warehouse_bianhao"=>$_REQUEST["store_modify_warehouse_bianhao"]
+            );
+            insert("ydf_dangkou_warehouse",$sets);
+        }
+    }
+    else
+    {
+        cdelete("ydf_dangkou_warehouse",array("dangkou_warehouse_dangkou_bianhao=?",$_REQUEST["store_modify_store_bianhao"]),"dangkou_warehouse_dangkou_bianhao");
+    }
+    
+    update("ydf_dangkou",array("dangkou_market"=>$_REQUEST["store_modify_store_market"],"dangkou_layer"=>$_REQUEST["store_modify_store_layer"],"dangkou_place"=>$_REQUEST["store_modify_store_place"],"dangkou_name"=>$_REQUEST["store_modify_store_market"].$_REQUEST["store_modify_store_place"],"dangkou_manager"=>$_REQUEST["store_modify_store_manager"],"dangkou_mobile"=>$_REQUEST["store_modify_store_mobile"],"dangkou_address"=>$_REQUEST["store_modify_store_address"]),array("dangkou_bianhao=?",$_REQUEST["store_modify_store_bianhao"]) );
+    
+    $pdo->commit();
+    echo json_encode(array("state"=>"ok"));
+}
+catch(PDOException $e)
+{  
+    $pdo->rollback();
+    $pdo->setAttribute(PDO::ATTR_AUTOCOMMIT, 1);
+    die(json_encode(array("state"=>$e->getCode(),"desc"=>$e->getMessage(),"trace"=>$e->getTraceAsString() )));
+}
+?>

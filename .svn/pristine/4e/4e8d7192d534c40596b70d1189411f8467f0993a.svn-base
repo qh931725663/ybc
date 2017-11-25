@@ -1,0 +1,68 @@
+<?php
+include_once "{$root_path}/model/model_bi.php";
+$boss_id = $_SESSION["ERP_ACCOUNT_USER_BOSS_M_BIANHAO"];
+$ymd=empty($_REQUEST["bi_time"])?"day":$_REQUEST["bi_time"];
+if (!empty($_SESSION["ERP_ACCOUNT_USER_DANGKOU_BIANHAO"]))
+    $order_master_id=$_SESSION["ERP_ACCOUNT_USER_DANGKOU_BIANHAO"];
+else
+    $order_master_id="";
+$kucun_color=$_REQUEST["kucun_color"];
+$product_id=$_REQUEST['get_stock_guige_huohao'];
+$factory_id= $_REQUEST['factory_id'];
+$group=array("detail_p_huohao","detail_p_color","detail_p_size","detail_master_bianhao");
+list($historys,$detail_addup)=get_history_stock_num($ymd="day",$group,$factory_id,$product_id,$order_master_id,$kucun_color,null,null);
+debug($detail_addup);
+//得到档口列表
+$dangkou_arr=get_dangkou_list();//档口仓库和编号数组
+debug($dangkou_arr);
+//七日总销和均销
+$group=array("detail_p_huohao","detail_p_color","detail_p_size");
+$where=array("detail_p_huohao=?  and detail_p_color=?",$product_id,$kucun_color);
+$event_inventory=predict(7,7,7,$group,$where);
+debug($event_inventory);
+
+$rowcount=count($detail_addup);
+$add_ar=[];
+$ret=[];
+foreach ($detail_addup as $key=>$value)
+{
+    $add_ar[]=$key;
+    $ret[]=$value;
+}
+debug($ret);
+debug($add_ar);
+for ($i=0;$i<$rowcount;$i++)
+{
+    $pool=$ret[$i]["pool"];
+    list($huohao,$color,$size) = split('#', $add_ar[$i]);
+    debug($size);
+    if(array_key_exists($huohao.'#'.$color.'#'.$size, $event_inventory)==false){
+        $avg_num=0;
+        $total_num=0;
+    }else{
+        $avg_num=round($event_inventory[$huohao.'#'.$color.'#'.$size]["avg_num"]);
+        $total_num=round($event_inventory[$huohao.'#'.$color.'#'.$size]["total_num"]);
+    }
+    //取分库存
+    $kucun_x2="";
+    for($j=0;$j<count($dangkou_arr);$j++){
+
+        $huo_dang=$dangkou_arr[$j][0];
+        $dangkou_name=$dangkou_arr[$j][1];
+        if(array_key_exists($huohao.'#'.$color.'#'.$size."#".$huo_dang, $detail_addup)==false){
+            $kucun_x2.="<span class='lf' style='margin-top:4px;margin-right:5px;'>".$dangkou_name.":0"."</span>";
+        }else{
+            $kucun_x2.="<span class='lf' style='margin-top:4px;margin-right:5px;'>".$dangkou_name.":".floatval($detail_addup[$huohao.'#'.$color.'#'.$size."#".$huo_dang]['pool'])."</span>";
+        }
+    }
+?>
+    <div style="width:100%; margin:0 auto; padding:10px 0; border-bottom:1px dashed #cccccc; overflow:hidden; display:block;">
+        <div style="float:left; width:8%; height:15px;text-align:center;margin-left:16%;"><?php echo $size ?></div>
+        <div style="float:left; width:6%;text-align:center;margin-left:1%"><?php echo round($pool) ?></div>
+        <div class="kucun_sp" style="float:left; width:26%; text-align:center;margin-left:2%;"><?php echo $kucun_x2 ?></div>
+        <div style="float:left; width:6%; height:15px;text-align:center;margin-left:3%"><?php echo $avg_num ?></div>
+        <div style="float:left;width:6%;height:14px;text-align:center;margin-left:10%"><?php echo $total_num ?></div>
+    </div>
+<?php
+}
+?>

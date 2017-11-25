@@ -1,0 +1,64 @@
+<div class="search_box">
+    <div id="real_time_profit">
+        <div style="width:30%; float:left; text-align:center;">
+            <p style="font-size:16px; padding-top:40px;">当前资金总额</p>
+            <p style="font-size:40px; padding-top:40px;">50,0000</p>
+        </div>
+        <div style="width:35%; float:left; text-align:center;">
+            <p style="font-size:16px; padding-top:40px;">当前应收货款</p>
+            <p style="font-size:40px; padding-top:40px;">100,0000</p>
+        </div>
+        <div style="width:35%; float:left; text-align:center;">
+            <p style="font-size:16px; padding-top:40px;">当前应付货款</p>
+            <p style="font-size:40px; padding-top:40px;">150,0000</p>
+        </div>
+    </div>
+    <div class="search_box_inner">
+        <div class="zjfx_a">
+            <input type="hidden" id="order_type" name="order_type"/>
+            <span class="listtypevalue listtypeselect">周报</span>
+            <span class="listtypevalue">周报</span>
+            <span class="listtypevalue">月报</span>
+            <span class="listtypevalue">年报</span>
+        </div>
+        <div class="zjfx_b">
+            <span class="sp_a">
+                <span>日期 <input type="text" class="datepicker" name="search_store_dangkoubuhuo_from_date"  size="12" maxlength="50" readonly="readonly"> 至 <input type="text" class="datepicker" name="search_sotre_dangkoubuhuo_to_date"  size="12" maxlength="50" readonly="readonly">
+                </span>
+            </span>
+            <span id="btn_chukuorder_search" class="btn_normal_red">搜索</span>
+        </div>
+    </div>
+    <div class="report_table_header" style="background:#f2f2f2">
+        <div style="color:#999999; width:20%">日期</div>
+        <div style="color:#999999; width:16%">上期未提净利</div>
+        <div style="color:#999999; width:16%">+ 本期毛利</div>
+        <div style="color:#999999; width:16%">- 本期开支</div>
+        <div style="color:#999999; width:16%">- 本期已提净利</div>
+        <div style="color:#999999; width:16%">= 本期可提净利</div>
+    </div>
+
+<!-- refresh_begin -->
+<?php
+include_once("{$root_path}/model/model_bi.php");
+include_once("{$root_path}/model/model_bill.php");
+
+$ymd=empty($_REQUEST["bi_time"])?"day":$_REQUEST["bi_time"];
+$ymd="week";
+@$from_day=$_REQUEST["from_day"]?get_ymd($_REQUEST["from_day"])["d"]:null;
+@$to_day=$_REQUEST["to_day"]?get_ymd($_REQUEST["to_day"])["d"]+24*3600-1:null;
+@$page=$_REQUEST["page_idx"]?$_REQUEST["page_idx"]:1;$pagesize=20;$offset=($page-1)*$pagesize;
+
+list($historys,$addup) = get_history_net_profit($ymd="day",$seller_id=null);
+debug($historys);
+    <div class="report_table_body" style="border-bottom:1px dashed #cccccc">
+        <div style="height:15px; width:20%">-</div>
+        <div style="height:15px; width:16%">-</div>
+        <div style="height:15px; width:16%">-</div>
+        <div style="height:15px; width:16%">-</div>
+        <div style="height:15px; width:16%">-</div>
+        <div style="height:15px; width:16%">-</div>
+    </div>                    
+    <div class="record"> 共 <span class="record_num">0</span> 条记录</div>
+
+</div>
